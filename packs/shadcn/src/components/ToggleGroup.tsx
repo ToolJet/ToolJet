@@ -20,7 +20,7 @@ import {
 import { lookVars, useDropRemovedChoices, useResetOn } from '../lib/ui2/choice/looks';
 import { moveRovingFocus, rovingEntry } from '../lib/activeElement';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
-import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { TOKEN, useThemeColor, useThemeRadius, earlierColor } from '../lib/styleDefaults';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
 
@@ -183,7 +183,7 @@ export const ToggleGroup = () => {
   const vars = lookVars({
     '--lk-bg': backgroundColor,
     '--lk-fg': textColor,
-    '--lk-on-bg': selectedBackgroundColor || selectedColor,
+    '--lk-on-bg': selectedBackgroundColor || earlierColor(selectedColor),
     '--lk-on-fg': selectedTextColor,
     '--ui-radius': borderRadius,
     '--ui-border': borderColor,

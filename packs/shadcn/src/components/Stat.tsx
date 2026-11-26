@@ -38,6 +38,9 @@ const NARROW_CARD = 160;
 
 const css = (value: unknown) => (isSet(value) ? String(value) : undefined);
 const text = (value: unknown) => (value == null || typeof value === 'object' ? '' : String(value));
+// {{Infinity}} (arithmetic on data not loaded, like 1/0) reaches a text property as the word: no figure, as NaN is not.
+const finiteText = (value: unknown) =>
+  typeof value === 'string' && /^[-+]?Infinity$/.test(value.trim()) ? '' : value;
 
 const Sparkline = ({ data, type }: { data: unknown; type: string }) => {
   const paths = useMemo(() => sparkPaths(data, SPARK_W, SPARK_H), [data]);
@@ -208,7 +211,8 @@ export const Stat = () => {
       displayName: 'Set secondary value',
       params: [{ handle: 'text', displayName: 'Change', defaultValue: '' }],
     },
-    (next: unknown) => setChange(text(next))
+    // As Set primary value: a number that is no figure (NaN, Infinity) sets nothing, not the word.
+    (next: unknown) => setChange(typeof next === 'number' && !Number.isFinite(next) ? '' : text(next))
   );
   // The Trend a change written as words points (a figure's own sign wins).
   ToolJet.useAction(
@@ -280,7 +284,7 @@ export const Stat = () => {
 
   useEffect(() => {
     setPrimaryLabel(text(label));
-    setPrimaryValue(typeof value === 'number' ? (Number.isFinite(value) ? value : '') : text(value));
+    setPrimaryValue(typeof value === 'number' ? (Number.isFinite(value) ? value : '') : text(finiteText(value)));
     setSecondaryLabel(text(changeLabel));
     setSecondaryValue(text(change));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -367,7 +371,7 @@ export const Stat = () => {
   ) : null;
   // The chip sits in the label row unless the icon takes that corner; then it follows the figure.
   const badgeInHeader = !(Glyph && iconPosition === 'right');
-  const shown = statValue(value, { valueFormat, currency, locale });
+  const shown = statValue(finiteText(value), { valueFormat, currency, locale });
 
   const content = (
     <div className={cn('ui-stat-content', reserveLabel ? 'is-roomy' : 'is-short', inline && 'is-inline')}>
@@ -470,7 +474,15 @@ export const Stat = () => {
           isCard && box.width > 0 && box.width < NARROW_CARD && 'is-narrow',
           !reserveLabel && 'is-short'
         )}
+        // A tab stop announced as a button named by what it shows; Enter or Space clicks it, as the Badge does.
+        role="button"
+        tabIndex={0}
         onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          onClick();
+        }}
         style={isCard && shadow ? { boxShadow: shadow } : undefined}
       >
         {body}

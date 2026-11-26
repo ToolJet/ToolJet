@@ -21,7 +21,7 @@ import {
 } from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
-import { TOKEN } from '../lib/styleDefaults';
+import { TOKEN, earlierColor } from '../lib/styleDefaults';
 import { Chip, ClearX, OptionsMenu, Spinner, type MenuCommand } from '../lib/ui2/choice/parts';
 import { FieldLoading } from '../lib/ui2/loading/look';
 import { activeElementIn } from '../lib/activeElement';
@@ -292,7 +292,7 @@ export const MultiSelect = () => {
   const selectAll = showSelectAll !== false && limit === 0 && !search && enabled.length > 1;
   const vars = lookVars({
     ...fieldVars(styles),
-    '--lk-chip-bg': chipBackgroundColor || chipColor,
+    '--lk-chip-bg': chipBackgroundColor || earlierColor(chipColor),
     '--lk-chip-fg': chipTextColor,
     '--lk-menu-bg': menuBackgroundColor,
     '--lk-menu-fg': menuTextColor,

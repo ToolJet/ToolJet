@@ -7,7 +7,7 @@ import { Check } from 'lucide-react';
 import { CheckedRow } from '../lib/Field';
 import { lookVars, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useColorStyle } from '../lib/ui2/choice/fieldStyles';
-import { TOKEN } from '../lib/styleDefaults';
+import { TOKEN, earlierColor } from '../lib/styleDefaults';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-choice.css';
 
@@ -92,7 +92,7 @@ export const Checkbox = () => {
   const note = check.error || description;
   const vars = lookVars({
     '--ui-primary': accentColor,
-    '--lk-label': labelColor || textColor,
+    '--lk-label': labelColor || earlierColor(textColor),
     '--lk-help': helpTextColor,
     '--lk-border': borderColor,
     '--ui-destructive': errorColor,

@@ -18,6 +18,7 @@ import {
   isRecord,
   isSet,
   list,
+  num,
   sameDatum,
   statusColors,
 } from '../lib/ui2/charts/chartModel';
@@ -80,7 +81,13 @@ export const PieChart = () => {
     const states = Array.isArray(colors) && colors.length ? null : statusColors(drawn.map((d) => d[categoryField]));
     return {
       rows: drawn,
-      slices: drawn.map((d, i) => ({ ...d, fill: states?.[i] ?? seriesColor(colors, chartColor, i) })),
+      // A number written as text ("20", as a database often returns it) is drawn as the number, as the line and bar
+      // charts do: recharts gave it no share. The rows a click exposes keep the value as the app gave it.
+      slices: drawn.map((d, i) => ({
+        ...d,
+        [valueKey]: num(d[valueKey]),
+        fill: states?.[i] ?? seriesColor(colors, chartColor, i),
+      })),
     };
   }, [data, colors, chartColor, categoryField, valueKey]);
   const isDonut = donut !== false;

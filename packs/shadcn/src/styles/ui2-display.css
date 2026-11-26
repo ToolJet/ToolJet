@@ -52,10 +52,13 @@
   display: flex;
   align-items: center;
 }
+/* The row shrinks to the box, so a long label is cut there (one long word ran thousands of px outside it). */
 .ui2-spinner {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: 100%;
+  min-width: 0;
 }
 .ui2-spinner.is-below {
   flex-direction: column;
@@ -83,6 +86,11 @@
 .ui2-spinner-label {
   font-size: 14px;
   color: var(--lk-label, var(--ui-muted-fg));
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 @keyframes ui2-spin {
   to {

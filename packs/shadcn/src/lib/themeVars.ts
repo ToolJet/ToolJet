@@ -18,6 +18,9 @@ const withFallback = (value: string) =>
   );
 
 const isSet = (value: unknown): value is string | number => value !== undefined && value !== null && value !== '';
+// A colour is text: a number, object or array bound to a colour style is left unset, so the stock colour shows (as the
+// native Modal's textOr); it crashed the component here (.replace on a number).
+const isColor = (value: unknown): value is string => typeof value === 'string' && value !== '';
 
 export interface ThemeStyles {
   primary?: string; // filled controls, focus ring, default button/badge
@@ -45,19 +48,19 @@ export const themeVars = ({
   buttonText,
 }: ThemeStyles): CSSProperties => {
   const vars: Record<string, string> = {};
-  if (isSet(primary)) {
+  if (isColor(primary)) {
     vars['--ui-primary'] = withFallback(primary);
     // --ui-ring is derived from --ui-primary where it is declared (:host), so it must be re-derived here.
     vars['--ui-ring'] = `color-mix(in srgb, ${withFallback(primary)} 35%, transparent)`;
   }
-  if (isSet(primaryFg)) vars['--ui-primary-fg'] = withFallback(primaryFg);
-  if (isSet(bg)) vars['--ui-bg'] = withFallback(bg);
-  if (isSet(fg)) vars['--ui-fg'] = withFallback(fg);
-  if (isSet(muted)) vars['--ui-muted'] = withFallback(muted);
-  if (isSet(border)) vars['--ui-border'] = withFallback(border);
+  if (isColor(primaryFg)) vars['--ui-primary-fg'] = withFallback(primaryFg);
+  if (isColor(bg)) vars['--ui-bg'] = withFallback(bg);
+  if (isColor(fg)) vars['--ui-fg'] = withFallback(fg);
+  if (isColor(muted)) vars['--ui-muted'] = withFallback(muted);
+  if (isColor(border)) vars['--ui-border'] = withFallback(border);
   if (isSet(radius) && !Number.isNaN(Number(radius))) vars['--ui-radius'] = `${Number(radius)}px`;
   // Left unset when empty, so each button variant keeps its own colors (see .ui-btn--* in ui.css).
-  if (isSet(buttonColor)) vars['--ui-btn-color'] = withFallback(buttonColor);
-  if (isSet(buttonText)) vars['--ui-btn-text'] = withFallback(buttonText);
+  if (isColor(buttonColor)) vars['--ui-btn-color'] = withFallback(buttonColor);
+  if (isColor(buttonText)) vars['--ui-btn-text'] = withFallback(buttonText);
   return vars as CSSProperties;
 };

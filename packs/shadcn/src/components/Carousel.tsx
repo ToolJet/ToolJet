@@ -253,6 +253,10 @@ export const Carousel = () => {
             } else if (e.key === 'ArrowRight') {
               e.preventDefault();
               go(indexRef.current + 1);
+            } else if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) {
+              // Tab lands on the carousel first: Enter or Space there clicks the current slide, as a click on it does.
+              e.preventDefault();
+              clickSlide(indexRef.current);
             }
           }}
           onMouseEnter={() => setHovered(true)}
@@ -327,15 +331,11 @@ export const Carousel = () => {
                           style={{ objectFit: imageFit === 'contain' ? 'contain' : 'cover' }}
                         />
                       ) : (
+                        // An image that failed shows its mark and still the slide's text (it showed the mark alone).
                         <div className="n2-carousel-text">
-                          {slide.image ? (
-                            <ImageOff size={24} style={{ color: 'var(--ui-muted-fg)' }} />
-                          ) : (
-                            <>
-                              <strong>{slide.title}</strong>
-                              {slide.description ? <span>{slide.description}</span> : null}
-                            </>
-                          )}
+                          {slide.image ? <ImageOff size={24} style={{ color: 'var(--ui-muted-fg)' }} /> : null}
+                          <strong>{slide.title}</strong>
+                          {slide.description ? <span>{slide.description}</span> : null}
                         </div>
                       )}
                       {caption === 'overlay' && showImage && (slide.title || slide.description) ? (

@@ -9,8 +9,6 @@ import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
-const MAX_SECTIONS = 200;
-
 /** A section index: a whole number from 0 (as a number or numeric text) below `count`, as its key; else null. */
 const sectionKey = (v: unknown, count = Infinity): string | null => {
   if (typeof v !== 'number' && !(typeof v === 'string' && v.trim() !== '')) return null;
@@ -21,17 +19,15 @@ const sectionKey = (v: unknown, count = Infinity): string | null => {
 type Item = { value: string; title: string; content: string };
 
 const toItems = (raw: unknown): Item[] =>
-  list(raw)
-    .slice(0, MAX_SECTIONS)
-    .map((t, i) =>
-      isRecord(t)
-        ? {
-            value: text(t.value) || `item-${i + 1}`,
-            title: text(t.title ?? t.label),
-            content: text(t.content ?? t.children),
-          }
-        : { value: `item-${i + 1}`, title: text(t), content: '' }
-    );
+  list(raw).map((t, i) =>
+    isRecord(t)
+      ? {
+          value: text(t.value) || `item-${i + 1}`,
+          title: text(t.title ?? t.label),
+          content: text(t.content ?? t.children),
+        }
+      : { value: `item-${i + 1}`, title: text(t), content: '' }
+  );
 
 const same = (a: string[], b: string[]) => a.length === b.length && a.every((k, i) => k === b[i]);
 

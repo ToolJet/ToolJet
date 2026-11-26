@@ -135,6 +135,9 @@ const RadialBody = ({
         <PolarAngleAxis type="number" domain={[0, max]} tick={false} axisLine={false} />
         {progress ? null : (
           <Tooltip
+            // Each ring's own shape (its bar, and its track when shown) shows its tooltip. Found from the pointer's radius,
+            // the innermost ring's inner half had none: Recharts centres that ring on the inner radius its search starts at.
+            shared={false}
             cursor={false}
             content={({ active, payload }: { active?: boolean; payload?: { payload?: Ring }[] }) => {
               const item = active ? payload?.[0]?.payload : null;

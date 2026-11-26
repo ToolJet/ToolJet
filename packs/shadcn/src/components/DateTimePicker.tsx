@@ -245,6 +245,8 @@ export const DateTimePicker = () => {
     kind: 'date',
     value: date ? formatDate(date, 'YYYY-MM-DD[T]HH:mm') : '',
     present: !!date && !problem,
+    // Its own min, max, disabled-date or skipped-time message makes isValid false, as the field shows it.
+    rule: problem,
   });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   const now = new Date();

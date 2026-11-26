@@ -135,12 +135,28 @@ export const Avatar = () => {
     ]),
   };
   const avatarClass = cn('ui2-avatar', shape === 'square' && 'is-square');
+  // What a screen reader calls it: the people shown, and how many more.
+  const shownNames = shown.map((person) => person.name).filter(Boolean).join(', ');
+  const label = (extra > 0 ? `${shownNames} and ${extra} more` : shownNames) || 'Avatar';
   return (
     <LoadingFrame
       loading={ld.loading}
       look={ld.skeleton ? <AvatarSkel size={px} count={people.length} /> : <LoadingBox />}
     >
-      <div ref={ref} className="ui ui2-avatar-row" style={vars} onClick={onClick}>
+      <div
+        ref={ref}
+        className="ui ui2-avatar-row"
+        style={vars}
+        role="button"
+        tabIndex={0}
+        aria-label={label}
+        onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          onClick();
+        }}
+      >
         <div className="ui2-avatar-stack">
           {shown.map((person, i) => (
             <AvatarPrimitive.Root key={`${person.name}-${i}`} className={avatarClass} title={person.name}>

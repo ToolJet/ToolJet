@@ -359,8 +359,8 @@ export interface TagRules {
 }
 
 /** Adds candidates to the tags: { tags, added, error }. Duplicates (ignoring case unless caseSensitive), tags that
- *  fail the pattern (or that the pattern is too complex to check) and tags past maxTags are refused, with the reason
- *  in `error`. */
+ *  fail the pattern (or that the pattern is too complex to check, or is not a valid regex) and tags past maxTags are
+ *  refused, with the reason in `error`. */
 export const addTags = (
   tags: unknown,
   candidates: unknown,
@@ -371,11 +371,18 @@ export const addTags = (
   let error = '';
   const max = clampInt(maxTags, 0, MAX_TAGS, 0) || MAX_TAGS;
   const re = tagRegex(pattern);
+  // A pattern is set but cannot be compiled (invalid, or too long): no tag can be checked against it. ToolJet's own
+  // inputs fail an invalid Regex validation the same way.
+  const broken = !re && (pattern instanceof RegExp || (isScalar(pattern) && String(pattern).trim() !== ''));
   const norm = (t: string) => (caseSensitive ? String(t) : String(t).toLowerCase());
   const seen = new Set(next.map(norm));
   for (const tag of toTags(candidates)) {
     if (seen.has(norm(tag))) {
       error = `"${tag}" is already added`;
+      continue;
+    }
+    if (broken) {
+      error = 'Invalid regex pattern';
       continue;
     }
     const outcome = re ? re.match(tag) : true;
