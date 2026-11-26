@@ -73,7 +73,7 @@ No `{n}` in the path; `repos/{o}/{r}/pulls/{n}/comments/{id}` returns 404. `DELE
 path as `PATCH`.
 
 A PATCH cannot split a thread. A second finding found after posting gets a new comment on its own
-anchor, or an `Also on these lines.` tail if it shares the anchor (`references/comment-format.md`).
+anchor, or an `Also on these lines:` tail if it shares the anchor (`references/comment-format.md`).
 
 ## Root comment (large tier only)
 
