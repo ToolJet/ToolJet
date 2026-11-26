@@ -179,6 +179,7 @@ Update the closest guide in the same PR when a feature gains a new invariant, co
 - `console.log` or debug leftovers
 - Unused imports
 - Missing `key` props in `.map()`
+- Text inputs whose `value` can be `undefined` (use `?? ''`): React then stops controlling the input and keeps the old text
 - Missing `shallow` in `useStore` selectors
 - Direct DOM manipulation (canvas drop calculations excepted)
 
