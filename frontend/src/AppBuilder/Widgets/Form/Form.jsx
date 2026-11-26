@@ -322,9 +322,7 @@ const FormComponent = (props) => {
     validateVisibleFieldsOnly && (child?.isVisible === false || hiddenByContainer.has(childId));
 
   const checkJsonChildrenValidtion = () => {
-    const isValid = Object.values(effectiveChildrenData).every(
-      (item) => isSkippedField(item) || item?.isValid !== false
-    );
+    const isValid = Object.values(effectiveChildrenData).every((item) => item?.isValid !== false);
     return isValid;
   };
 

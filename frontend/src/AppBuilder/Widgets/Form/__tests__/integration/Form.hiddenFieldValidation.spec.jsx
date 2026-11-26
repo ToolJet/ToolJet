@@ -221,6 +221,24 @@ describe('Form with a hidden required field', () => {
       expect(count('formSubmits')).toBe(1);
     });
 
+    test('with the toggle on, a field in the header of a hidden Container does not block submit', async () => {
+      // Break this catches: the walk not hiding a hidden Container's header slot,
+      // so a required field there blocks the Form again.
+      const box = child('box1', 'Container', 'form1', {
+        visibility: binding('{{false}}'),
+        showHeader: binding('{{true}}'),
+      });
+      await renderForm({ box1: box, inHeader1: requiredTextInputIn('inHeader1', 'box1-header') }, on);
+      expect(exposed('inHeader1').isValid).toBe(false);
+
+      await clickSubmit();
+      await drain();
+
+      expect(exposed('form1').isValid).toBe(true);
+      expect(count('formSubmits')).toBe(1);
+      expect(exposed('form1').formData).toHaveProperty('inHeader1');
+    });
+
     test('with the toggle on, showing the Container again shows the field and makes the Form count it', async () => {
       // Break this catches: deciding visibility once, so a field whose Container
       // is shown later is still skipped; or the field not coming back on screen.
