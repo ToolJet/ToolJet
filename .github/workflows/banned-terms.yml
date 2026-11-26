@@ -1,0 +1,52 @@
+name: Banned Terms
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'frontend/**'
+      - 'scripts/check-banned-terms.js'
+      - '.github/workflows/banned-terms.yml'
+
+jobs:
+  scan:
+    name: Scan changed files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 22.15.1
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.15.1
+
+      - name: Collect changed files
+        id: files
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          CHANGED=$(git diff --name-only --diff-filter=AM "$BASE_SHA" "$HEAD_SHA" \
+            | grep -E '^frontend/.*\.(js|jsx|ts|tsx)$' || true)
+          {
+            echo 'files<<EOF'
+            echo "$CHANGED"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Skip if no relevant files
+        if: steps.files.outputs.files == ''
+        run: echo "No frontend source files changed. Skipping."
+
+      - name: Run banned-terms check
+        if: steps.files.outputs.files != ''
+        env:
+          TOOLJET_BANNED_TERMS: ${{ secrets.TOOLJET_BANNED_TERMS }}
+        run: |
+          if [ -z "$TOOLJET_BANNED_TERMS" ]; then
+            echo "TOOLJET_BANNED_TERMS secret not set on this run (likely a fork PR). Skipping."
+            exit 0
+          fi
+          echo "${{ steps.files.outputs.files }}" | xargs node scripts/check-banned-terms.js
