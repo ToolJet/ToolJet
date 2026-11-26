@@ -15,7 +15,7 @@ To connect to a Smartsheet data source in ToolJet, you can either click the **+ 
 
 Smartsheet supports two connection modes in this plugin:
 
-- **OAuth 2.0**: provide the Smartsheet app `Client ID` and `Client Secret`
+- **OAuth 2.0**: provide the Smartsheet app `Client ID` and `Client Secret`, then click **Connect to Smartsheet**
 - **API Access Token**: provide a personal Smartsheet access token
 
 Choose the **Region** first. The API base URL changes by region:
@@ -27,14 +27,16 @@ Choose the **Region** first. The API base URL changes by region:
 ### Setting up OAuth
 
 1. **Create a Smartsheet app**: in the [Smartsheet Developer Portal](https://developers.smartsheet.com), register a new app. Copy its **Client ID** and **Client Secret** into the ToolJet connection form.
-2. **Register the redirect URL** in the app's OAuth settings (Redirect URLs). It must match the URL ToolJet redirects to after consent, exactly:
-   - Leave the **Redirect URL** field on the ToolJet connection form empty and the plugin computes it from `TOOLJET_HOST` and `SUB_PATH`:
-     - Local: `http://localhost:8082/oauth2/authorize`
-     - Deployed: `https://<your-tooljet-host>/oauth2/authorize`
-   - Fill the field only to override the computed URL (custom host, subpath, or a proxy in front of ToolJet), then register that exact value in Smartsheet instead.
+2. **Register the redirect URL** in the app's OAuth settings (Redirect URLs). The connection form shows a read-only **Redirect URI** with a copy button; it is computed from `TOOLJET_HOST` and `SUB_PATH`:
+
+   - Local: `http://localhost:8082/oauth2/authorize`
+   - Deployed: `https://<your-tooljet-host>/oauth2/authorize`
+
+   Copy that exact value into Smartsheet.
+
 3. The redirect URL is a browser redirect target, not a server-to-server callback, so it does not need to be publicly reachable for local testing. If Smartsheet rejects `http://localhost` for your app, use an **API Access Token** locally, or expose ToolJet through an HTTPS tunnel and register the tunnel URL.
 
-The plugin uses the selected region's authorization and token endpoints, unless custom endpoint overrides are configured.
+The plugin uses the authorization and token endpoints of the selected region.
 
 ### Procuring an API Access Token
 
@@ -42,7 +44,7 @@ Generate a personal access token in Smartsheet under **Account → Personal Acce
 
 ### Scopes
 
-The scopes field is prefilled with a starting point. Edit it to match your Smartsheet app before connecting.
+The **Scope(s)** field is prefilled with a starting point. Edit it to match your Smartsheet app before connecting.
 
 Recommended minimum read/write scopes for the current plugin surface are:
 
@@ -54,14 +56,16 @@ Keep the scope list as narrow as possible. If you ask for a scope that your Smar
 
 ### Authorizing
 
-OAuth 2.0 data sources are authorized the first time a query runs:
+OAuth 2.0 data sources are authorized from the connection form:
 
-1. Fill in the credentials, pick the correct **Region**, and click **Save**.
-2. Open an app, add a query that uses this data source, and click **Run**.
-3. Smartsheet's consent screen opens. Approve access.
-4. Run the query again. Results are returned and the token is stored on the data source.
-5. **Test Connection** now reports success.
+1. Fill in **Client ID** and **Client Secret**, pick the correct **Region**, and adjust the scopes.
+2. Click **Connect to Smartsheet**. Smartsheet's consent screen opens — approve access.
+3. Click **Save data source**. The token is stored on the data source.
+4. **Test Connection** now reports success.
 
+Running a query before authorizing also opens the consent screen, so the datasource can still be authorized from a query run.
+
+Enable **Authentication required for all users** if each viewer of an app should authorize with their own Smartsheet account.
 
 The plugin returns ToolJet's OAuth refresh signal for expired OAuth tokens, allowing the runtime to refresh and retry the query. If the refresh token has been revoked, reconnect the data source.
 

@@ -105,42 +105,19 @@
       }
     },
     "oauth2": {
-      "client_id": {
-        "label": "Client ID",
-        "key": "client_id",
-        "type": "text",
-        "description": "Enter the Smartsheet OAuth client ID"
-      },
-      "client_secret": {
-        "label": "Client Secret",
-        "key": "client_secret",
-        "type": "password",
-        "description": "Enter the Smartsheet OAuth client secret",
-        "encrypted": true
-      },
-      "redirect_url": {
-        "label": "Redirect URL",
-        "key": "redirect_url",
-        "type": "text",
-        "description": "Copy this redirect URL into your Smartsheet app"
-      },
-      "access_token_url": {
-        "label": "Access token URL",
-        "key": "access_token_url",
-        "type": "text",
-        "description": "Smartsheet token endpoint. Leave blank to use the endpoint of the selected region."
-      },
-      "auth_url": {
-        "label": "Authorization URL",
-        "key": "auth_url",
-        "type": "text",
-        "description": "Smartsheet authorization endpoint. Leave blank to use the endpoint of the selected region."
-      },
-      "scopes": {
-        "label": "Scopes",
-        "key": "scopes",
-        "type": "text",
-        "description": "Space-separated Smartsheet OAuth scopes"
+      "oauth": {
+        "key": "oauth",
+        "type": "react-component-oauth",
+        "description": "OAuth configuration for Smartsheet",
+        "oauth_configs": {
+          "allowed_field_groups": {
+            "authorization_code": ["client_id", "client_secret"]
+          },
+          "allowed_auth_types": ["oauth2"],
+          "allowed_grant_types": ["authorization_code"],
+          "allowed_scope_field": true,
+          "scopeHelperText": "Space-separated Smartsheet scopes. These must also be added to your Smartsheet app under OAuth. The authorization and token endpoints come from the selected region."
+        }
       }
     },
     "personal_access_token": {

@@ -16,8 +16,6 @@ import FormData from 'form-data';
 import JSON5 from 'json5';
 import { SourceOptions, QueryOptions, Region } from './types';
 
-// ─── Region maps ─────────────────────────────────────────────────────────────
-
 const REGION_BASE_URLS: Record<Region, string> = {
   us: 'https://api.smartsheet.com/2.0',
   eu: 'https://api.smartsheet.eu/2.0',
@@ -36,19 +34,13 @@ const REGION_TOKEN_URLS: Record<Region, string> = {
   au: 'https://api.smartsheet.au/2.0/token',
 };
 
-// Shared got defaults: explicit timeout prevents indefinite hangs, and retry:0
-// ensures got v11 surfaces 429s and 5xx responses to our error handler rather
-// than sleeping on Retry-After headers before re-attempting the request.
+// Explicit timeout plus retry:0 makes got v11 surface 429/5xx to our error handler instead of sleeping on Retry-After.
 const GOT_DEFAULTS = {
   timeout: { request: 30_000 },
   retry: { limit: 0 },
 } as const;
 
-// ─── Plugin ───────────────────────────────────────────────────────────────────
-
 export default class Smartsheet implements QueryService {
-  // ── Option helpers ────────────────────────────────────────────────────────
-
   private option(sourceOptions: any, key: string): any {
     if (Array.isArray(sourceOptions)) {
       return sourceOptions.find((entry: any) => entry?.key === key)?.value;
@@ -74,11 +66,7 @@ export default class Smartsheet implements QueryService {
     return REGION_TOKEN_URLS[region] || REGION_TOKEN_URLS.us;
   }
 
-  // ── Auth token resolution ─────────────────────────────────────────────────
-
-  // Read multiple_auth_enabled and tokenData through this.option() so both the
-  // flat-object and array-of-{key,value} sourceOptions storage formats are handled
-  // consistently with every other field read in the class.
+  // Read through this.option() so both sourceOptions storage formats are handled consistently.
   private getAccessToken(sourceOptions: SourceOptions, context?: { user?: User; app?: App }): string | undefined {
     const isMultiAuthEnabled = this.option(sourceOptions, 'multiple_auth_enabled');
     if (isMultiAuthEnabled) {
@@ -93,7 +81,6 @@ export default class Smartsheet implements QueryService {
     if (authType === 'personal_access_token') {
       return this.option(sourceOptions, 'access_token');
     }
-    // OAuth2 or fallback: prefer the top-level access_token, then tokenData.
     const tokenData = this.option(sourceOptions, 'tokenData');
     const tokenDataAccessToken = Array.isArray(tokenData) ? tokenData[0]?.access_token : tokenData?.access_token;
     return this.option(sourceOptions, 'access_token') || tokenDataAccessToken;
@@ -114,8 +101,6 @@ export default class Smartsheet implements QueryService {
     return this.option(sourceOptions, 'refresh_token') || tokenDataRefreshToken;
   }
 
-  // ── Request helpers ───────────────────────────────────────────────────────
-
   private authHeader(token: string): Record<string, string> {
     return {
       Authorization: `Bearer ${token}`,
@@ -133,8 +118,6 @@ export default class Smartsheet implements QueryService {
     const normalizedSubPath = subPath.endsWith('/') ? subPath : `${subPath}/`;
     return `${host}${normalizedSubPath}oauth2/authorize`;
   }
-
-  // ── Public OAuth methods ──────────────────────────────────────────────────
 
   authUrl(sourceOptions: any): string {
     const clientId = this.option(sourceOptions, 'client_id');
@@ -178,8 +161,7 @@ export default class Smartsheet implements QueryService {
       });
     }
 
-    // access_token_url is user-supplied and carries the client secret in the Basic
-    // auth header, so validate it for SSRF before making the request.
+    // access_token_url is user-supplied and carries the client secret, so validate it for SSRF.
     await validateUrlForSSRF(tokenUrl);
 
     try {
@@ -241,7 +223,6 @@ export default class Smartsheet implements QueryService {
       });
     }
 
-    // Same SSRF guard as accessDetailsFrom, since the token URL carries the client secret.
     await validateUrlForSSRF(tokenUrl);
 
     try {
@@ -262,9 +243,7 @@ export default class Smartsheet implements QueryService {
 
       const body = response.body as Record<string, any>;
 
-      // An empty access_token means the grant was silently revoked; surface it as
-      // an auth error so ToolJet triggers re-authorization rather than caching an
-      // empty token and failing on every subsequent query.
+      // An empty access_token means the grant was revoked; raise an auth error instead of caching an empty token.
       if (!body?.access_token) {
         throw new OAuthUnauthorizedClientError(
           'Could not refresh access token',
@@ -275,8 +254,7 @@ export default class Smartsheet implements QueryService {
 
       return {
         access_token: body.access_token,
-        // Smartsheet issues non-rotating refresh tokens; if the server does not echo
-        // a new one back, keep the existing token rather than clearing it.
+        // Smartsheet refresh tokens do not rotate; keep the old one when the server does not echo a new one.
         refresh_token: body?.refresh_token || String(refreshToken),
       };
     } catch (error: any) {
@@ -290,8 +268,6 @@ export default class Smartsheet implements QueryService {
       throw new QueryError('Failed to refresh access token', this.errorMessage(error), this.errorDetails(error));
     }
   }
-
-  // ── Connection test ───────────────────────────────────────────────────────
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const accessToken = this.getAccessToken(sourceOptions);
@@ -324,8 +300,7 @@ export default class Smartsheet implements QueryService {
       };
     } catch (error: any) {
       const statusCode = error?.response?.statusCode || error?.statusCode;
-      // A 401 for oauth2 means the access token has expired; try refreshing once before
-      // reporting failure. A 403 is a permissions problem, and refreshing cannot help there.
+      // Refresh once on a 401 for oauth2 (expired token); a 403 is a permissions problem refreshing cannot fix.
       if (statusCode === 401) {
         const authType = this.option(sourceOptions, 'auth_type');
         if (authType === 'oauth2') {
@@ -339,9 +314,6 @@ export default class Smartsheet implements QueryService {
             });
             return { status: 'ok', message: 'Successfully connected to Smartsheet (token refreshed)' };
           } catch (refreshError: any) {
-            // Only convert OAuthUnauthorizedClientError to the friendly OAUTH_TOKEN_EXPIRED
-            // message. Any other error (config problem, network, etc.) propagates as-is so
-            // the real cause is not hidden.
             if (!(refreshError instanceof OAuthUnauthorizedClientError)) throw refreshError;
             throw new QueryError(
               'Connection could not be established',
@@ -361,8 +333,6 @@ export default class Smartsheet implements QueryService {
       throw new QueryError('Connection could not be established', this.errorMessage(error), this.errorDetails(error));
     }
   }
-
-  // ── Query helpers ─────────────────────────────────────────────────────────
 
   private searchParams(queryParams: Record<string, any>): URLSearchParams {
     const params = new URLSearchParams();
@@ -436,8 +406,6 @@ export default class Smartsheet implements QueryService {
     }, {});
   }
 
-  // ── Attachment helpers ────────────────────────────────────────────────────
-
   private detectAttachmentMode(requestBody: Record<string, any>): 'multipart' | 'binary' | 'url' | null {
     const fileObj = requestBody.file;
     if (fileObj && typeof fileObj === 'object') {
@@ -507,8 +475,7 @@ export default class Smartsheet implements QueryService {
     };
 
     if (fileObj.name) {
-      // Strip characters that are illegal in a Content-Disposition header value
-      // (double-quotes, CR, LF) to prevent header injection.
+      // Strip characters that are illegal in a Content-Disposition header value to prevent header injection.
       const safeName = String(fileObj.name).replace(/["\r\n]/g, '');
       headers['Content-Disposition'] = `attachment; filename="${safeName}"`;
     }
@@ -534,8 +501,6 @@ export default class Smartsheet implements QueryService {
       headers: { 'Content-Type': 'application/json' },
     };
   }
-
-  // ── Main query runner ─────────────────────────────────────────────────────
 
   async run(
     sourceOptions: SourceOptions,
@@ -573,8 +538,7 @@ export default class Smartsheet implements QueryService {
       });
     }
 
-    // Catch empty/null/undefined path param values before substitution so the request
-    // never reaches Smartsheet with a placeholder-less URL like /sheets/ or /sheets/undefined.
+    // Catch empty path params before substitution so the URL never reaches Smartsheet as /sheets/ or /sheets/undefined.
     const missingBeforeSubstitution = Object.entries(pathParams)
       .filter(([, v]) => v === '' || v === null || v === undefined)
       .map(([k]) => `{${k}}`);
@@ -586,8 +550,7 @@ export default class Smartsheet implements QueryService {
       );
     }
 
-    // Use split/join instead of new RegExp(`{${key}}`) to avoid breaking on keys
-    // that contain regex special characters (e.g. dots, brackets).
+    // split/join instead of new RegExp(`{${key}}`) so regex special characters in keys cannot break matching.
     let url = `${this.baseUrl(sourceOptions)}${path}`;
     for (const key of Object.keys(pathParams)) {
       const encoded = encodeURIComponent(String(pathParams[key]));
@@ -603,11 +566,7 @@ export default class Smartsheet implements QueryService {
       );
     }
 
-    // responseType is intentionally left at got's default ('text') so that export
-    // operations returning CSV, XLSX or PDF are not rejected, and 204 No Content
-    // responses (empty body) do not throw. The body is parsed as JSON below where
-    // possible. Accept: application/json in the auth header still signals to
-    // Smartsheet that we prefer JSON for non-export endpoints.
+    // Keep got's default 'text' responseType so exports and 204 responses are not rejected; the body is parsed below.
     const requestOptions: Options = {
       ...GOT_DEFAULTS,
       method: operation as any,
@@ -615,10 +574,7 @@ export default class Smartsheet implements QueryService {
       searchParams: this.searchParams(queryParams),
     };
 
-    // GET has no body in the Smartsheet API. DELETE can have one (e.g. Remove report
-    // scope: DELETE /reports/{reportId}/scope takes a JSON array body). Array.isArray
-    // is checked first because Object.keys on an array returns index strings, not a
-    // meaningful "has body" signal.
+    // GET has no body; DELETE can carry a JSON array body, and Array.isArray must be checked before Object.keys.
     const hasBody = Array.isArray(requestBody) ? requestBody.length > 0 : Object.keys(requestBody).length > 0;
 
     if (operation !== 'get' && hasBody) {
@@ -645,8 +601,6 @@ export default class Smartsheet implements QueryService {
           requestOptions.headers = { ...requestOptions.headers, ...urlRequest.headers };
         }
       } else {
-        // Plain JSON body. coerceStructuredFields also handles the array-body case
-        // (returns the array unchanged without iterating its entries as object keys).
         requestOptions.json = this.coerceStructuredFields(queryOptions, requestBody as any);
       }
     }
@@ -655,8 +609,6 @@ export default class Smartsheet implements QueryService {
       await validateUrlForSSRF(url);
       const response = await got(url, getSSRFProtectionOptions(undefined, requestOptions));
 
-      // Parse the text body as JSON where possible. An empty string (204 No Content)
-      // becomes {} so callers always receive an object.
       const rawBody = response.body as any;
       let body: any;
       if (rawBody === '' || rawBody === null || rawBody === undefined) {
@@ -677,17 +629,7 @@ export default class Smartsheet implements QueryService {
     }
   }
 
-  // ── Error handling ────────────────────────────────────────────────────────
-
-  // OAuthUnauthorizedClientError is the signal ToolJet uses to trigger an
-  // automatic token refresh, so it must only be thrown when a refresh is actually
-  // possible and likely to help:
-  //   401 + oauth2  → token expired; ToolJet should refresh and retry
-  //   401 + PAT     → bad API key; refreshing is impossible, plain QueryError
-  //   403           → plan gate or permissions; refreshing cannot help, plain QueryError
-  //
-  // isScopeMismatch is restricted to 403: a 401 body often contains the word
-  // "unauthorized" but that describes an expired token, not a missing scope.
+  // OAuthUnauthorizedClientError only for 401 + oauth2, where a refresh can help; 401 + PAT and 403 get a QueryError.
   private toQueryError(
     error: any,
     queryOptions?: QueryOptions,
@@ -716,8 +658,6 @@ export default class Smartsheet implements QueryService {
 
     if (statusCode === 401) {
       if (authType === 'oauth2') {
-        // OAuthUnauthorizedClientError signals ToolJet's runtime to start the refresh
-        // cycle. The caller does `throw this.toQueryError(...)` which re-throws it.
         return new OAuthUnauthorizedClientError('OAuth token expired or invalid', this.errorMessage(error), {
           statusCode,
           body: this.errorBody(error),
@@ -756,10 +696,7 @@ export default class Smartsheet implements QueryService {
     return [];
   }
 
-  // Keyword heuristic (scope/permission/unauthorized) is limited to 403 responses:
-  // those words in a 401 body indicate an expired/invalid token, not a missing scope.
-  // errorCode 1008 is Smartsheet's canonical "missing scope" code and is checked
-  // regardless of HTTP status.
+  // The scope keyword heuristic is limited to 403; errorCode 1008 marks a missing scope on any status.
   private isScopeMismatch(error: any, statusCode?: number): boolean {
     const body = this.errorBody(error);
     if (body && body.errorCode === 1008) return true;
@@ -767,8 +704,6 @@ export default class Smartsheet implements QueryService {
     const msg = this.errorMessage(error).toLowerCase();
     return msg.includes('scope') || msg.includes('permission') || msg.includes('unauthorized');
   }
-
-  // ── Error utilities ───────────────────────────────────────────────────────
 
   private errorMessage(error: any): string {
     const body = this.errorBody(error);
