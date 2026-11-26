@@ -175,7 +175,8 @@ describe("Cloud AI Spend — Usage Page", { retries: 0 }, () => {
   });
 
   it("should ask for confirmation before turning limits on while builders are over their limit", () => {
-    seedWallet({ extraSpent: { [omar.userId]: 2100 } });
+    // Over both pools: 2,000 monthly + 333 add-on is the most Omar may use.
+    seedWallet({ extraSpent: { [omar.userId]: 2500 } });
     openAiCreditsUsage(adminEmail, workspaceId);
 
     cy.get(aiSpendSelectors.limitSwitch).click().should("have.attr", "aria-checked", "false");
