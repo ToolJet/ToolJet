@@ -23,7 +23,7 @@ The build mode is chosen when an app is created, and the app keeps it. A visual 
 3. The editor opens with the AI chat, and the app is named from the prompt. If the AI asks a question, pick an option and click **Continue**.
 4. Watch the build move through its three stages: Data, Build and Check. The screens appear on the canvas near the end. Click **Stop** to change course.
 
-<!-- TODO screenshot: /img/build-with-ai/react-builder/create-app/build-mode-dialog.png | img-l | alt: The dialog that asks how to build the app, with the Visual and React Builder cards | shows: the "How should we build this app?" dialog after sending a first prompt from the Home page; shows the product name, so capture after the UI rename -->
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/create-app/build-mode-dialog.png" alt="The How should we build this app? dialog with the Visual builder and React builder cards and a Don't ask again checkbox" />
 
 When the build finishes, the chat lists what it built and suggests next steps.
 

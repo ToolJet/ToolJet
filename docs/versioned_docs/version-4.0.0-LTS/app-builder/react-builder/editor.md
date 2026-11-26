@@ -5,9 +5,7 @@ title: Edit in the Browser
 
 A React Builder application can be edited inside ToolJet. Files are edited in the Code panel, and the style inspector changes the styling of an element selected on the canvas. Each save rebuilds the application in the browser and updates the canvas.
 
-<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/editor/editor-frame.png" alt="The React Builder editor with the Northwind Dispatch app running on the canvas, and the canvas width control, Code button and Preview in the header" />
-
-<!-- TODO retake after the UI rename: the header badge reads "Code mode". Capture with the AI chat open once AI is enabled on the capture instance. -->
+<img className="screenshot-full img-full" src="/img/build-with-ai/react-builder/editor/editor-frame-v2.png" alt="The React Builder editor with the AI chat open on the left, the Northwind Dispatch app running on the canvas, and the canvas width control, Code button and Preview in the header" />
 
 <CardGrid columns={2}>
   <FeatureCard
