@@ -9,7 +9,8 @@ import { timeAgo } from './NotificationRow';
 // AlertDialog's title prop is string-only (data-cy slugify) — render our own header.
 export default function ErrorDetailModal({ notification, show, onClose }) {
   const meta = notification?.metadata || {};
-  const stack = meta?.error?.stack;
+  // Branch failures carry { stack }; version-creation failures a plain-text reason.
+  const stack = typeof meta?.error === 'string' ? meta.error : meta?.error?.stack;
 
   const copyTrace = () => {
     navigator.clipboard?.writeText(stack || '');
@@ -39,7 +40,7 @@ export default function ErrorDetailModal({ notification, show, onClose }) {
           <div className="notification-error-footer">
             <button className="notification-copy-trace" onClick={copyTrace}>
               <Copy size={14} />
-              Copy trace
+              {typeof meta?.error === 'string' ? 'Copy error' : 'Copy trace'}
             </button>
           </div>
         )}

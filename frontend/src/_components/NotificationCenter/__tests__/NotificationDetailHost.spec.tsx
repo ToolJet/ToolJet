@@ -26,6 +26,20 @@ describe('NotificationDetailHost', () => {
     expect(screen.getByText('Version creation failed')).toBeTruthy();
   });
 
+  it('shows a plain-text failure reason', () => {
+    render(<NotificationDetailHost />);
+    act(() => useNotificationsStore.setState({ detailNotification: failed }));
+    expect(screen.getByText('Version name already exists.')).toBeTruthy();
+  });
+
+  it('still shows the stack of a branch failure', () => {
+    render(<NotificationDetailHost />);
+    const branchFailed = { ...failed, metadata: { error: { stack: 'Error: boom\n  at x' } } };
+    act(() => useNotificationsStore.setState({ detailNotification: branchFailed }));
+    expect(screen.getByText(/Error: boom/)).toBeTruthy();
+    expect(screen.getByText('Copy trace')).toBeTruthy();
+  });
+
   it('closes through the store', () => {
     render(<NotificationDetailHost />);
     act(() => useNotificationsStore.setState({ detailNotification: failed }));
