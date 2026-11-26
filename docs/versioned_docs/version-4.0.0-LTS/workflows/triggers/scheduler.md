@@ -49,3 +49,4 @@ You can use Cron Syntax to configure a schedule. ToolJet offers an graphical use
      In the above image the workflow is schduled to trigger at the 15th minute of every hour, you can check that below the environment field as well. You can refer to **[this](https://crontab.guru/)** website to generate a cron schedule.
 4. Click on **+ Create schedule** to create and save the schedule. By default the schedule is inactive, toggle the switch to activate the schedule. <br/>
    <img style={{ marginTop: '15px' }} className="screenshot-full img-s" src="/img/workflows/triggers/scheduler/enable.png" alt="Scheduler - Interval Mode" />
+git s
