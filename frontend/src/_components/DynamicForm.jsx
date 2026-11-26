@@ -968,7 +968,9 @@ const DynamicForm = ({
     const normalComponents = Object.keys(obj).map((key) => {
       const component = obj[key];
 
-      if (component.type && component.type !== 'dropdown-component-flip') {
+      // An operation group (e.g. WooCommerce `list_product`) can contain a field whose key is literally
+      // `type`, making `component.type` a field config object rather than a component type string
+      if (typeof component?.type === 'string' && component.type !== 'dropdown-component-flip') {
         return <div key={key}>{getLayout({ [key]: component })}</div>;
       }
       return null;
