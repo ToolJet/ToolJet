@@ -66,6 +66,28 @@ import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import SampleDataSourceBody from './SampleDataSourceBody';
 
+const getDataSourceMeta = (dataSource) => {
+  if (!dataSource) return {};
+
+  if (dataSource?.pluginId) {
+    const manifestData = dataSource?.plugin?.manifestFile?.data;
+
+    // Handle new tj:version schema format
+    if (manifestData?.['tj:version']) {
+      const dsm = new DataSourceSchemaManager(manifestData);
+      return dsm.getSourceMetadata();
+    }
+
+    // // Old schema format
+    let dataSourceMeta = camelizeKeys(manifestData?.source);
+    dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
+
+    return dataSourceMeta;
+  }
+
+  return DataSourceTypes.find((source) => source?.kind === dataSource?.kind);
+};
+
 export class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -90,6 +112,7 @@ export class DataSourceManagerComponent extends React.Component {
     }
 
     this.state = {
+      syncedSelectedDataSource: props.selectedDataSource,
       showModal: true,
       appId: props.appId,
       selectedDataSource,
@@ -138,51 +161,35 @@ export class DataSourceManagerComponent extends React.Component {
       });
   }
 
-  componentDidUpdate(prevProps) {
-    this.props.setGlobalDataSourceStatus({ saveAction: this.createDataSource });
-    if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
-      let dataSourceMeta = this.getDataSourceMeta(this.props.selectedDataSource);
-      let nextOptions = this.props.selectedDataSource?.options;
-      if (this.props.selectedDataSource?.is_dummy && isEmpty(nextOptions)) {
-        const dummyDefaults = getDummyDefaultOptions(this.props.selectedDataSource);
-        if (dummyDefaults) nextOptions = dummyDefaults;
-      }
-      this.setState({
-        selectedDataSource: this.props.selectedDataSource,
-        options: nextOptions,
-        dataSourceMeta,
-        dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
-        selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
-        connectionTestError: null,
-        datasourceName: this.props.selectedDataSource?.name,
-        validationMessages: {},
-        validationError: [],
-        showValidationErrors: false,
-      });
+  // Runs before render, so the form never draws one environment's options under another environment's tab.
+  static getDerivedStateFromProps(props, state) {
+    if (props.selectedDataSource === state.syncedSelectedDataSource) return null;
+    const selectedDataSource = props.selectedDataSource;
+    let nextOptions = selectedDataSource?.options;
+    if (selectedDataSource?.is_dummy && isEmpty(nextOptions)) {
+      const dummyDefaults = getDummyDefaultOptions(selectedDataSource);
+      if (dummyDefaults) nextOptions = dummyDefaults;
     }
+    return {
+      syncedSelectedDataSource: selectedDataSource,
+      selectedDataSource,
+      options: nextOptions,
+      dataSourceMeta: getDataSourceMeta(selectedDataSource),
+      dataSourceSchema: selectedDataSource?.plugin?.manifestFile?.data,
+      selectedDataSourceIcon: selectedDataSource?.plugin?.iconFile?.data,
+      connectionTestError: null,
+      datasourceName: selectedDataSource?.name,
+      validationMessages: {},
+      validationError: [],
+      showValidationErrors: false,
+    };
   }
 
-  getDataSourceMeta = (dataSource) => {
-    if (!dataSource) return {};
+  componentDidUpdate() {
+    this.props.setGlobalDataSourceStatus({ saveAction: this.createDataSource });
+  }
 
-    if (dataSource?.pluginId) {
-      const manifestData = dataSource?.plugin?.manifestFile?.data;
-
-      // Handle new tj:version schema format
-      if (manifestData?.['tj:version']) {
-        const dsm = new DataSourceSchemaManager(manifestData);
-        return dsm.getSourceMetadata();
-      }
-
-      // // Old schema format
-      let dataSourceMeta = camelizeKeys(manifestData?.source);
-      dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
-
-      return dataSourceMeta;
-    }
-
-    return DataSourceTypes.find((source) => source?.kind === dataSource?.kind);
-  };
+  getDataSourceMeta = (dataSource) => getDataSourceMeta(dataSource);
 
   selectDataSource = (source, category) => {
     posthogHelper.captureEvent('choose_datasource', {

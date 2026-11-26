@@ -44,6 +44,9 @@ export const GlobalDataSourcesPage = (props) => {
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [environmentLoading, setEnvironmentLoading] = useState(false);
+  const latestEnvironmentRequestRef = useRef(0);
+  // The environment whose data the form shows; the tab returns here if loading another one fails.
+  const shownEnvironmentRef = useRef(null);
   const [activeDatasourceList, setActiveDatasourceList] = useState('#commonlyused');
   const navigate = useNavigate();
   const { selectedId: selectedIdFromUrl } = useParams();
@@ -109,6 +112,10 @@ export const GlobalDataSourcesPage = (props) => {
     fetchFeatureAccess();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!environmentLoading) shownEnvironmentRef.current = currentEnvironment;
+  }, [environmentLoading, currentEnvironment]);
 
   useEffect(() => {
     selectedDataSource
@@ -425,17 +432,34 @@ export const GlobalDataSourcesPage = (props) => {
   };
 
   const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
+    const request = ++latestEnvironmentRequestRef.current;
     setEnvironmentLoading(true);
-    globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
-      // Preserve isSynced flags: the environment endpoint doesn't include them, but we need them
-      // to correctly gate credential editing on the default branch (synced DSes must stay locked).
-      setSelectedDataSource((prev) => ({
-        ...data,
-        isSynced: prev?.isSynced,
-        is_synced: prev?.is_synced,
-      }));
-      setEnvironmentLoading(false);
-    });
+    globalDatasourceService
+      .getDataSourceByEnvironmentId(dataSourceId, envId)
+      .then((data) => {
+        // Answers can arrive out of click order; only the last click may fill the form.
+        if (request !== latestEnvironmentRequestRef.current) return;
+        // Preserve isSynced flags: the environment endpoint doesn't include them, but we need them
+        // to correctly gate credential editing on the default branch (synced DSes must stay locked).
+        setSelectedDataSource((prev) =>
+          prev?.id && prev.id !== dataSourceId
+            ? prev
+            : {
+                ...data,
+                isSynced: prev?.isSynced,
+                is_synced: prev?.is_synced,
+              }
+        );
+        setEnvironmentLoading(false);
+      })
+      .catch(() => {
+        if (request !== latestEnvironmentRequestRef.current) return;
+        const failedEnvironment = environments.find((env) => env.id === envId);
+        toast.error(`Could not load the ${failedEnvironment?.name ?? 'selected'} configuration. Please try again.`);
+        // The form still holds the previous tab's data, so the tab goes back to match it.
+        setCurrentEnvironment(shownEnvironmentRef.current);
+        setEnvironmentLoading(false);
+      });
   };
 
   const value = useMemo(
