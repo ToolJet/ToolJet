@@ -1,4 +1,4 @@
-import { sanitizeTraceObject as sanitizeObject } from './sanitize';
+import { isLlmKeyRequest, sanitizeTraceObject as sanitizeObject } from './sanitize';
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
 import { getWorkspaceLabel, getWorkspaceNameLabel } from './org-plan-cache';
 import {
@@ -104,7 +104,11 @@ function createSDK(): NodeSDK {
               span.setAttribute('http.query', JSON.stringify(sanitizeObject(request.query)));
             }
 
-            if (request.body && Object.keys(request.body).length > 0) {
+            if (
+              !isLlmKeyRequest(request.originalUrl || request.url) &&
+              request.body &&
+              Object.keys(request.body).length > 0
+            ) {
               span.setAttribute('http.body', JSON.stringify(sanitizeObject(request.body)));
             }
           }

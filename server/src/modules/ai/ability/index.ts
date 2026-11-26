@@ -49,13 +49,14 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       );
     }
 
-    if (isAdmin || superAdmin) {
-      can([FEATURE_KEY.UPDATE_KEY], AiConversation);
-      can([FEATURE_KEY.GET_KEY_SETTINGS], AiConversation);
+    const edition = getTooljetEdition();
+    // EE stores these credentials once for every workspace on the instance.
+    if (superAdmin || (isAdmin && edition !== TOOLJET_EDITIONS.EE)) {
+      can([FEATURE_KEY.UPDATE_KEY, FEATURE_KEY.GET_KEY_SETTINGS], AiConversation);
     }
 
     // Cloud pool is per workspace; self-hosted pool is per instance, so only super admins see it.
-    const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
+    const isCloud = edition === TOOLJET_EDITIONS.Cloud;
     if (superAdmin || (isCloud && isAdmin)) {
       can([FEATURE_KEY.GET_CREDITS_USAGE, FEATURE_KEY.UPDATE_CREDIT_LIMITS], AiConversation);
     }

@@ -16,6 +16,7 @@ export const aiService = {
   updateBuilderLimit,
   fixWithAI,
   updateKey,
+  testKey,
   getKeySettings,
   updateMessageData,
   listConversations,
@@ -315,6 +316,11 @@ async function fixWithAI(body) {
 async function updateKey(body) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/ai/update-key`, requestOptions).then(handleResponse);
+}
+
+async function testKey(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/test-key`, requestOptions).then(handleResponse);
 }
 
 async function getKeySettings(licenseType) {

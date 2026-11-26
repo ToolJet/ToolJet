@@ -3,6 +3,7 @@ import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from
 import { SentryExceptionCaptured } from '@sentry/nestjs';
 import { Logger } from 'nestjs-pino';
 import { QueryFailedError } from 'typeorm';
+import { sanitizeTraceObject } from '@otel/sanitize';
 
 interface ErrorResponse {
   message: string;
@@ -31,7 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         {
           method: request.method,
           url: request.url,
-          headers: request.headers,
+          headers: sanitizeTraceObject(request.headers),
           exception,
         },
         exception.stack
