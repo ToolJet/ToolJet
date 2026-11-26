@@ -48,14 +48,6 @@ To accept larger payloads, set the following environment variable. It applies to
 |:---------------------|:--------|:------------|
 | `MAX_JSON_SIZE` | `50mb` | Maximum size of a request body, for example `100mb`. |
 
-## License Quotas
-
-The ToolJet license sets the maximum number of workflow runs per day and per month, for each workspace and for the whole instance. Runs of child workflows started by a [Workflow node](/docs/workflows/nodes/wf) also count. When a quota is reached, new runs are rejected until the next day or month.
-
-The license also sets the maximum number of workflows that can be created in each workspace and in the instance.
-
-These quotas come from the license and can't be changed through environment variables.
-
 ## Code Node Limits
 
 [JavaScript](/docs/workflows/nodes/logic/js) and [Python](/docs/workflows/nodes/logic/py) nodes run with the following time and memory limits:
