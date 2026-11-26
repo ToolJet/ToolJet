@@ -1,3 +1,4 @@
+import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { heightContractOf } from './contracts';
 import { resolveWidgetVisibility } from './visibility';
 
@@ -153,12 +154,17 @@ export const createModuleScope = (state, moduleId, currentLayout) => {
   const currentTabOf = (id, contextIndices) => getExposed(id, contextIndices, 'currentTab');
 
   // The height a widget is known to have when this pass did not decide it:
-  // its last rendered height when it sizes to its content (Dynamic height on,
-  // or an Accordion following being opened and closed), else the height it is
-  // drawn at. A rendered height of 0 is not a size (not drawn yet).
+  // its last rendered height when it sizes to its content, else the height it
+  // is drawn at. A rendered height of 0 is not a size (not drawn yet).
+  //
+  // "Sizes to its content" is the rule the canvas wrapper draws it by
+  // (fitsContentInView: Dynamic height on, a pack widget unless turned off, a
+  // FlexContainer card or row), plus an Accordion following being opened and
+  // closed. Any other rule would place it at one height while it is drawn at
+  // another.
   const knownHeight = (id, contextIndices, renderedLayout) => {
     const properties = getResolvedComponent(id, contextIndices)?.properties;
-    const sizesToContent = !!properties?.dynamicHeight || contractOf(id)?.followsExpansion === true;
+    const sizesToContent = fitsContentInView(typeOf(id), properties) || contractOf(id)?.followsExpansion === true;
     return sizesToContent && renderedLayout?.height > 0 ? renderedLayout.height : savedHeight(id);
   };
 

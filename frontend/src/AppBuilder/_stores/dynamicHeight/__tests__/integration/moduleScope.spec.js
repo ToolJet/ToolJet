@@ -180,6 +180,35 @@ describe('dynamic height: module scope', () => {
     it('[DynamicHeight-SCOPE-015] follows an Accordion opening and closing, Dynamic height on or off', () => {
       expect(scopeOf().knownHeight(ACCORDION, null, { height: 52 })).toBe(52);
     });
+
+    it('[DynamicHeight-SCOPE-021] sizes to its content by the rule the canvas draws it with', () => {
+      // WidgetWrapper draws a widget at its rendered height by dynamicHeightPolicy.fitsContentInView, so the engine
+      // must place it at that height too, or the widgets under it overlap it or leave a gap.
+      const OFF = binding('{{false}}');
+      const CARD = uuid(8);
+      const ROW = uuid(9);
+      const OLD_ROW = uuid(10);
+      seedApp({
+        // A component pack widget fits its content unless Dynamic height is turned off.
+        stat: widget('stat', 'ShadStat'),
+        fixedStat: widget('fixedStat', 'ShadStat', { properties: { dynamicHeight: OFF } }),
+        // A FlexContainer card, or a UI 2.0 row, always fits its content; a row saved before UI 2.0 follows the property.
+        [CARD]: widget(CARD, 'FlexContainer', { properties: { dynamicHeight: OFF, cardStyle: binding('shadcnCard') } }),
+        [ROW]: widget(ROW, 'FlexContainer', {
+          properties: { dynamicHeight: OFF, direction: binding('row'), layoutVersion: binding('2') },
+        }),
+        [OLD_ROW]: widget(OLD_ROW, 'FlexContainer', {
+          properties: { dynamicHeight: OFF, direction: binding('row'), layoutVersion: undefined },
+        }),
+      });
+      const scope = scopeOf();
+      const rendered = { height: 120 };
+      expect(scope.knownHeight('stat', null, rendered)).toBe(120);
+      expect(scope.knownHeight('fixedStat', null, rendered)).toBe(40);
+      expect(scope.knownHeight(CARD, null, rendered)).toBe(120);
+      expect(scope.knownHeight(ROW, null, rendered)).toBe(120);
+      expect(scope.knownHeight(OLD_ROW, null, rendered)).toBe(40);
+    });
   });
 });
 
