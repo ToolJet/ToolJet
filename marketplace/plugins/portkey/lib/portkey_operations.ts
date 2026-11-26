@@ -16,7 +16,7 @@ export async function getCompletion(
   try {
     const data = await portkey.completions.create(
       {
-        model: typeof model === 'string' ? model : 'davinci-002',
+        model: typeof model === 'string' ? model : 'gpt-5.6-terra',
         prompt: prompt,
         temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 1,
         max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 256,
