@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class CreateTableBitbucket1788000000000 implements MigrationInterface {
+// migration-lint: allow-destructive new table; its foreign key is on that new table
+
+export class CreateTableBitbucket1795675998000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -65,17 +67,17 @@ export class CreateTableBitbucket1788000000000 implements MigrationInterface {
             default: 'now()',
           },
         ],
-      })
-    );
-
-    await queryRunner.createForeignKey(
-      'organization_bitbucket',
-      new TableForeignKey({
-        columnNames: ['config_id'],
-        referencedColumnNames: ['id'],
-        referencedTableName: 'organization_git_sync',
-        onDelete: 'CASCADE',
-      })
+        foreignKeys: [
+          new TableForeignKey({
+            columnNames: ['config_id'],
+            referencedColumnNames: ['id'],
+            referencedTableName: 'organization_git_sync',
+            onDelete: 'CASCADE',
+          }),
+        ],
+      }),
+      // Skipped where an earlier run of this migration under its old name already made the table.
+      true
     );
   }
 
