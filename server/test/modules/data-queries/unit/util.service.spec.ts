@@ -489,4 +489,76 @@ describe('DataQueriesUtilService', () => {
       });
     });
   });
+  describe('parseQueryOptions | SQL parameter binding', () => {
+    const injection = "x' OR '1'='1";
+    const parse = (query: object, kind: string) =>
+      service.parseQueryOptions(
+        query,
+        { '{{name}}': injection },
+        'org-id',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        kind
+      );
+
+    it.each([
+      ['postgresql', { mode: 'sql', query: "SELECT * FROM t WHERE name = '{{name}}'" }, 'query', ':tj_param_0'],
+      ['ibmdb', { mode: 'sql', query: "SELECT * FROM t WHERE name = '{{name}}'" }, 'query', ':tj_param_0'],
+      ['databricks', { sql_query: "SELECT * FROM t WHERE name = '{{name}}'" }, 'sql_query', ':tj_param_0'],
+      ['bigquery', { mode: 'sql', query: "SELECT * FROM t WHERE name = '{{name}}'" }, 'query', '@tj_param_0'],
+      [
+        'bigquery',
+        { mode: 'gui', operation: 'query', query: "SELECT * FROM t WHERE name = '{{name}}'" },
+        'query',
+        '@tj_param_0',
+      ],
+      ['spanner', { dialect: 'standard', sql: "SELECT * FROM t WHERE name = '{{name}}'" }, 'sql', '@tj_param_0'],
+      [
+        'supabase',
+        { operation: 'sql_query', query: "SELECT * FROM t WHERE name = '{{name}}'" },
+        'query',
+        ':tj_param_0',
+      ],
+    ])('should bind the value as a parameter for %s', async (kind, query, field, placeholder) => {
+      const result = await parse(query, kind);
+
+      expect(result).toMatchObject({
+        [field]: `SELECT * FROM t WHERE name = ${placeholder}`,
+        query_params: [['tj_param_0', injection]],
+      });
+    });
+
+    it('should number Spanner PostgreSQL dialect placeholders after existing params', async () => {
+      const result = await parse(
+        {
+          dialect: 'postgresql',
+          sql: 'SELECT * FROM t WHERE id = $1 AND name = {{name}}',
+          query_params: [['id', '1']],
+        },
+        'spanner'
+      );
+
+      expect(result).toMatchObject({
+        sql: 'SELECT * FROM t WHERE id = $1 AND name = $2',
+        query_params: [
+          ['id', '1'],
+          ['tj_param_1', injection],
+        ],
+      });
+    });
+
+    it.each([
+      ['databricks', { mode: 'gui', sql_query: 'name = {{name}}' }, 'sql_query'],
+      ['bigquery', { mode: 'gui', operation: 'insert_record', query: 'name = {{name}}' }, 'query'],
+      ['supabase', { operation: 'get_rows', query: 'name = {{name}}' }, 'query'],
+      ['snowflake', { mode: 'sql', query: 'name = {{name}}' }, 'query'],
+    ])('should leave %s non-SQL or unsupported queries interpolated', async (kind, query, field) => {
+      const result = await parse(query, kind);
+
+      expect(result).toMatchObject({ [field]: `name = ${injection}` });
+      expect(result).not.toHaveProperty('query_params');
+    });
+  });
 });

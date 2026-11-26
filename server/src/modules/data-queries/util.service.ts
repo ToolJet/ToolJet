@@ -27,7 +27,46 @@ import { AppVersion } from '@entities/app_version.entity';
 import { ListTablesDto } from './dto';
 import { DataSourceTypes, SAMPLE_SQL_DISABLED_KEY } from '@modules/data-sources/constants';
 
-const SQL_PARAMETERIZED_PLUGINS = ['postgresql', 'oracledb', 'mysql', 'mssql', 'mariadb'];
+// Plugins whose raw SQL gets user-supplied {{}} values bound as parameters instead of interpolated.
+// `fields`: option keys holding the SQL text. `isSql`: whether the query is in raw-SQL mode.
+// `placeholder`: the driver's bind marker for the Nth parameter (0-based).
+type SqlParamConfig = {
+  fields: string[];
+  isSql: (options: any) => boolean;
+  placeholder: (index: number, options: any) => string;
+};
+
+const namedColon = (index: number) => `:tj_param_${index}`;
+const namedAt = (index: number) => `@tj_param_${index}`;
+const knexSqlMode: SqlParamConfig = { fields: ['query'], isSql: (o) => o?.mode === 'sql', placeholder: namedColon };
+
+const SQL_PARAMETERIZED_PLUGINS: Record<string, SqlParamConfig> = {
+  postgresql: knexSqlMode,
+  oracledb: knexSqlMode,
+  mysql: knexSqlMode,
+  mssql: knexSqlMode,
+  mariadb: knexSqlMode,
+  ibmdb: knexSqlMode,
+  // Old Databricks queries have no `mode`; anything that isn't GUI runs as SQL.
+  databricks: { fields: ['sql_query', 'query'], isSql: (o) => o?.mode !== 'gui', placeholder: namedColon },
+  // GUI mode's `query` operation also runs raw SQL with query_params.
+  bigquery: {
+    fields: ['query'],
+    isSql: (o) => o?.mode === 'sql' || (o?.mode === 'gui' && o?.operation === 'query'),
+    placeholder: namedAt,
+  },
+  // Spanner's PostgreSQL dialect binds by position ($1, $2, …) in query_params order.
+  spanner: {
+    fields: ['sql'],
+    isSql: () => true,
+    placeholder: (index, o) => (o?.dialect === 'postgresql' ? `$${index + 1}` : namedAt(index)),
+  },
+  supabase: {
+    fields: ['query'],
+    isSql: (o) => !o?.operation || o.operation === 'sql_query',
+    placeholder: namedColon,
+  },
+};
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -794,7 +833,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         // named parameters instead of interpolating them into the SQL text. Runs after (b) so
         // constants/secrets/globals.server are already resolved server-side and never bound
         // from client-supplied values.
-        if (key === 'query' && parent?.mode === 'sql' && SQL_PARAMETERIZED_PLUGINS.includes(pluginKind ?? '')) {
+        const sqlParamConfig = SQL_PARAMETERIZED_PLUGINS[pluginKind ?? ''];
+        if (sqlParamConfig?.fields.includes(key) && sqlParamConfig.isSql(parent)) {
           const userVars = [...new Set<string>(resolvedValue.match(/\{\{(.*?)\}\}/gs) || [])].filter((v) =>
             Object.prototype.hasOwnProperty.call(options, v.replace(/\n/g, ' '))
           );
@@ -804,7 +844,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             let parameterizedQuery = resolvedValue;
 
             for (const variable of userVars) {
-              const placeholder = `:tj_param_${params.length}`;
+              const placeholder = sqlParamConfig.placeholder(params.length, parent);
               // '{{var}}' / "{{var}}" lose their quotes: a bind param inside a string literal is not bound.
               parameterizedQuery = parameterizedQuery
                 .split(`'${variable}'`)
@@ -813,10 +853,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 .join(placeholder)
                 .split(variable)
                 .join(placeholder);
-              params.push([placeholder.slice(1), (options as any)[variable.replace(/\n/g, ' ')]]);
+              params.push([`tj_param_${params.length}`, (options as any)[variable.replace(/\n/g, ' ')]]);
             }
 
-            parent.query = parameterizedQuery;
+            parent[key] = parameterizedQuery;
             parent.query_params = params;
             continue;
           }

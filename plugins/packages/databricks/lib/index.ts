@@ -12,6 +12,7 @@ import {
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { DBSQLClient } from '@databricks/sql';
+import { DBSQLParameterValue } from '@databricks/sql/dist/DBSQLParameter';
 import IDBSQLSession from '@databricks/sql/dist/contracts/IDBSQLSession';
 import IOperation from '@databricks/sql/dist/contracts/IOperation';
 import got, { Headers } from 'got';
@@ -374,20 +375,16 @@ export default class Databricks implements QueryService {
 
     // PAT — use DBSQLClient
     const sqlText = queryOptions.query || queryOptions.sql_query;
-    const finalSql = this.isSqlParametersUsed(queryOptions)
-      ? this._substituteNamedParams(
-          sqlText,
-          Object.fromEntries((queryOptions.query_params || []).filter(([k]) => k && k.trim() !== ''))
-        )
-      : sqlText;
+    const namedParameters = this.getNamedParameters(queryOptions);
 
     let result: any[];
     const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
     try {
-      const queryOperation: IOperation = await session.executeStatement(finalSql, {
+      const queryOperation: IOperation = await session.executeStatement(sqlText, {
         runAsync: true,
         queryTimeout: new Int64(10000),
+        ...(namedParameters && { namedParameters }),
       });
       result = await queryOperation.fetchAll();
     } catch (error) {
@@ -464,19 +461,15 @@ export default class Databricks implements QueryService {
     await validateUrlForSSRF(`https://${host}`);
 
     const sqlText = queryOptions.query || queryOptions.sql_query;
-    const finalSql = this.isSqlParametersUsed(queryOptions)
-      ? this._substituteNamedParams(
-          sqlText,
-          Object.fromEntries((queryOptions.query_params || []).filter(([k]) => k && k.trim() !== ''))
-        )
-      : sqlText;
+    const namedParameters = this.getNamedParameters(queryOptions);
 
     const connOpts = this.getOAuthConnectionOptions(sourceOptions);
     const catalog = connOpts['default_catalog'];
     const schema = connOpts['default_schema'];
 
     try {
-      const body: Record<string, any> = { warehouse_id: warehouseId, statement: finalSql, wait_timeout: '50s' };
+      const body: Record<string, any> = { warehouse_id: warehouseId, statement: sqlText, wait_timeout: '50s' };
+      if (namedParameters) body.parameters = this.toStatementApiParameters(namedParameters);
       if (catalog) body.catalog = catalog;
       if (schema) body.schema = schema;
 
@@ -1031,20 +1024,26 @@ export default class Databricks implements QueryService {
   //  GUI mode — helpers
   // ──────────────────────────────────────────────────────────────────────────
 
-  private isSqlParametersUsed(queryOptions: QueryOptions): boolean {
-    const queryParams = queryOptions.query_params || [];
-    return queryParams.some(([key]) => key && key.trim() !== '');
+  // SQL mode :name markers are bound by Databricks, never inlined into the SQL text.
+  private getNamedParameters(queryOptions: QueryOptions): Record<string, DBSQLParameterValue> | undefined {
+    const entries = (queryOptions.query_params || []).filter(([key]) => key && key.trim() !== '');
+    if (entries.length === 0) return undefined;
+    return Object.fromEntries(
+      entries.map(([key, value]: [string, unknown]) => [
+        key,
+        value !== null && typeof value === 'object' ? JSON.stringify(value) : (value as DBSQLParameterValue),
+      ])
+    );
   }
 
-  // Substitute :name placeholders for SQL mode named parameters.
-  private _substituteNamedParams(query: string, params: Record<string, any>): string {
-    return query.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, (_match, name) => {
-      if (!(name in params)) return `:${name}`;
-      const val = params[name];
-      if (val === null || val === undefined) return 'NULL';
-      if (typeof val === 'number' && isFinite(val as number)) return String(val);
-      if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
-      return `'${String(val).replace(/'/g, "''")}'`;
+  // Statement Execution API takes string values with an optional type; an omitted value is NULL.
+  private toStatementApiParameters(params: Record<string, DBSQLParameterValue>) {
+    return Object.entries(params).map(([name, value]) => {
+      if (value === null || value === undefined) return { name };
+      if (typeof value === 'boolean') return { name, value: String(value), type: 'BOOLEAN' };
+      if (typeof value === 'number')
+        return { name, value: String(value), type: Number.isInteger(value) ? 'BIGINT' : 'DOUBLE' };
+      return { name, value: String(value) };
     });
   }
 
