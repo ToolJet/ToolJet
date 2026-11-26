@@ -34,6 +34,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.FETCH_PULL_REQUESTS,
           FEATURE_KEY.ENSURE_DRAFT,
           FEATURE_KEY.GET_ENTITY_TAGS,
+          FEATURE_KEY.BRANCH_REVIEW_STATUS,
         ],
         WorkspaceBranch
       );
@@ -55,6 +56,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.FETCH_PULL_REQUESTS,
           FEATURE_KEY.ENSURE_DRAFT,
           FEATURE_KEY.GET_ENTITY_TAGS,
+          FEATURE_KEY.BRANCH_REVIEW_STATUS,
         ],
         WorkspaceBranch
       );

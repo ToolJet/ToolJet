@@ -15,21 +15,8 @@ import { getSubpath } from '@/_helpers/routes';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { AlertTriangle, Tag, Info, ExternalLink } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-import { buildGitPrUrl } from '@/_helpers/gitPrUrl';
-
-// Provider-neutral git config reads. orgGit carries whichever provider is active — git_https for
-// GitHub, git_lab for GitLab — so reading only git_https broke Create PR / default-branch detection
-// on GitLab workspaces (repoUrl came back empty → "Unable to determine repository URL").
-const resolveRepoUrl = (orgGit) =>
-  orgGit?.git_https?.https_url || orgGit?.git_https?.repository || orgGit?.git_lab?.gitlab_url || '';
-const resolveDefaultBranchName = (orgGit) =>
-  orgGit?.git_https?.github_branch || orgGit?.git_lab?.gitlab_branch || 'main';
-// Only assert a provider when one is actually known/enabled; otherwise leave it undefined so
-// buildGitPrUrl falls back to host detection instead of mislabeling the repo as GitHub.
-const resolveGitType = (orgGit) =>
-  orgGit?.git_type ||
-  orgGit?.gitType ||
-  (orgGit?.git_lab?.is_enabled ? 'gitlab' : orgGit?.git_https?.is_enabled ? 'github_https' : undefined);
+import { workspaceBranchesService } from '@/_services/workspace_branches.service';
+import { pullRequestAction, pullRequestUrl, resolveDefaultBranchName } from './branchPullRequest';
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -43,6 +30,8 @@ export function BranchDropdown({ appId, organizationId }) {
   const [hasFetchedPRs, setHasFetchedPRs] = useState(false); // Track if PRs have been fetched
   const [hasFetchedBranchInfo, setHasFetchedBranchInfo] = useState(false); // Track if branch info has been fetched
   const [isLoadingPRs, setIsLoadingPRs] = useState(false); // Track PR loading state
+  // The branch's pull request and its apps' reviews: Create pull request waits for every committed app's approval.
+  const [reviewStatus, setReviewStatus] = useState(null);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
@@ -83,17 +72,9 @@ export function BranchDropdown({ appId, organizationId }) {
   };
 
   // Helper function to build PR creation URL
-  const buildPRCreationURL = () =>
-    buildGitPrUrl({
-      repoUrl: resolveRepoUrl(orgGit),
-      gitType: resolveGitType(orgGit),
-      sourceBranch: currentBranchName,
-      defaultBranch: resolveDefaultBranchName(orgGit),
-    });
-
   // Handle Create PR action
   const _handleCreatePR = () => {
-    const prUrl = buildPRCreationURL();
+    const prUrl = pullRequestUrl(reviewStatus, orgGit, currentBranchName);
     if (prUrl) {
       window.open(prUrl, '_blank', 'noopener,noreferrer');
       setShowDropdown(false);
@@ -176,6 +157,22 @@ export function BranchDropdown({ appId, organizationId }) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const activeBranchId = workspaceActiveBranch?.id;
+  const activeBranchIsDefault = !!(workspaceActiveBranch?.is_default || workspaceActiveBranch?.isDefault);
+  useEffect(() => {
+    if (!showDropdown || !isMultiBranchingEnabled || !activeBranchId || activeBranchIsDefault) return;
+    let cancelled = false;
+    setReviewStatus(null);
+    workspaceBranchesService
+      .getBranchReviewStatus(activeBranchId)
+      .then((status) => !cancelled && setReviewStatus(status))
+      .catch(() => !cancelled && setReviewStatus(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [showDropdown, isMultiBranchingEnabled, activeBranchId, activeBranchIsDefault]);
+  const prAction = pullRequestAction(reviewStatus);
 
   // Reset commit state when dropdown closes
   useEffect(() => {
@@ -775,9 +772,15 @@ export function BranchDropdown({ appId, organizationId }) {
                   <>
                     {/* Feature branch footer: Create PR + Switch branch */}
                     {/* Always show Create PR button when on sub-branch */}
-                    <button className="create-pr-btn" onClick={_handleCreatePR} data-cy="create-pr-btn">
+                    <button
+                      className="create-pr-btn"
+                      onClick={_handleCreatePR}
+                      disabled={prAction.disabled}
+                      title={prAction.reason ?? undefined}
+                      data-cy="create-pr-btn"
+                    >
                       <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
-                      <span>Create pull request</span>
+                      <span>{prAction.label}</span>
                     </button>
                     <div className="branch-dropdown-split-row">
                       <button

@@ -18,6 +18,8 @@ export const FEATURES: FeaturesConfig = {
         REVIEW_AUDIT_KEYS.REREQUESTED,
         REVIEW_AUDIT_KEYS.CLOSED,
         REVIEW_AUDIT_KEYS.REOPENED,
+        REVIEW_AUDIT_KEYS.MERGED_WITHOUT_APPROVAL,
+        REVIEW_AUDIT_KEYS.APPROVALS_RESET,
       ],
     },
     // One endpoint records an approval, a request for changes or a dismissal.

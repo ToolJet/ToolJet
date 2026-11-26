@@ -10,6 +10,42 @@ export interface WorkspaceBranchListResponse {
   isMultiBranchingEnabled?: boolean;
 }
 
+// A branch's pull request into the default branch, as the git provider reports it.
+export interface BranchPullRequest {
+  number: number;
+  url: string;
+  status: 'open' | 'merged' | 'closed';
+  mergedAt: string | null;
+}
+
+// Where a git branch stands for its pull request: each app draft's review, and whether every committed app is
+// approved (`ready`). `pullRequest` is null when there is none, or when the provider could not be asked
+// (`pullRequestError`).
+export interface BranchReviewStatusResponse {
+  branchName: string;
+  defaultBranchName: string | null;
+  isDefault: boolean;
+  pullRequest: BranchPullRequest | null;
+  pullRequestError: string | null;
+  apps: Array<{
+    appId: string;
+    versionId: string;
+    name: string;
+    reviewId: string | null;
+    status: string;
+    mergedWithoutApproval: boolean;
+  }>;
+  ready: boolean;
+  // ToolJet's comment on the branch's pull request (GitHub); null where none is kept. `commit` is the commit its verdict
+  // is for, null while no pull request is open.
+  reviewComment: BranchReviewComment | null;
+}
+
+export interface BranchReviewComment {
+  state: 'approved' | 'pending' | 'changes_requested';
+  commit: string | null;
+}
+
 export interface CheckUpdatesResponse {
   hasUpdates: boolean;
   latestCommit: {
@@ -82,5 +118,6 @@ export interface IWorkspaceBranchService {
   checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse>;
   listRemoteBranches(organizationId: string): Promise<{ branches: any[] }>;
   getPullRequests(organizationId: string): Promise<any>;
+  getBranchReviewStatus(organizationId: string, branchId: string): Promise<BranchReviewStatusResponse>;
   getEntityTags(organizationId: string, coRelationId: string): Promise<any[]>;
 }

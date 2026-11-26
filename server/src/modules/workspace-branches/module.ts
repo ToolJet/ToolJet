@@ -25,6 +25,7 @@ export class WorkspaceBranchesModule extends SubModule {
 
     const {
       DeletionCommitListener,
+      ReviewCommentListener,
       WorkspaceBranchController,
       WorkspaceBranchService,
       GitSyncQueueService,
@@ -33,6 +34,7 @@ export class WorkspaceBranchesModule extends SubModule {
       'controller',
       'service',
       'deletion-commit.listener',
+      'review-comment.listener',
       'git-sync-queue.service',
       'git-sync-queue.processor',
     ]);
@@ -78,6 +80,7 @@ export class WorkspaceBranchesModule extends SubModule {
         ...(isMainImport
           ? [
               DeletionCommitListener,
+              ReviewCommentListener,
               // Same pattern as workflows: job processors only on WORKER=true pods,
               // so HTTP-only instances never run git jobs
               ...(process.env.WORKER === 'true' ? [GitSyncQueueProcessor] : []),
