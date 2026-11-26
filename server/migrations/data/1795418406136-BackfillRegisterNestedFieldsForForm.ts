@@ -27,6 +27,9 @@ export class BackfillRegisterNestedFieldsForForm1795418406136 implements Migrati
 
     let lastId = '00000000-0000-0000-0000-000000000000';
     let totalUpdated = 0;
+    // Only the app versions whose Forms this run changed lose their history; an app whose Forms
+    // already carried the key keeps its undo history.
+    const touchedVersions = new Set<string>();
 
     while (true) {
       const rows: { id: string }[] = await queryRunner.query(
@@ -51,6 +54,15 @@ export class BackfillRegisterNestedFieldsForForm1795418406136 implements Migrati
         [PROPERTY_PATCH, ids]
       );
 
+      const versions: { app_version_id: string }[] = await queryRunner.query(
+        `SELECT DISTINCT p.app_version_id
+             FROM components c
+             INNER JOIN pages p ON c.page_id = p.id
+             WHERE c.id = ANY($1::uuid[])`,
+        [ids]
+      );
+      versions.forEach(({ app_version_id }) => app_version_id && touchedVersions.add(app_version_id));
+
       totalUpdated += rows.length;
       const percentage = total > 0 ? ((totalUpdated / total) * 100).toFixed(1) : '0.0';
       console.log(`${MIGRATION_NAME}: [PROGRESS] ${totalUpdated}/${total} (${percentage}%)`);
@@ -58,18 +70,10 @@ export class BackfillRegisterNestedFieldsForForm1795418406136 implements Migrati
 
     console.log(`${MIGRATION_NAME}: [SUCCESS] Backfill registerNestedFields finished.`);
 
-    if (totalUpdated > 0) {
-      const appVersionRows: { app_version_id: string }[] = await queryRunner.query(
-        `SELECT DISTINCT p.app_version_id
-             FROM components c
-             INNER JOIN pages p ON c.page_id = p.id
-             WHERE c.type = ANY($1)`,
-        [COMPONENT_TYPES]
-      );
-
+    if (touchedVersions.size > 0) {
       await deleteAppHistoryForStructuralMigration(
         queryRunner.manager,
-        { appVersionIds: appVersionRows.map((r) => r.app_version_id) },
+        { appVersionIds: [...touchedVersions] },
         MIGRATION_NAME
       );
     }

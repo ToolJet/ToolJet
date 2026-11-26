@@ -320,6 +320,16 @@ describe('Widget stability drop 5 migrations: copy and backfill in the data phas
     expect((await stored('container')).properties).toEqual({});
   }, 120_000);
 
+  it('should clear undo history only for app versions whose Forms the backfill changed', async () => {
+    await save('form', 'Form', {});
+    await save('form-set', 'Form', { properties: { registerNestedFields: { value: '{{true}}' } } }, OTHER_VERSION);
+
+    await dataPhase();
+
+    // The other version's Form already had the key, so nothing in it changed and its history stays.
+    expect(await db.query('SELECT app_version_id FROM app_history')).toEqual([{ app_version_id: OTHER_VERSION }]);
+  }, 120_000);
+
   it('should change nothing when the data phase runs again', async () => {
     await save('editor', 'RichTextEditor', {
       styles: { visibility: HIDDEN },
