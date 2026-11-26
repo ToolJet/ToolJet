@@ -106,15 +106,9 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       // Step 3 - Attach the new groups
       try {
-        const endUsers = await this.rolesRepository.getRoleUsersList(
-          USER_ROLE.END_USER,
-          organizationId,
-          [user.id],
-          manager
-        );
         for (const addGroup of addGroups ?? []) {
           await this.groupPermissionsUtilService.addUsersToGroup(
-            { allowRoleChange: false, userIds: [user.id], groupId: addGroup, endUsers },
+            { allowRoleChange: false, userIds: [user.id], groupId: addGroup },
             organizationId,
             manager
           );

@@ -285,9 +285,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     manager?: EntityManager,
     canChangeRole = true
   ) {
-    const { userIds, groupId, allowRoleChange, endUsers } = addGroupUserDto;
-
-    // endUsers - can be passed if this function is called in a loop. Scenario -> adding a user to multiple groups
+    const { userIds, groupId, allowRoleChange } = addGroupUserDto;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const { group, isBuilderLevel } = await this.getGroupWithBuilderLevel(groupId, organizationId, manager);
@@ -302,9 +300,12 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       this.validateAddGroupUserOperation(group);
 
       // Get end users
-      const endUserRoleUsers = endUsers?.length
-        ? endUsers
-        : await this.rolesRepository.getRoleUsersList(USER_ROLE.END_USER, organizationId, userIds, manager);
+      const endUserRoleUsers = await this.rolesRepository.getRoleUsersList(
+        USER_ROLE.END_USER,
+        organizationId,
+        userIds,
+        manager
+      );
 
       // Check for builder-level environment permissions
       const hasBuilderEnvironments = await this.roleUtilService.checkIfBuilderLevelEnvironmentPermissions(
@@ -334,7 +335,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         await this.roleUtilService.changeEndUserToEditor(
           organizationId,
           endUserRoleUsers.map((user) => user.id),
-          endUserRoleUsers[0].userGroups[0].group.id,
           manager
         );
       }
@@ -472,7 +472,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
             await this.roleUtilService.changeEndUserToEditor(
               organizationId,
               endUsersList.map((user) => user.id),
-              endUsersList[0].userGroups[0].group.id,
               manager
             );
           }

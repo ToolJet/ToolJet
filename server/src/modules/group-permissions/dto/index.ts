@@ -1,4 +1,3 @@
-import { User } from '@entities/user.entity';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsArray } from 'class-validator';
 
@@ -121,10 +120,6 @@ export class AddGroupUserDto {
   @IsBoolean()
   @IsOptional()
   allowRoleChange?: boolean;
-
-  @IsOptional()
-  @IsArray()
-  endUsers?: User[];
 }
 
 export class DuplicateGroupDtoBase {

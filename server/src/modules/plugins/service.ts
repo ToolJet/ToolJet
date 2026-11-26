@@ -70,8 +70,14 @@ export class PluginsService implements IPluginsService {
   }
 
   async update(id: string, body: UpdatePluginDto) {
-    const { pluginId, repo } = body;
-    const result = await this.pluginsUtilService.fetchPluginFiles(pluginId, repo);
+    // An update upgrades the installed plugin only. Taking pluginId/repo from the body would let a caller
+    // swap this instance-wide plugin's code for a different marketplace plugin.
+    const plugin = await this.findOne(id);
+    if (!plugin) throw new NotFoundException('Plugin not found');
+    if (body.pluginId && body.pluginId !== plugin.pluginId) {
+      throw new BadRequestException('pluginId cannot be changed on update');
+    }
+    const result = await this.pluginsUtilService.fetchPluginFiles(plugin.pluginId, plugin.repo);
     const [index, operations, icon, manifest, version, specFiles] = result;
     return await this.pluginsUtilService.upgrade(id, body, version, { index, operations, icon, manifest }, specFiles);
   }
