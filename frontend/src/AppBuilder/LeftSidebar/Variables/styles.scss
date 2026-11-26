@@ -359,12 +359,6 @@
   }
 }
 
-// A text field keeps its footprint on focus; use the compact inset treatment.
-body.app-builder-chrome .right-panel-shell .variable-configuration-panel input[data-cy='variable-name-input']:focus-visible {
-  border-color: var(--border-accent-strong);
-  box-shadow: inset 0 0 0 1px var(--border-accent-strong) !important;
-}
-
 .variable-configuration-panel .variables-scope-label {
   display: block;
   min-width: 0;

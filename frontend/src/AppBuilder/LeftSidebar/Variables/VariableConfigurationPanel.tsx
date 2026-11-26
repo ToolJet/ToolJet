@@ -3,6 +3,7 @@ import { CopyIcon, Trash2Icon, WaypointsIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import RawPanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
+import RawPanelDocumentationLink from '@/AppBuilder/Shared/Panel/PanelDocumentationLink';
 import { getPanelCloseLabel } from '@/AppBuilder/panelLayout';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { copyToClipboard } from '@/_helpers/appUtils';
@@ -17,6 +18,7 @@ import type { VariableReference } from './variableReferences';
 import './styles.scss';
 
 const PanelHeader = RawPanelHeader as React.ComponentType<any>;
+const PanelDocumentationLink = RawPanelDocumentationLink as React.ComponentType<any>;
 const variableIcon = <EntityIcon kind="variable" size={16} />;
 
 const LiveValue = ({ moduleId, scope, name }: { moduleId: string; scope: VariableScope; name: string }) => {
@@ -134,6 +136,13 @@ const VariableConfigurationPanel = ({
         closeLabel={getPanelCloseLabel('variable')}
         closeDataCy="variable-configuration-close"
       >
+        {context.mode === 'detail' && (
+          <PanelDocumentationLink
+            href="https://docs.tooljet.com/docs/actions/set-page-variable/"
+            label="Variables documentation"
+            dataCy="variable-documentation-link"
+          />
+        )}
         <DetailMenu items={menuItems} darkMode={darkMode} />
       </PanelHeader>
       <div className="variables-body">

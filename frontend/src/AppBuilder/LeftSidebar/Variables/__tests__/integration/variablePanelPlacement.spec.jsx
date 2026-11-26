@@ -91,6 +91,10 @@ test('opening a variable keeps its list and search on the left and edits on the 
   await session.user.click(screen.getByRole('button', { name: /^source Number/ }));
   const name = await screen.findByDisplayValue('source');
   expect(name.closest('.right-panel-shell')).not.toBeNull();
+  const documentation = screen.getByRole('link', { name: 'Variables documentation' });
+  expect(documentation).toHaveAttribute('href', 'https://docs.tooljet.com/docs/actions/set-page-variable/');
+  expect(documentation).toHaveAttribute('target', '_blank');
+  expect(documentation).toHaveAttribute('rel', 'noreferrer');
   expect(screen.getByPlaceholderText('Search variables')).toBeVisible();
   expect(screen.getByRole('button', { name: /^source Number/ })).toBeVisible();
 });
@@ -153,6 +157,7 @@ test('frozen variable details keep navigation live while mutation fields are dis
   expect(name.closest('.right-panel-shell')).not.toHaveClass('tw-pointer-events-none');
   expect(screen.getByRole('button', { name: 'Close variable configuration' })).toBeEnabled();
   expect(screen.getByRole('button', { name: 'Entity actions' })).toBeEnabled();
+  expect(screen.getByRole('link', { name: 'Variables documentation' })).toBeVisible();
 });
 
 test.each([200, 500])('a rename keeps the right editor open when its save returns %s', async (status) => {
