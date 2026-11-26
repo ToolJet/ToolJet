@@ -20,7 +20,7 @@ export type QueryOptions = {
   operation: string;
   query: string;
   mode: string;
-  query_params: string[][];
+  query_params?: string[][];
   table: string;
   primary_key_column: string;
   primary_key_columns?: string[];

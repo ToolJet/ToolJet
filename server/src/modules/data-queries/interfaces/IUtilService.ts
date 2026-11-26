@@ -57,6 +57,7 @@ export interface IDataQueriesUtilService {
     environmentId?: string,
     user?: User,
     opts?: DataQueryExecutionOptions,
-    collectedSecretValues?: string[]
+    collectedSecretValues?: string[],
+    pluginKind?: string
   ): Promise<object>;
 }
