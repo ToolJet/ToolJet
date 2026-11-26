@@ -2,11 +2,7 @@ const byCy = (name) => cy.get(`[data-cy="${name}"]`);
 const row = (scope, name) => byCy(`variables-row-${scope}-${name}`);
 const nameInput = () => byCy('variable-name-input');
 const valueInput = () => byCy('variable-initial-value-input-field');
-const backToList = () =>
-  cy
-    .get('[data-cy="variables-panel"]')
-    .contains('[role="button"]', /^Variables$/)
-    .click();
+const backToList = () => byCy('variable-configuration-close').click();
 
 function enterValue(value) {
   valueInput()

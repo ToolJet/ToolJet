@@ -43,6 +43,7 @@ const TruncatedText = ({ text, className, children }: TruncatedTextProps) => {
       placement="bottom"
       delay={{ show: 300, hide: 0 }}
       tooltipClassName="dependency-row-full-text"
+      maxWidth="min(320px, calc(100vw - 32px))"
     >
       <span ref={ref} className={className}>
         {children ?? text}
