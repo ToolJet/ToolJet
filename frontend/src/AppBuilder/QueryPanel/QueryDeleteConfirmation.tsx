@@ -20,9 +20,9 @@ type QueryDeleteState = {
 };
 
 /**
- * Delete confirmation for queries. Lives at the pane level rather than inside
- * QueryCard: the folder tree mounts cards through its own renderer, so a card can be
- * unmounted (collapsed folder, reorder) while its query is the one being deleted.
+ * Delete confirmation for queries. AppBuilder hosts it, not QueryCard or the Queries panel:
+ * the folder tree can unmount a card (collapsed folder, reorder) while its query is being
+ * deleted, and the query editor header deletes with the Queries panel closed.
  */
 export const QueryDeleteConfirmation = ({ darkMode }: QueryDeleteConfirmationProps) => {
   const { moduleId } = useModuleContext();
