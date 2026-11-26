@@ -722,6 +722,20 @@ export class AppsUtilService implements IAppsUtilService {
               message: 'This slug is already taken.',
             },
           ]);
+          // name/slug/icon/is_public/workflow_enabled all travel through git, so a synced
+          // draft now differs from its last push. Draft only: a push clears the flag on the
+          // version it pushes, so flagging a published row here would block pulls for good.
+          // Mirrors GitDirtyFlagInterceptor (guarded, so it's a no-op once already flagged).
+          await manager.update(
+            AppVersion,
+            {
+              ...canonicalCondition,
+              status: AppVersionStatus.DRAFT,
+              isSynced: true,
+              hasUncommittedChanges: false,
+            },
+            { hasUncommittedChanges: true }
+          );
         } else {
           // Non-git-sync flow: write metadata to the canonical default-branch DRAFT
           // version row. The DB metadata trigger (propagate_app_version_metadata) then
