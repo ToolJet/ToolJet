@@ -98,6 +98,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
         if (groups?.length) {
           setPendingImportName(null);
           setConflictGroups(groups);
+          setConflictBranchName(name);
           return true;
         }
         return false;
