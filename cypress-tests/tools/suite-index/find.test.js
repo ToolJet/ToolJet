@@ -3,7 +3,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
-const { findSymbols, loadSymbols, tokens } = require("./find");
+const { findSymbols, loadSymbols, tokens, formatHit } = require("./find");
 
 const rec = (o) => ({ type: [], usage: "", file: "", line: 1, ...o });
 const recs = [
@@ -53,3 +53,17 @@ assert.strictEqual(fresh.status, 0);
 assert.match(fresh.stdout, /^command  gitHubMergePR\(n\)  cypress\/commands\/platform\/gitSyncCommands\.js:1/);
 assert.ok(!fs.existsSync(path.join(tmp, "cypress/support/suiteIndex")), "find writes nothing");
 assert.strictEqual(loadSymbols(tmp).symbols.length, 1);
+
+// an exact name match (ignoring the api prefix) ranks above higher-scoring partial matches
+const exact = [
+  rec({ id: "command:apiCreateWorkflowApp", kind: "command", name: "apiCreateWorkflowApp", areas: ["workflows"], type: ["workflowApp.create"] }),
+  rec({ id: "command:apiCreateWorkflow", kind: "command", name: "apiCreateWorkflow", areas: ["shared"], type: ["workflow.create"] }),
+];
+assert.strictEqual(findSymbols(exact, "workflows", ["create", "workflow"])[0].record.name, "apiCreateWorkflow");
+assert.strictEqual(findSymbols(exact, "workflows", ["Workflow", "create"])[0].record.name, "apiCreateWorkflow", "word order and case ignored");
+
+// multi-line signatures and selector expressions still print one line per hit
+const multi = formatHit({ record: rec({ kind: "command", name: "x", file: "a.js", signature: "({\n    type = \"a  b\",\n    zone,\n  } = {})", usage: "cy.x()" }) });
+assert.strictEqual(multi, 'command  x({ type = "a  b", zone } = {})  a.js:1  cy.x()');
+const sel = formatHit({ record: rec({ kind: "selector", name: "s.link", file: "b.js", expression: "(n) => {\n    return n;\n  }" }) });
+assert.strictEqual(sel, "selector  s.link  b.js:1  (n) => { return n; }");

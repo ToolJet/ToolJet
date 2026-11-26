@@ -1,6 +1,7 @@
 const path = require("path");
 const { AREAS } = require("./areas");
 const { collectSymbols } = require("./generate");
+const { oneLine } = require("./usage");
 
 function tokens(name) {
   return name
@@ -29,6 +30,12 @@ function score(rec, words) {
   return s;
 }
 
+// The words are the whole name: "create workflow" for apiCreateWorkflow.
+function isExact(rec, words) {
+  const bare = (list) => list.map(w => w.toLowerCase()).filter(w => w !== "api").sort().join(" ");
+  return bare(tokens(rec.name)) === bare(words);
+}
+
 function findSymbols(symbols, area, words, opts = {}) {
   const limit = opts.limit || 5;
   return symbols
@@ -37,7 +44,7 @@ function findSymbols(symbols, area, words, opts = {}) {
     .map(record => ({ record, score: score(record, words) }))
     .filter(h => h.score > 0)
     .map(h => ({ ...h, score: h.score + (area !== "shared" && h.record.areas.includes(area) ? 2 : 0) }))
-    .sort((a, b) => b.score - a.score || (a.record.name < b.record.name ? -1 : a.record.name > b.record.name ? 1 : 0))
+    .sort((a, b) => isExact(b.record, words) - isExact(a.record, words) || b.score - a.score || (a.record.name < b.record.name ? -1 : a.record.name > b.record.name ? 1 : 0))
     .slice(0, limit);
 }
 
@@ -48,7 +55,7 @@ function loadSymbols(rootDir) {
 
 function formatHit({ record: r }) {
   const usage = r.kind === "selector" ? r.expression : r.usage;
-  return `${r.kind}  ${r.name}${r.signature || ""}  ${r.file}:${r.line}  ${usage || "-"}`;
+  return `${r.kind}  ${r.name}${oneLine(r.signature || "")}  ${r.file}:${r.line}  ${oneLine(usage || "-")}`;
 }
 
 if (require.main === module) {
@@ -72,4 +79,4 @@ if (require.main === module) {
   hits.forEach(h => console.log(formatHit(h)));
 }
 
-module.exports = { findSymbols, loadSymbols, tokens, score };
+module.exports = { findSymbols, loadSymbols, tokens, score, formatHit };
