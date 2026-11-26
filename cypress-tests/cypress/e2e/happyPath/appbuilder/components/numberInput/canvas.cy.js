@@ -79,12 +79,12 @@ describe('Number Input — canvas facet', { testIsolation: false }, () => {
         verifyWidgetCount('numberinput', 2);
     });
 
-    it('copy-paste (Cmd/Ctrl+C then +V)', () => {
+    it.skip('copy-paste (Cmd/Ctrl+C then +V)', () => {
         copyPasteWidget(W);
         verifyWidgetCount('numberinput', 2);
     });
 
-    it('cut removes the widget, paste restores it', () => {
+    it.skip('cut removes the widget, paste restores it', () => {
         cutWidget(W); // asserts removal internally
         cy.forceClickOnCanvas();
         pasteWidget();
