@@ -2,6 +2,7 @@ import { getContentSlotId, resolveContainerHeight } from './containerHeight';
 import { resolveFlexContainerHeight } from './flexContainerHeight';
 import { getDynamicLayoutKey, normalizeLayoutContext } from './layoutKeys';
 import { listviewFallbackRowHeight, listviewRowCount, listviewRowHeight } from './listviewHeight';
+import { ui2RowHeight } from './ui2Rows';
 import { createArrangementCache } from './arrangement';
 import { createModuleScope } from './moduleScope';
 import { contentBottom, solveTops } from './solver';
@@ -36,7 +37,9 @@ import { createWorkQueue } from './workQueue';
 // a row carries the row's index at the end of its context (`[row]`, or
 // `[outer row, row]` in a nested list). A row is solved like any canvas, its
 // height is written under the list's key at that row, and the list is then
-// sized from its rows in its own (outer) context.
+// sized from its rows in its own (outer) context. A list whose own code draws
+// its rows (UI 2.0's List view and Kanban, a pack list: `measured` in its
+// contract) has its rows solved the same way, but measures its own height.
 //
 // A pass that fails on one widget throws outside production, so a broken
 // engine fails tests and local runs. In production the rest of the pass is
@@ -100,9 +103,6 @@ const createPass = (state, { measureWidth }) => {
     return canvasId == null || scope.ownerOf(canvasId) !== null;
   };
 
-  // How many rows a List view draws in a given context.
-  const rowCountOf = (scope, list, context) => listviewRowCount(scope.getResolvedComponent(list, context)?.properties);
-
   // Every context a widget is drawn in: one per row of each List view around it (nested lists multiply), or just the
   // root context outside any list.
   // Cached per module: one module used twice shares its widget ids, not its rows.
@@ -112,7 +112,7 @@ const createPass = (state, { measureWidth }) => {
     const list = scope.listAround(id);
     const drawnIn = list
       ? contextsOf(scope, list).flatMap((outer) =>
-          Array.from({ length: rowCountOf(scope, list, outer) }, (_, row) => [...(outer ?? []), row])
+          Array.from({ length: scope.rowCountOf(list, outer) }, (_, row) => [...(outer ?? []), row])
         )
       : [null];
     contexts.set(cacheKey, drawnIn);
@@ -210,7 +210,9 @@ const createPass = (state, { measureWidth }) => {
     const flowOf = (id) => flows.get(id);
     const { sorted, blockers } = arrangements.arrange(scope.components, arrangementKeyOf(canvasId), boxes);
     const tops = solveTops(sorted, blockers, flowOf);
-    const bottom = contentBottom(sorted, tops, flowOf);
+    const result = isCardRow(scope, canvasId)
+      ? cardBottom(scope, sorted, tops, flows, context)
+      : { bottom: contentBottom(sorted, tops, flowOf) };
     const onRoot = canvasId == null;
     // An embedded module's root is drawn flush with the top of its instance. In the module editor (the module is the
     // main canvas) it stays where it is drawn.
@@ -220,9 +222,25 @@ const createPass = (state, { measureWidth }) => {
       write(scope, id, key, { top, height }, onRoot);
     }
 
-    const result = { bottom };
     solvedCanvases.set(canvasKey, result);
     return result;
+  };
+
+  // A Kanban card is the Kanban's own canvas drawn at the card's context.
+  const isCardRow = (scope, canvasId) => canvasId != null && scope.contractOf(canvasId)?.rowFit === 'card';
+
+  // A Kanban card's bottom leaves out a component hidden on it, slot and all: whether a card shows a component is
+  // decided per card (from cardData), while "Collapse when hidden" is one setting for every card. Only the bottom: the
+  // components under a hidden one keep their place, as on main. Visibility is read here, for cards only.
+  const cardBottom = (scope, sorted, tops, flows, context) => {
+    let anyHidden = false;
+    const shownFlowOf = (id) => {
+      if (scope.isVisible(id, context)) return flows.get(id);
+      anyHidden = true;
+      return 0;
+    };
+    const bottom = contentBottom(sorted, tops, shownFlowOf);
+    return { bottom, anyHidden };
   };
 
   // A FlexContainer's height, laid out by flex rules (flexContainerHeight.js) from its children's heights in this
@@ -265,11 +283,16 @@ const createPass = (state, { measureWidth }) => {
     return { rowHeights, fallbackRowHeight: listviewFallbackRowHeight({ templateBottom, properties, savedHeight }) };
   };
 
-  // A row has been solved: its height is its content's bottom (listviewHeight.js), written under the list's key at
-  // the row. Only the height: the List view draws its rows itself.
-  const sizeRow = (scope, list, rowContext, contentBottom) => {
+  // A row has been solved: its height is written under the list's key at the row. Only the height: the list draws
+  // its rows itself. A native List view row is its content's bottom (listviewHeight.js); a UI 2.0 row or card fits
+  // its components plus 8, floored at the Row (card) height (ui2Rows.js); a pack list's host sizes its rows itself.
+  const sizeRow = (scope, list, rowContext, { bottom: contentBottom, anyHidden }) => {
+    const { rowFit } = scope.contractOf(list);
+    if (rowFit === 'host') return;
     const properties = scope.getResolvedComponent(list, outerContextOf(rowContext))?.properties;
-    const height = listviewRowHeight({ contentBottom, properties, savedHeight: scope.savedHeight(list) });
+    const height = rowFit
+      ? ui2RowHeight({ componentType: scope.typeOf(list), properties, contentBottom, anyHidden })
+      : listviewRowHeight({ contentBottom, properties, savedHeight: scope.savedHeight(list) });
     const rowKey = layoutKeyOf(scope, list, rowContext);
     heights.set(rowKey, height);
     if (temporaryLayouts[rowKey]?.height !== height) patch[rowKey] = { height };
@@ -315,7 +338,9 @@ const createPass = (state, { measureWidth }) => {
       writeBody(scope, id, context, containerHeight(scope, id, context, key));
       height = leafHeight(scope, id, context, key);
     } else {
-      height = contract ? containerHeight(scope, id, context, key) : leafHeight(scope, id, context, key);
+      // A list whose own code draws its rows measures its own height, like a leaf.
+      const sizedFromContent = contract && !contract.measured;
+      height = sizedFromContent ? containerHeight(scope, id, context, key) : leafHeight(scope, id, context, key);
     }
     heights.set(key, height);
 
@@ -329,11 +354,12 @@ const createPass = (state, { measureWidth }) => {
   // A canvas: place its widgets, then size the container it belongs to. A List view's canvas is one of its rows: the
   // row is sized, then the list in its own context.
   const runCanvas = ({ scope, canvasId, context }) => {
-    const { bottom } = solveCanvas(scope, canvasId, context);
+    const solved = solveCanvas(scope, canvasId, context);
     const owner = scope.ownerOf(canvasId);
     if (!owner) return;
-    if (scope.contractOf(owner)?.content === 'rows') {
-      sizeRow(scope, owner, context, bottom);
+    // Only a list's own canvas is a row; a pack's drop area (`<id>-<slot>`) is drawn once.
+    if (canvasId === owner && scope.contractOf(owner)?.content === 'rows') {
+      sizeRow(scope, owner, context, solved);
       queueWidget(scope, owner, outerContextOf(context), false);
     } else {
       queueWidget(scope, owner, context, false);

@@ -248,3 +248,79 @@ describe('dynamic height: a module root takes Dynamic height from the module it 
     expect(scopeOf(INSTANCE).getResolvedComponent(ROOT, null).properties.dynamicHeight).toBe(true);
   });
 });
+
+describe('dynamic height: lists whose own code draws their rows', () => {
+  const PACK_LIST = uuid(60);
+  const PACK_CARD = uuid(61);
+  const UI2_LIST = uuid(62);
+  const OUTER = uuid(63);
+
+  const seedLists = () =>
+    seedApp({
+      // A pack list: its row's components sit on its own canvas, once per row.
+      [PACK_LIST]: widget(PACK_LIST, 'PackComponent', { top: 0, height: 200 }),
+      inPackRow: widget('inPackRow', 'Text', { parent: PACK_LIST }),
+      // A pack card: its body's components sit on its drop area, drawn once.
+      [PACK_CARD]: widget(PACK_CARD, 'PackComponent', { top: 210, height: 200 }),
+      inCardBody: widget('inCardBody', 'Text', { parent: `${PACK_CARD}-body` }),
+      // A UI 2.0 List view in each row of a native List view.
+      [OUTER]: widget(OUTER, 'Listview', { top: 420, height: 300 }),
+      [UI2_LIST]: widget(UI2_LIST, 'ShadListView', { parent: OUTER, top: 0, height: 200 }),
+      inUi2Row: widget('inUi2Row', 'Text', { parent: UI2_LIST }),
+    });
+
+  it('[DynamicHeight-SCOPE-022] gives a row index only for a list’s own canvas, not a pack’s drop area', () => {
+    seedLists();
+    const scope = scopeOf();
+    expect(scope.rowDepthOf('inPackRow')).toBe(1);
+    expect(scope.listAround('inPackRow')).toBe(PACK_LIST);
+    expect(scope.rowDepthOf('inCardBody')).toBe(0);
+    expect(scope.listAround('inCardBody')).toBeNull();
+    // Nested: the UI 2.0 list's row inside the native list's row.
+    expect(scope.rowDepthOf('inUi2Row')).toBe(2);
+    expect(scope.listAround('inUi2Row')).toBe(UI2_LIST);
+  });
+
+  it('[DynamicHeight-SCOPE-023] counts the rows of a list that draws its own from the rows it set up in the store', () => {
+    seedLists();
+    // What each list does when it draws its rows (usePackHost, Listview): one exposed slot per row for its components.
+    s().initExposedValueArrayForChildren(PACK_LIST, 3, 'canvas', []);
+    s().initExposedValueArrayForChildren(UI2_LIST, 2, 'canvas', [0]);
+    s().initExposedValueArrayForChildren(UI2_LIST, 4, 'canvas', [1]);
+    const scope = scopeOf();
+    expect(scope.rowCountOf(PACK_LIST, null)).toBe(3);
+    expect(scope.rowCountOf(UI2_LIST, [0])).toBe(2);
+    expect(scope.rowCountOf(UI2_LIST, [1])).toBe(4);
+    // Not drawn yet: no rows.
+    expect(scope.rowCountOf(UI2_LIST, [2])).toBe(0);
+    expect(scope.rowCountOf(PACK_CARD, null)).toBe(0);
+  });
+
+  it('[DynamicHeight-SCOPE-025] counts a list’s rows in the module instance it is drawn in', () => {
+    // One module used twice draws its list with different rows in each instance.
+    const INSTANCE = uuid(64);
+    bootModule(INSTANCE);
+    seedApp(
+      {
+        [PACK_LIST]: widget(PACK_LIST, 'PackComponent', { top: 0, height: 200 }),
+        inPackRow: widget('inPackRow', 'Text', { parent: PACK_LIST }),
+      },
+      { moduleId: INSTANCE }
+    );
+    s().initExposedValueArrayForChildren(PACK_LIST, 3, INSTANCE, []);
+    expect(scopeOf(INSTANCE).rowCountOf(PACK_LIST, null)).toBe(3);
+  });
+
+  it('[DynamicHeight-SCOPE-024] counts a native List view’s rows from its data, as before', () => {
+    seedApp({
+      [OUTER]: widget(OUTER, 'Listview', {
+        properties: {
+          dataSourceSelector: binding('rawJson'),
+          data: binding('{{[{ "n": 1 }, { "n": 2 }]}}'),
+        },
+      }),
+      inOuterRow: widget('inOuterRow', 'Text', { parent: OUTER }),
+    });
+    expect(scopeOf().rowCountOf(OUTER, null)).toBe(2);
+  });
+});

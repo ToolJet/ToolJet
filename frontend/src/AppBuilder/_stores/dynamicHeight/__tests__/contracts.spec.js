@@ -2,7 +2,8 @@ import { MODAL_TYPES, TABS_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstan
 import { CONTENT_KINDS, HEIGHT_CONTRACTS, heightContractOf } from '../contracts';
 
 // Every field a contract may carry. A field outside this list is a typo the engine would silently ignore.
-const CONTRACT_FIELDS = ['content', 'contentSlot', 'portal', 'followsExpansion', 'moduleRoot'];
+const CONTRACT_FIELDS = ['content', 'contentSlot', 'portal', 'followsExpansion', 'moduleRoot', 'measured', 'rowFit'];
+const ROW_FITS = ['fitted', 'card', 'host'];
 
 describe('dynamic height contracts', () => {
   it('[DynamicHeight-CONTRACT-001] lays out a Container and a Form as a grid of components', () => {
@@ -35,6 +36,17 @@ describe('dynamic height contracts', () => {
     expect(heightContractOf('FlexContainer')).toEqual({ content: 'flex' });
   });
 
+  it('[DynamicHeight-CONTRACT-010] lets a list that draws its own rows measure itself, and says how its rows fit', () => {
+    // UI 2.0's List view: each row fits its components, never below the Row height.
+    expect(heightContractOf('ShadListView')).toEqual({ content: 'rows', measured: true, rowFit: 'fitted' });
+    // UI 2.0's Kanban: each card fits its components, leaving out what is hidden on it.
+    expect(heightContractOf('ShadKanban')).toEqual({ content: 'rows', measured: true, rowFit: 'card' });
+    // A component built with the SDK: its host sizes its rows (usePackHost), so only their components are placed.
+    for (const type of ['PackComponent', 'LibraryComponent']) {
+      expect(heightContractOf(type)).toEqual({ content: 'rows', measured: true, rowFit: 'host' });
+    }
+  });
+
   it('[DynamicHeight-CONTRACT-007] treats every other widget as a leaf that is only measured', () => {
     // ModuleViewer follows its module's root, Kanban and the legacy Modal have no Dynamic height.
     for (const type of ['Text', 'Table', 'ModuleViewer', 'Kanban', 'Modal', 'NotAWidget', undefined, null]) {
@@ -53,6 +65,16 @@ describe('dynamic height contracts', () => {
         type,
         unknown: [],
       });
+      // How a row fits is only said for a list that measures itself: the native List view sizes from its rows.
+      if ('rowFit' in contract) {
+        const { content, measured, rowFit } = contract;
+        expect({ type, knownFit: ROW_FITS.includes(rowFit), content, measured }).toEqual({
+          type,
+          knownFit: true,
+          content: 'rows',
+          measured: true,
+        });
+      }
     }
   });
 

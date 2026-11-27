@@ -1,5 +1,6 @@
 import { fitsContentInView } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { heightContractOf } from './contracts';
+import { listviewRowCount } from './listviewHeight';
 import { resolveWidgetVisibility } from './visibility';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ export const createModuleScope = (state, moduleId, currentLayout) => {
 
   const savedHeights = new Map();
   const depths = new Map();
-  const rowDepths = new Map();
+  const lists = new Map(); // widget id → the lists around it (listsAround)
 
   const savedLayout = (id) => components[id]?.layouts?.[currentLayout];
   const contractOf = (id) => heightContractOf(typeOf(id));
@@ -122,17 +123,45 @@ export const createModuleScope = (state, moduleId, currentLayout) => {
     return depths.get(id);
   };
 
-  // How many List views a widget sits in. Each adds one row index to the
-  // widget's context, so this is how long its context is.
-  const rowDepthOf = (id) => {
-    if (!rowDepths.has(id)) {
-      rowDepths.set(id, ownersAround(id).filter((owner) => contractOf(owner)?.content === 'rows').length);
+  // The lists a widget is drawn in, innermost first. Only a list's own canvas
+  // is drawn once per row: a pack's drop area (`<id>-<slot>`) is drawn once,
+  // so a widget in it gets no row index from that pack.
+  const listsAround = (id) => {
+    if (lists.has(id)) return lists.get(id);
+    const found = [];
+    const seen = new Set([id]);
+    let canvasId = components[id]?.component?.parent;
+    let owner = ownerOf(canvasId);
+    while (owner && !seen.has(owner)) {
+      if (canvasId === owner && contractOf(owner)?.content === 'rows') found.push(owner);
+      seen.add(owner);
+      canvasId = components[owner]?.component?.parent;
+      owner = ownerOf(canvasId);
     }
-    return rowDepths.get(id);
+    lists.set(id, found);
+    return found;
   };
 
-  // The nearest List view a widget is drawn in, whose rows its last row index counts; null outside any row.
-  const listAround = (id) => ownersAround(id).find((owner) => contractOf(owner)?.content === 'rows') ?? null;
+  // How many lists a widget sits in. Each adds one row index to the widget's
+  // context, so this is how long its context is.
+  const rowDepthOf = (id) => listsAround(id).length;
+
+  // The nearest list a widget is drawn in, whose rows its last row index counts; null outside any row.
+  const listAround = (id) => listsAround(id)[0] ?? null;
+
+  // How many rows a list draws in a given context (its own context: one index
+  // per list around it). A native List view's come from its data. A list whose
+  // own code draws its rows (`measured`) has none in its properties; when it
+  // draws them it sets up one exposed slot per row for its components
+  // (initExposedValueArrayForChildren), nested by the outer rows' indices, so
+  // that is where they are counted. Not drawn yet is no rows.
+  const rowCountOf = (list, contextIndices) => {
+    if (!contractOf(list)?.measured) return listviewRowCount(getResolvedComponent(list, contextIndices)?.properties);
+    const first = childrenOf(list)[0];
+    let rows = state.resolvedStore?.modules?.[moduleId]?.exposedValues?.components?.[first];
+    for (const index of contextIndices ?? []) rows = Array.isArray(rows) ? rows[index] : undefined;
+    return Array.isArray(rows) ? rows.length : 0;
+  };
 
   const isVisible = (id, contextIndices) =>
     resolveWidgetVisibility({
@@ -184,6 +213,7 @@ export const createModuleScope = (state, moduleId, currentLayout) => {
     depthOf,
     rowDepthOf,
     listAround,
+    rowCountOf,
     isVisible,
     isCollapsible,
     isJsonSchemaForm,
