@@ -1,6 +1,9 @@
 import { DynamicModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { RateLimitModule } from '@modules/rate-limit/module';
+import { RedisThrottlerStorage } from '@modules/rate-limit/redis-throttler-storage';
+import { webhookThrottlerOptions } from '@modules/rate-limit/webhook-throttler.options';
 import { SubModule } from '@modules/app/sub-module';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { BullModule } from '@nestjs/bullmq';
@@ -26,15 +29,11 @@ export class GitSyncWebhookModule extends SubModule {
     const isEEOrCloud = edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud;
 
     const imports: any[] = [
+      // Counted in Redis so the webhook limit holds across all server pods
       ThrottlerModule.forRootAsync({
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => [
-          {
-            ttl: config.get('WEBHOOK_THROTTLE_TTL') || 60000,
-            limit: config.get('WEBHOOK_THROTTLE_LIMIT') || 100,
-          },
-        ],
+        imports: [ConfigModule, RateLimitModule],
+        inject: [ConfigService, RedisThrottlerStorage],
+        useFactory: webhookThrottlerOptions,
       }),
     ];
     const providers: any[] = [GitSyncWebhookService];
