@@ -255,6 +255,8 @@ export const treeSelectConfig = {
       accordian: 'switch',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box Shadow',
       validation: {
@@ -409,6 +411,9 @@ export const treeSelectConfig = {
       textColor: { value: 'var(--cc-primary-text)' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      // New drops follow the theme's None shadow; a saved widget without these keys keeps its own
+      // values (NEW_DROP_ONLY_STYLES in ../utils.js).
+      boxShadowStyle: { value: 'none' },
     },
   },
 };

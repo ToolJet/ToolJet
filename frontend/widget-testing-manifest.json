@@ -141,7 +141,8 @@
     },
     {
       "componentType": "TagsInput",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/TagsInput/TESTING.md"
     },
     {
       "componentType": "Checkbox",
@@ -150,7 +151,8 @@
     },
     {
       "componentType": "ToggleSwitchV2",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/ToggleSwitchV2/TESTING.md"
     },
     {
       "componentType": "RadioButtonV2",

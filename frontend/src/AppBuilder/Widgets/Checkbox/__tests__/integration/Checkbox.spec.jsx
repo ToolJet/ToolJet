@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { componentDefinition } from '@/test/app-builder';
 import { checkboxConfig } from '@tooljet/widget-definitions';
 import { createWidgetHarness, setVariableOn, binding, store } from '../../../__tests__/integration/widgetHarness';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const CHK = 'chk1';
 const FORM = 'form1';
@@ -707,7 +708,8 @@ describe('Checkbox', () => {
       },
       {
         name: 'boxShadow on the widget row',
-        styles: { boxShadow: binding('2px 4px 6px 0px rgb(255, 0, 0)') },
+        // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+        styles: { boxShadow: binding('2px 4px 6px 0px rgb(255, 0, 0)'), boxShadowStyle: binding('custom') },
         assert: (container) => {
           expect(rowEl(container)).toHaveStyle({ boxShadow: '2px 4px 6px 0px rgb(255, 0, 0)' });
         },
@@ -763,3 +765,53 @@ async function actSet(id, key, value) {
     widget.setExposedValue(id, key, value);
   });
 }
+
+// Theme box shadow (contract D-07; Button's D-03..D-06 transferred).
+describe('Checkbox: theme box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const themedBox = () => document.querySelector('[role="checkbox"], input[type="checkbox"]')?.closest('[data-cy]');
+  // Computed, not inline: some fields are styled through react-select's emotion classes.
+  const css = (prop) => getComputedStyle(themedBox())[prop];
+
+  test('[Checkbox-THEME-001] a newly dropped Checkbox starts with no theme shadow, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(checkboxConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(checkboxConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[Checkbox-THEME-002] a Checkbox saved before theme styles keeps its own shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'chk1',
+      'chk1',
+      'Checkbox',
+      {},
+      {
+        styles: { boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ chk1: saved })['chk1'].component.definition;
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({ styles: { ...styles, boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('boxShadow')).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[Checkbox-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw shadow whatever the theme style.
+    widget.render({
+      styles: {
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('boxShadow')).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('chk1', 'boxShadowStyle', 'custom', 'styles');
+    await waitFor(() => expect(css('boxShadow')).toBe('0px 0px 0px 0px #00000040'));
+  });
+});

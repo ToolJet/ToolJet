@@ -134,6 +134,9 @@ export const dropNewContainerDefaults = (componentType, mergedProperties, savedP
 // stamp them onto every saved widget and switch it from its own radius and shadow to the theme's; a saved widget
 // without them keeps its own values (an absent key renders as custom).
 const THEME_STYLE_KEYS = ['borderRadiusStyle', 'boxShadowStyle'];
+// Fields whose radius control is `fieldBorderRadius` (the inspector saves its theme choice as `<control>Style`).
+const FIELD_THEME_STYLE_KEYS = ['fieldBorderRadiusStyle', 'boxShadowStyle'];
+const SHADOW_THEME_STYLE_KEYS = ['boxShadowStyle'];
 export const NEW_DROP_ONLY_STYLES = {
   Button: THEME_STYLE_KEYS,
   ButtonGroupV2: THEME_STYLE_KEYS,
@@ -148,7 +151,6 @@ export const NEW_DROP_ONLY_STYLES = {
   Tabs: THEME_STYLE_KEYS,
   Listview: THEME_STYLE_KEYS,
   Calendar: THEME_STYLE_KEYS,
-  Kanban: THEME_STYLE_KEYS,
   TextInput: THEME_STYLE_KEYS,
   EmailInput: THEME_STYLE_KEYS,
   PasswordInput: THEME_STYLE_KEYS,
@@ -158,6 +160,18 @@ export const NEW_DROP_ONLY_STYLES = {
   CurrencyInput: THEME_STYLE_KEYS,
   RichTextEditor: THEME_STYLE_KEYS,
   StarRating: THEME_STYLE_KEYS,
+  FileInput: THEME_STYLE_KEYS,
+  DaterangePicker: THEME_STYLE_KEYS,
+  DropdownV2: FIELD_THEME_STYLE_KEYS,
+  MultiselectV2: FIELD_THEME_STYLE_KEYS,
+  TagsInput: FIELD_THEME_STYLE_KEYS,
+  Cascader: FIELD_THEME_STYLE_KEYS,
+  DatePickerV2: FIELD_THEME_STYLE_KEYS,
+  TimePicker: FIELD_THEME_STYLE_KEYS,
+  DatetimePickerV2: FIELD_THEME_STYLE_KEYS,
+  Checkbox: SHADOW_THEME_STYLE_KEYS,
+  ToggleSwitchV2: SHADOW_THEME_STYLE_KEYS,
+  TreeSelect: SHADOW_THEME_STYLE_KEYS,
 };
 
 /**

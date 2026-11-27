@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 // eslint-disable-next-line import/no-unresolved
 import * as Popover from '@radix-ui/react-popover';
 import { IconX } from '@tabler/icons-react';
@@ -77,7 +78,9 @@ export const Cascader = ({
   const {
     selectedTextColor,
     fieldBorderRadius,
+    fieldBorderRadiusStyle,
     boxShadow,
+    boxShadowStyle,
     labelColor,
     alignment,
     direction,
@@ -328,10 +331,10 @@ export const Cascader = ({
                   height: isTopAlignment ? '100%' : _height,
                   minHeight: _height,
                   padding: '0 10px',
-                  borderRadius: Number.parseFloat(fieldBorderRadius),
+                  borderRadius: themedRadius(fieldBorderRadiusStyle, Number.parseFloat(fieldBorderRadius)),
                   border: `1px solid ${borderColor}`,
                   backgroundColor,
-                  boxShadow,
+                  boxShadow: themedShadow(boxShadowStyle, boxShadow),
                   cursor: interactionBlocked ? 'not-allowed' : 'pointer',
                 }}
                 onClick={toggleOpen}

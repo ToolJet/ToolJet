@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { components } from 'react-select';
@@ -52,6 +53,7 @@ const FileInput = (props) => {
     labelColor = 'var(--cc-primary-text)',
     widthType = 'ofComponent',
     borderRadius = 6,
+    borderRadiusStyle,
     backgroundColor = 'var(--cc-surface1-surface)',
     borderColor = 'var(--cc-default-border)',
     accentColor = 'var(--cc-primary-brand)',
@@ -59,6 +61,7 @@ const FileInput = (props) => {
     errTextColor = 'var(--cc-error-systemStatus)',
     padding = 'default',
     boxShadow = '0px 0px 0px 0px #00000040',
+    boxShadowStyle,
     labelWidth = 0,
     auto: labelAutoWidth = true,
     icon = 'IconFileSearch',
@@ -162,7 +165,7 @@ const FileInput = (props) => {
     () => ({
       width: '100%',
       height: '100%',
-      borderRadius: Number.isNaN(Number(borderRadius)) ? borderRadius : `${borderRadius}px`,
+      borderRadius: themedRadius(borderRadiusStyle, borderRadius),
       borderWidth: '1px',
       borderStyle: 'solid',
       borderColor: hasError
@@ -173,7 +176,7 @@ const FileInput = (props) => {
             ? 'var(--borders-disabled-on-white)'
             : 'var(--borders-default)',
       '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
-      boxShadow,
+      boxShadow: themedShadow(boxShadowStyle, boxShadow),
       backgroundColor:
         backgroundColor !== '#fff'
           ? backgroundColor
@@ -193,10 +196,12 @@ const FileInput = (props) => {
     }),
     [
       borderRadius,
+      borderRadiusStyle,
       hasError,
       errTextColor,
       borderColor,
       boxShadow,
+      boxShadowStyle,
       backgroundColor,
       disabledState,
       isLoading,

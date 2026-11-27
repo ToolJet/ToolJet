@@ -10,6 +10,9 @@ import {
   drain,
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { cascaderConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 const ID = 'casc1';
 const HANDLE = 'cascader1';
@@ -1247,14 +1250,16 @@ describe('Cascader widget', () => {
 
   test('[Cascader-STYLE-013] Field border radius is the control borderRadius', async () => {
     // Break this catches: not parsing fieldBorderRadius onto the combobox.
-    widget.render({ styles: { fieldBorderRadius: { value: '12' } } });
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+    widget.render({ styles: { fieldBorderRadius: { value: '12' }, fieldBorderRadiusStyle: { value: 'custom' } } });
     const control = await mounted();
     expect(control).toHaveStyle({ borderRadius: '12px' });
   });
 
   test('[Cascader-STYLE-014] Box shadow is the control boxShadow', async () => {
     // Break this catches: applying generalStyles.boxShadow instead of styles.boxShadow.
-    widget.render({ styles: { boxShadow: { value: '1px 2px 3px 0px #123456' } } });
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+    widget.render({ styles: { boxShadow: { value: '1px 2px 3px 0px #123456' }, boxShadowStyle: { value: 'custom' } } });
     const control = await mounted();
     expect(control.style.boxShadow).toBe('1px 2px 3px 0px #123456');
   });
@@ -1339,5 +1344,65 @@ describe('Cascader widget', () => {
     await writeProp('disabledState', true);
     await waitFor(() => expect(widget.exposed().isDisabled).toBe(true));
     expect(control).toHaveAttribute('aria-disabled', 'true');
+  });
+});
+
+// Theme border radius / box shadow (contract D-09; Button's D-03..D-06 transferred).
+describe('Cascader: theme border radius and box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const themedBox = () => document.querySelector('[role="combobox"]');
+  // Computed, not inline: some fields are styled through react-select's emotion classes.
+  const css = (prop) => getComputedStyle(themedBox())[prop];
+
+  test('[Cascader-THEME-001] a newly dropped Cascader starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(cascaderConfig.definition.styles.fieldBorderRadiusStyle).toEqual({ value: 'large' });
+    expect(cascaderConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(cascaderConfig.styles.fieldBorderRadius.themeTokens).toBe('borderRadius');
+    expect(cascaderConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[Cascader-THEME-002] a Cascader saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'casc1',
+      'casc1',
+      'Cascader',
+      {},
+      {
+        styles: { fieldBorderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ casc1: saved })['casc1'].component.definition;
+    expect(styles).not.toHaveProperty('fieldBorderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...styles, fieldBorderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('10px');
+    expect(css('boxShadow')).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[Cascader-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    widget.render({
+      styles: {
+        fieldBorderRadius: binding('{{6}}'),
+        fieldBorderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(css('boxShadow')).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('casc1', 'fieldBorderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('casc1', 'fieldBorderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(css('borderRadius')).toBe('10px'));
   });
 });

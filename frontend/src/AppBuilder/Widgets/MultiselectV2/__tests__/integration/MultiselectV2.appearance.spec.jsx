@@ -14,6 +14,9 @@ import { cleanup, screen, waitFor } from '@testing-library/react';
 import { binding, drain, option } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import useStore from '@/AppBuilder/_stores/store';
 import { createMultiselectHarness } from './multiselectV2Harness';
+import { multiselectV2Config } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 const harness = createMultiselectHarness();
 const state = () => useStore.getState();
@@ -476,5 +479,65 @@ describe('MultiselectV2: exposed variables, styling, and accessibility', () => {
       events: 2,
     });
     expect(observed[1]).toEqual(observed[0]);
+  });
+});
+
+// Theme border radius / box shadow (contract D-22; Button's D-03..D-06 transferred).
+describe('MultiselectV2: theme border radius and box shadow', () => {
+  beforeEach(() => harness.setup());
+  afterEach(() => harness.teardown());
+  const themedBox = () => document.querySelector('.multiselect-widget [class$="-control"]');
+  // Computed, not inline: some fields are styled through react-select's emotion classes.
+  const css = (prop) => getComputedStyle(themedBox())[prop];
+
+  test('[MultiselectV2-THEME-001] a newly dropped MultiselectV2 starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(multiselectV2Config.definition.styles.fieldBorderRadiusStyle).toEqual({ value: 'large' });
+    expect(multiselectV2Config.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(multiselectV2Config.styles.fieldBorderRadius.themeTokens).toBe('borderRadius');
+    expect(multiselectV2Config.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[MultiselectV2-THEME-002] a MultiselectV2 saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'ms1',
+      'ms1',
+      'MultiselectV2',
+      {},
+      {
+        styles: { fieldBorderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ ms1: saved })['ms1'].component.definition;
+    expect(styles).not.toHaveProperty('fieldBorderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    harness.render({
+      styles: { ...styles, fieldBorderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('10px');
+    expect(css('boxShadow')).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[MultiselectV2-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    harness.render({
+      styles: {
+        fieldBorderRadius: binding('{{6}}'),
+        fieldBorderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(css('boxShadow')).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    harness.setComponentProperty('ms1', 'fieldBorderRadiusStyle', 'custom', 'styles');
+    harness.setComponentProperty('ms1', 'fieldBorderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(css('borderRadius')).toBe('10px'));
   });
 });

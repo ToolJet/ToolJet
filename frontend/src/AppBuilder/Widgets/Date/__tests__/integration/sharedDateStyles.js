@@ -37,7 +37,8 @@ export function sharedDateStyleTests({ widget, wrapper, input, borderRadiusKey =
     // Break this catches: not forwarding `boxShadow` to the input inline style
     // (BaseDateComponent.jsx -> DatepickerInput.jsx).
     boxShadow: async () => {
-      widget.render({ styles: { boxShadow: binding('0px 0px 5px red') } });
+      // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+      widget.render({ styles: { boxShadow: binding('0px 0px 5px red'), boxShadowStyle: binding('custom') } });
 
       await waitFor(() => expect(input()).toBeInTheDocument());
       expect(input()).toHaveStyle({ boxShadow: '0px 0px 5px red' });
@@ -45,7 +46,10 @@ export function sharedDateStyleTests({ widget, wrapper, input, borderRadiusKey =
     // Break this catches: not forwarding the border-radius style to the input
     // inline border-radius (BaseDateComponent.jsx -> DatepickerInput.jsx).
     borderRadius: async () => {
-      widget.render({ styles: { [borderRadiusKey]: binding('{{10}}') } });
+      // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+      widget.render({
+        styles: { [borderRadiusKey]: binding('{{10}}'), [`${borderRadiusKey}Style`]: binding('custom') },
+      });
 
       await waitFor(() => expect(input()).toBeInTheDocument());
       expect(input()).toHaveStyle({ borderRadius: '10px' });

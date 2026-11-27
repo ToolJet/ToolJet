@@ -1,5 +1,6 @@
 import _, { has, isObject } from 'lodash';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import Select from 'react-select';
 import './multiselectV2.scss';
 import CustomMenuList from '../DropdownV2/CustomMenuList';
@@ -53,7 +54,9 @@ export const MultiselectV2 = ({
   const {
     selectedTextColor,
     fieldBorderRadius,
+    fieldBorderRadiusStyle,
     boxShadow,
+    boxShadowStyle,
     labelColor,
     alignment,
     direction,
@@ -425,8 +428,8 @@ export const MultiselectV2 = ({
         ...provided,
         minHeight: _height,
         height: _height,
-        boxShadow: state.isFocused ? boxShadow : boxShadow,
-        borderRadius: Number.parseFloat(fieldBorderRadius),
+        boxShadow: themedShadow(boxShadowStyle, boxShadow),
+        borderRadius: themedRadius(fieldBorderRadiusStyle, Number.parseFloat(fieldBorderRadius)),
         borderColor: getInputBorderColor({
           isFocused: state.isFocused || isMultiselectOpen,
           isValid,

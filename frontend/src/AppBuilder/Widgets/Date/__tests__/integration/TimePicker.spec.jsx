@@ -7,6 +7,9 @@ import {
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { sharedDateStyleTests } from './sharedDateStyles';
+import { timePickerConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for TimePicker (display name "Time Picker").
 // Contract: frontend/ee/test/app-builder/widgets/TimePicker/TESTING.md.
@@ -270,5 +273,65 @@ describe('TimePicker widget', () => {
 
     await widget.act('setDisable', true);
     await waitFor(() => expect(clearBtn()).not.toBeInTheDocument());
+  });
+});
+
+// Theme border radius / box shadow (contract D-13; Button's D-03..D-06 transferred).
+describe('TimePicker: theme border radius and box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const themedBox = () => document.querySelector('[data-cy="timepicker1-input-field"]');
+  // Computed, not inline: some fields are styled through react-select's emotion classes.
+  const css = (prop) => getComputedStyle(themedBox())[prop];
+
+  test('[TimePicker-THEME-001] a newly dropped TimePicker starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(timePickerConfig.definition.styles.fieldBorderRadiusStyle).toEqual({ value: 'large' });
+    expect(timePickerConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(timePickerConfig.styles.fieldBorderRadius.themeTokens).toBe('borderRadius');
+    expect(timePickerConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[TimePicker-THEME-002] a TimePicker saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'timepicker1',
+      'timepicker1',
+      'TimePicker',
+      {},
+      {
+        styles: { fieldBorderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ timepicker1: saved })['timepicker1'].component.definition;
+    expect(styles).not.toHaveProperty('fieldBorderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...styles, fieldBorderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('10px');
+    expect(css('boxShadow')).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[TimePicker-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    widget.render({
+      styles: {
+        fieldBorderRadius: binding('{{6}}'),
+        fieldBorderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(css('boxShadow')).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('timepicker1', 'fieldBorderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('timepicker1', 'fieldBorderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(css('borderRadius')).toBe('10px'));
   });
 });

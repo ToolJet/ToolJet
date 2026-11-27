@@ -380,6 +380,8 @@ export const fileinputConfig = {
       accordian: 'field',
     },
     borderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'numberInput',
       displayName: 'Border radius',
       validation: {
@@ -392,6 +394,8 @@ export const fileinputConfig = {
       accordian: 'field',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: {
@@ -520,6 +524,10 @@ export const fileinputConfig = {
       borderRadius: { value: '{{6}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own
+      // values (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
     },
     validation: {
       enableValidation: { value: '{{false}}' },

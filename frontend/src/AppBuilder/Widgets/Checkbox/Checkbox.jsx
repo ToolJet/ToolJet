@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useId } from 'react';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -32,7 +33,16 @@ export const Checkbox = ({
     ? 'var(--text-primary)'
     : styles.textColor;
   const { loadingState, disabledState } = properties;
-  const { checkboxColor, boxShadow, alignment, uncheckedColor, borderColor, handleColor } = styles;
+  const {
+    checkboxColor,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
+    alignment,
+    uncheckedColor,
+    borderColor,
+    handleColor,
+  } = styles;
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   const [loading, setLoading] = useState(properties?.loadingState);
   const [disable, setDisable] = useState(disabledState || loadingState);

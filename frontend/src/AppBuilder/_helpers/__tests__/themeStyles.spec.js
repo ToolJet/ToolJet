@@ -14,6 +14,12 @@ describe('themedRadius', () => {
     expect(themedRadius('large', 6)).toBe('var(--cc-border-radius-large, 6px)');
     expect(themedRadius('custom-a1', 8)).toBe('var(--cc-border-radius-custom-a1, 8px)');
   });
+
+  it('uses a radius that carries its own unit as is (FileInput accepts "1rem")', () => {
+    expect(themedRadius(CUSTOM_STYLE, '1rem')).toBe('1rem');
+    expect(themedRadius('large', '50%')).toBe('var(--cc-border-radius-large, 50%)');
+    expect(themedRadius(CUSTOM_STYLE, '12')).toBe('12px');
+  });
 });
 
 describe('themedShadow', () => {

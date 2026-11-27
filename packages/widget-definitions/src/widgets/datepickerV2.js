@@ -353,12 +353,16 @@ export const datePickerV2Config = {
       accordian: 'field',
     },
     fieldBorderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.fieldBorderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'input',
       displayName: 'Border radius',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
       accordian: 'field',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: {
@@ -429,6 +433,10 @@ export const datePickerV2Config = {
       iconDirection: { value: 'left' },
       fieldBorderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own
+      // values (NEW_DROP_ONLY_STYLES in ../utils.js).
+      fieldBorderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
       padding: { value: 'default' },
       iconColor: { value: 'var(--cc-default-icon)' },
       widthType: { value: 'ofComponent' },

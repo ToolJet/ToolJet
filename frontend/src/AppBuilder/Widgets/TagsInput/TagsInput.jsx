@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import CreatableSelect from 'react-select/creatable';
 import './tagsInput.scss';
 import cx from 'classnames';
@@ -56,7 +57,9 @@ const TagsInput = ({
   const {
     selectedTextColor,
     fieldBorderRadius,
+    fieldBorderRadiusStyle,
     boxShadow,
+    boxShadowStyle,
     labelColor,
     alignment,
     direction,
@@ -654,8 +657,12 @@ const TagsInput = ({
       ...provided,
       minHeight: _height,
       height: isDynamicHeightEnabled ? 'auto' : _height,
-      boxShadow: state.isFocused || isMenuOpen ? `0 0 0 1px ${getInputFocusedColor({ accentColor })}` : boxShadow,
-      borderRadius: Number.parseFloat(fieldBorderRadius),
+      // Focused or open, the focus ring replaces the shadow.
+      boxShadow:
+        state.isFocused || isMenuOpen
+          ? `0 0 0 1px ${getInputFocusedColor({ accentColor })}`
+          : themedShadow(boxShadowStyle, boxShadow),
+      borderRadius: themedRadius(fieldBorderRadiusStyle, Number.parseFloat(fieldBorderRadius)),
       alignItems: 'flex-start',
       overflowY: isDynamicHeightEnabled ? 'visible' : 'auto',
       overflowX: 'hidden',

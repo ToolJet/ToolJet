@@ -7,6 +7,9 @@ import {
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { sharedDateStyleTests } from './sharedDateStyles';
+import { datePickerV2Config } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for DatePickerV2 (display name "Date Picker").
 // Contract: frontend/ee/test/app-builder/widgets/DatePickerV2/TESTING.md.
@@ -325,5 +328,65 @@ describe('DatePickerV2 widget', () => {
 
     await waitFor(() => expect(exposed().selectedDate).toBe('02/02/2022'));
     expect(widget.variables().onSelectCount).toBeUndefined();
+  });
+});
+
+// Theme border radius / box shadow (contract D-13; Button's D-03..D-06 transferred).
+describe('DatePickerV2: theme border radius and box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const themedBox = () => document.querySelector('[data-cy="datepicker1-input-field"]');
+  // Computed, not inline: some fields are styled through react-select's emotion classes.
+  const css = (prop) => getComputedStyle(themedBox())[prop];
+
+  test('[DatePickerV2-THEME-001] a newly dropped DatePickerV2 starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(datePickerV2Config.definition.styles.fieldBorderRadiusStyle).toEqual({ value: 'large' });
+    expect(datePickerV2Config.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(datePickerV2Config.styles.fieldBorderRadius.themeTokens).toBe('borderRadius');
+    expect(datePickerV2Config.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[DatePickerV2-THEME-002] a DatePickerV2 saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'datepicker1',
+      'datepicker1',
+      'DatePickerV2',
+      {},
+      {
+        styles: { fieldBorderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ datepicker1: saved })['datepicker1'].component.definition;
+    expect(styles).not.toHaveProperty('fieldBorderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...styles, fieldBorderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('10px');
+    expect(css('boxShadow')).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[DatePickerV2-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    widget.render({
+      styles: {
+        fieldBorderRadius: binding('{{6}}'),
+        fieldBorderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(css('boxShadow')).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('datepicker1', 'fieldBorderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('datepicker1', 'fieldBorderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(css('borderRadius')).toBe('10px'));
   });
 });

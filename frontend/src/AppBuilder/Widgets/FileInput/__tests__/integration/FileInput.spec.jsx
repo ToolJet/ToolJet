@@ -18,6 +18,9 @@ import {
   MODULE_ID,
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { fileinputConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 const ID = 'fileinput1';
 const NAME = 'fileinput1';
@@ -754,5 +757,63 @@ describe('FileInput: styling', () => {
     await screen.findByText('Attachment', { exact: false });
 
     expect(fieldBox(container)).toHaveStyle({ height: '100%' });
+  });
+});
+
+// Theme border radius / box shadow (contract D-05; Button's D-03..D-06 transferred).
+describe('FileInput: theme border radius and box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const themedBox = () => document.querySelector('.tj-file-input-field');
+  // Computed, not inline: some fields are styled through react-select's emotion classes.
+  const css = (prop) => getComputedStyle(themedBox())[prop];
+
+  test('[FileInput-THEME-001] a newly dropped FileInput starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(fileinputConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(fileinputConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(fileinputConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(fileinputConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[FileInput-THEME-002] a FileInput saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'fileinput1',
+      'fileinput1',
+      'FileInput',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ fileinput1: saved })['fileinput1'].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({ styles: { ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('10px');
+    expect(css('boxShadow')).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[FileInput-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw radius / shadow whatever the theme style.
+    widget.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('borderRadius')).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(css('boxShadow')).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('fileinput1', 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('fileinput1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(css('borderRadius')).toBe('10px'));
   });
 });

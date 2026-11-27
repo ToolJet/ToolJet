@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import Select, { components } from 'react-select';
 import { IconX } from '@tabler/icons-react';
 
@@ -93,8 +94,10 @@ export const DropdownV2 = ({
   const {
     selectedTextColor,
     fieldBorderRadius,
+    fieldBorderRadiusStyle,
     justifyContent,
     boxShadow,
+    boxShadowStyle,
     labelColor,
     alignment,
     direction,
@@ -390,8 +393,8 @@ export const DropdownV2 = ({
         ...provided,
         minHeight: _height,
         height: _height,
-        boxShadow: state.isFocused ? boxShadow : boxShadow,
-        borderRadius: Number.parseFloat(fieldBorderRadius),
+        boxShadow: themedShadow(boxShadowStyle, boxShadow),
+        borderRadius: themedRadius(fieldBorderRadiusStyle, Number.parseFloat(fieldBorderRadius)),
         borderColor: getInputBorderColor({
           isFocused: state.isFocused || state.menuIsOpen,
           isValid,

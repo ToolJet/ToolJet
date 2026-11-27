@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useId } from 'react';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -129,7 +130,8 @@ export const ToggleSwitchV2 = ({
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
 
-  const { toggleSwitchColor, boxShadow, alignment, borderColor } = styles;
+  const { toggleSwitchColor, boxShadow: savedBoxShadow, boxShadowStyle, alignment, borderColor } = styles;
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
 
   const toggleValue = (e) => {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useTranslation } from 'react-i18next';
 import { DatepickerInput } from './DatepickerInput';
@@ -46,8 +47,11 @@ export const BaseDateComponent = ({
   const {
     selectedTextColor,
     fieldBorderRadius,
+    fieldBorderRadiusStyle,
     borderRadius,
+    borderRadiusStyle,
     boxShadow,
+    boxShadowStyle,
     labelColor,
     alignment,
     direction,
@@ -93,13 +97,14 @@ export const BaseDateComponent = ({
           ? '1px solid var(--borders-disabled-on-white)'
           : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(fieldBorderColor, 24),
-    borderRadius: `${fieldBorderRadius || borderRadius}px`,
+    // DaterangePicker's control is `borderRadius`; the other pickers' is `fieldBorderRadius`.
+    borderRadius: themedRadius(fieldBorderRadiusStyle ?? borderRadiusStyle, fieldBorderRadius || borderRadius),
     color: !['#1B1F24', '#000', '#000000ff'].includes(selectedTextColor)
       ? selectedTextColor
       : disable || loading
         ? 'var(--text-disabled)'
         : 'var(--text-primary)',
-    boxShadow: boxShadow,
+    boxShadow: themedShadow(boxShadowStyle, boxShadow),
     backgroundColor:
       fieldBackgroundColor != '#fff'
         ? fieldBackgroundColor

@@ -1,5 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { binding, createWidgetHarness, drain, store } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { treeSelectConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 const ID = 'tree1';
 const HANDLE = 'treeselect1';
@@ -50,6 +53,8 @@ const defaults = {
     checkboxColor: binding('#56789a'),
     checkmarkColor: binding('#ffffff'),
     boxShadow: binding('1px 2px 3px 0px #000000'),
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+    boxShadowStyle: binding('custom'),
     padding: binding('default'),
   },
   widgetHeight: 320,
@@ -533,5 +538,55 @@ describe('TreeSelect widget', () => {
     expect(screen.queryByText('Root')).not.toBeInTheDocument();
     await waitFor(() => expect(exposed().checked).toEqual(['static-only']));
     expect(exposed().checkedPathStrings).toEqual(['static-only']);
+  });
+});
+
+// Theme box shadow (contract D-01; Button's D-03..D-06 transferred).
+describe('TreeSelect: theme box shadow', () => {
+  beforeEach(() => tree.setup());
+  afterEach(() => tree.teardown());
+  const themedBox = () => document.querySelector('[data-cy="treeselect1"]');
+  // Computed, not inline: some fields are styled through react-select's emotion classes.
+  const css = (prop) => getComputedStyle(themedBox())[prop];
+
+  test('[TreeSelect-THEME-001] a newly dropped TreeSelect starts with no theme shadow, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(treeSelectConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(treeSelectConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[TreeSelect-THEME-002] a TreeSelect saved before theme styles keeps its own shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'tree1',
+      'tree1',
+      'TreeSelect',
+      {},
+      {
+        styles: { boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles } = buildComponentMetaDefinition({ tree1: saved })['tree1'].component.definition;
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+
+    tree.render({ styles: { ...styles, boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('boxShadow')).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[TreeSelect-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw shadow whatever the theme style.
+    tree.render({
+      styles: {
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(themedBox()).toBeTruthy());
+    expect(css('boxShadow')).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    tree.setComponentProperty('tree1', 'boxShadowStyle', 'custom', 'styles');
+    await waitFor(() => expect(css('boxShadow')).toBe('0px 0px 0px 0px #00000040'));
   });
 });

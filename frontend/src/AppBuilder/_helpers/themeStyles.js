@@ -7,9 +7,12 @@ export const CUSTOM_STYLE = 'custom';
 
 const followsTheme = (style) => Boolean(style) && style !== CUSTOM_STYLE;
 
-/** The CSS border radius: the widget's own number, or the theme item with that number as the fallback. */
+// A number (or numeric string) is pixels; a string with its own unit ("1rem", "50%") is used as is.
+const radiusCss = (radius) => (typeof radius === 'string' && /[a-z%]$/i.test(radius.trim()) ? radius : `${radius}px`);
+
+/** The CSS border radius: the widget's own value, or the theme item with that value as the fallback. */
 export const themedRadius = (style, radius) =>
-  followsTheme(style) ? `var(${radiusVar(style)}, ${radius}px)` : `${radius}px`;
+  followsTheme(style) ? `var(${radiusVar(style)}, ${radiusCss(radius)})` : radiusCss(radius);
 
 /** The CSS box shadow: the widget's own shadow, or the theme item with that shadow as the fallback. */
 export const themedShadow = (style, shadow) =>

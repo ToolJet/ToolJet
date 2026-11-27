@@ -1,4 +1,5 @@
 import React, { useRef, useId } from 'react';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 // eslint-disable-next-line import/no-unresolved
 import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
@@ -53,7 +54,8 @@ const TreeSelect = ({
     uncheckedBackground,
     borderColor,
     checkmarkColor,
-    boxShadow,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
     labelColor,
     alignment,
     direction,
@@ -62,6 +64,7 @@ const TreeSelect = ({
     labelStyle = 'new',
     labelFontSize,
   } = styles;
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
