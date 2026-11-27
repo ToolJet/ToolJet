@@ -202,6 +202,10 @@ export function BranchDropdown({ appId, organizationId }) {
   useEffect(() => {
     if (initialBranchSwitchDone.current) return;
     if (!branchingEnabled || !appId) return;
+    // Before the workspace store initializes it has no branches: switchBranch would no-op on it,
+    // this effect would spend its one shot, and initialize() would then seed the header from the
+    // tab's previous branch instead of the one the version belongs to.
+    if (!isWsBranchStoreInitialized) return;
     if (!developmentVersions?.length) return;
 
     const isBranchTypeVersionForSwitch =
@@ -275,7 +279,16 @@ export function BranchDropdown({ appId, organizationId }) {
     initialBranchSwitchDone.current = true;
     switchBranch(appId, targetBranchName).catch((err) => console.error('Branch switch failed:', err?.message || err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [branchingEnabled, appId, workspaceActiveBranch, developmentVersions, selectedVersion, orgGit, allBranches]);
+  }, [
+    branchingEnabled,
+    appId,
+    isWsBranchStoreInitialized,
+    workspaceActiveBranch,
+    developmentVersions,
+    selectedVersion,
+    orgGit,
+    allBranches,
+  ]);
 
   // Manual fetch last commit function
   const fetchLastCommit = async () => {

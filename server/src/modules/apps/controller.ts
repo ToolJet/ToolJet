@@ -82,7 +82,8 @@ export class AppsController implements IAppsController {
     @Ability() ability: AppAbility,
     @App() app: AppEntity,
     @User() user: UserEntity,
-    // PrivateAppAuthGuard path — not the JWT strategy — so user.branchId isn't populated; read the query param directly.
+    // The branch the link named. user.branchId also carries the remembered/default branch when the link names none,
+    // so read the query param directly to tell the two apart.
     @Query('branch_id') branchId?: string
   ) {
     return this.appsService.validatePrivateAppAccess(app, ability, user, {
