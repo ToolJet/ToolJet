@@ -13,6 +13,7 @@ import { WorkspaceBanList } from '@entities/workspace_ban_list.entity';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { isAppPublic } from '@modules/app/guards/ability.guard';
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
   constructor(
@@ -60,7 +61,7 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     request.tj_resource_id = app.id;
     request.headers['tj-workspace-id'] = app.organizationId;
 
-    if (app.isPublic === true) {
+    if (isAppPublic(app)) {
       // No need to do user validation
       this.organizationRepository.touchLastAccessedAt(app.organizationId);
       return true;

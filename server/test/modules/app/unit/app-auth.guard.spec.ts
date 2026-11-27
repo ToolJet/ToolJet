@@ -112,6 +112,21 @@ describe('AppAuthGuard', () => {
     });
   });
 
+  describe('when a workflow is marked public', () => {
+    it('still requires session auth', async () => {
+      mockAppRepository.findAppBySlug.mockResolvedValue(makeApp({ isPublic: true, type: 'workflow' }));
+      mockOrgRepository.findOne.mockResolvedValue(makeOrg());
+      const parentSpy = jest
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(guard)), 'canActivate')
+        .mockResolvedValue(true);
+
+      await guard.canActivate(makeContext('my-app'));
+
+      expect(parentSpy).toHaveBeenCalled();
+      expect(mockOrgRepository.touchLastAccessedAt).not.toHaveBeenCalled();
+    });
+  });
+
   describe('when app.isPublic is false', () => {
     it('does NOT call touchLastAccessedAt', async () => {
       mockAppRepository.findAppBySlug.mockResolvedValue(makeApp({ isPublic: false }));

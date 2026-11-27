@@ -203,6 +203,27 @@ describe('AbilityGuard', () => {
     await expect(guard.canActivate(ctx)).resolves.toBe(false);
   });
 
+  describe('a workflow marked public', () => {
+    const publicWorkflow = { isPublic: true, type: 'workflow', organizationId: 'org-1' };
+
+    it('does not let an anonymous caller skip the permission check', async () => {
+      reflect(TEST_MODULE, ['NORMAL_FEATURE']);
+      const ctx = makeExecutionContext({ request: { headers: {}, tj_app: publicWorkflow, user: undefined } });
+
+      await expect(guard.canActivate(ctx)).resolves.toBe(false);
+    });
+
+    it("checks a signed-in user's permissions instead of skipping them", async () => {
+      reflect(TEST_MODULE, ['NORMAL_FEATURE']);
+      ability.can.mockReturnValue(false);
+      const ctx = makeExecutionContext({
+        request: { headers: {}, tj_app: publicWorkflow, user: { organizationId: 'org-1' } },
+      });
+
+      await expect(guard.canActivate(ctx)).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
+
   it('returns false when there is no user and the app is not public', async () => {
     reflect(TEST_MODULE, ['NORMAL_FEATURE']);
     const ctx = makeExecutionContext({
