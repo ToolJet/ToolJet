@@ -22,3 +22,37 @@ interface Features {
 export interface FeaturesConfig {
   [MODULES.WORKSPACE_BRANCHES]: Features;
 }
+
+export type PullCategory = 'dataSources' | 'apps' | 'modules' | 'workflows';
+
+export interface PullResourceCounts {
+  imported: number;
+  skipped: number;
+  stale: number;
+  outdated: number;
+  errors: number;
+}
+
+// Where a workspace pull spent its time and which shortcuts kicked in. Same shape in the
+// POST /workspace-branches/pull response (stage=request) and git-sync notification metadata (stage=job).
+export interface PullDiagnostics {
+  stage: 'request' | 'job';
+  pod: string; // hashed hostname: git mirror cache is per-pod disk
+  attempt?: number; // job only, 1-based
+  totalMs: number; // job: enqueue → done, retries included
+  // ms. Prefix says where: net_ git provider (clone includes local checkout), db_ our import,
+  // code_ in-process checks, redis_ queue ops, wait_ queue/lease waits (wait_queue on attempt 1 only)
+  phases: Record<string, number>;
+  skips: {
+    headUnchanged?: boolean;
+    categories?: Partial<Record<PullCategory, boolean>>; // true = tree SHA unchanged, skipped
+  };
+  gitCache?: {
+    enabled: boolean;
+    hit: boolean;
+    mirrorBuilt?: boolean; // true = cold mirror on this pod
+    mirrorFetchMs?: number;
+    mirrorLockWaitMs?: number;
+  };
+  resources?: Partial<Record<Exclude<PullCategory, 'dataSources'>, PullResourceCounts>>;
+}

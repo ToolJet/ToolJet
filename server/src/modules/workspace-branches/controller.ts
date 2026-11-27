@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+} from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { JwtAuthGuard } from '../session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { WorkspaceBranchService } from './service';
@@ -6,6 +19,7 @@ import {
   CreateBranchDto,
   WorkspacePushDto,
   WorkspacePullDto,
+  WorkspacePullResponseDto,
   PullAppDto,
   EnsureDraftDto,
   PullModuleDto,
@@ -75,8 +89,15 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @InitFeature(FEATURE_KEY.PULL_WORKSPACE)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('pull')
-  async pullWorkspace(@User() user, @Body() dto?: WorkspacePullDto) {
-    return this.workspaceBranchService.pullWorkspace(user.organizationId, user, dto?.sourceBranch, dto?.branchId);
+  @UseInterceptors(ClassSerializerInterceptor)
+  async pullWorkspace(@User() user, @Body() dto?: WorkspacePullDto): Promise<WorkspacePullResponseDto> {
+    const result = await this.workspaceBranchService.pullWorkspace(
+      user.organizationId,
+      user,
+      dto?.sourceBranch,
+      dto?.branchId
+    );
+    return plainToInstance(WorkspacePullResponseDto, result);
   }
 
   @InitFeature(FEATURE_KEY.RESOLVE_CONFLICTS)
