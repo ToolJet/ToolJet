@@ -15,6 +15,7 @@ import * as express from 'express';
 import { AppModule } from '@modules/app/module';
 import { GuardValidator } from '@modules/app/validators/feature-guard.validator';
 import { validateEdition } from '@helpers/edition.helper';
+import { sampleSecretProblems } from '@helpers/sample-secrets.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-info-updated.interceptor';
 import { shutdownOtelLogs, initializeOtelLogs } from '@otel/logs';
@@ -62,6 +63,14 @@ async function bootstrap() {
     const configService = app.get<ConfigService>(ConfigService);
     const appLogger = app.get<Logger>(Logger);
     appLogger.log('✅ NestJS application created successfully');
+
+    const secretProblems = sampleSecretProblems({
+      NODE_ENV: configService.get<string>('NODE_ENV'),
+      SECRET_KEY_BASE: configService.get<string>('SECRET_KEY_BASE'),
+      LOCKBOX_MASTER_KEY: configService.get<string>('LOCKBOX_MASTER_KEY'),
+    });
+    if (secretProblems.fatal) throw new Error(secretProblems.fatal);
+    if (secretProblems.warning) appLogger.warn(secretProblems.warning);
 
     // Validate edition
     appLogger.log('Validating ToolJet edition...');

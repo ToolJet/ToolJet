@@ -18,6 +18,9 @@ until pg_isready -h localhost -p 5432; do
 done
 echo "✅ PostgreSQL is ready!"
 
+# Replace published example keys before the server starts (keys persist next to the database)
+source /app/server/scripts/ensure-secret-keys.sh /var/lib/postgresql/16/main
+
 # Create ToolJet user
 psql -U postgres -tc "SELECT 1 FROM pg_roles WHERE rolname='tooljet'" | grep -q 1 || \
 psql -U postgres -c "CREATE USER tooljet WITH PASSWORD 'postgres' SUPERUSER;" >/dev/null 2>&1

@@ -15,6 +15,9 @@ fi
 echo "Starting PostgreSQL..."
 su - postgres -c "/usr/lib/postgresql/13/bin/pg_ctl -D /var/lib/postgresql/13/main -w start"
 
+# Replace published example keys before the server starts (keys persist next to the database)
+source "$(dirname "$0")/ensure-secret-keys.sh" /var/lib/postgresql/13/main
+
 # Fix ownership and permissions for Redis
 chown -R redis:redis /var/lib/redis /var/log/redis
 
