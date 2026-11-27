@@ -6,6 +6,7 @@
   "source": {
     "name": "Minio",
     "kind": "minio",
+    "description": "Upload, read and manage objects in your S3-compatible storage.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

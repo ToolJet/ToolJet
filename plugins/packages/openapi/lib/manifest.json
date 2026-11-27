@@ -6,6 +6,7 @@
   "source": {
     "name": "OpenAPI",
     "kind": "openapi",
+    "description": "Generate API operations from an OpenAPI spec in JSON or YAML.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

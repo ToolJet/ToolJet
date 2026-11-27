@@ -6,6 +6,7 @@
   "source": {
     "name": "GraphQL",
     "kind": "graphql",
+    "description": "Run queries and mutations against any GraphQL endpoint.",
     "options": {
       "url": {
         "type": "string"

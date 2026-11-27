@@ -6,6 +6,7 @@
   "source": {
     "name": "Mistral",
     "kind": "mistral_ai",
+    "description": "Generate text with language models.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

@@ -6,6 +6,7 @@
   "source": {
     "name": "AWS Bedrock",
     "kind": "aws-bedrock",
+    "description": "Generate content with foundation models hosted on AWS.",
     "customTesting": false,
     "exposedVariables": {
       "isLoading": false,

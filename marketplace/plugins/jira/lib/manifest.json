@@ -6,6 +6,7 @@
   "source": {
     "name": "Jira",
     "kind": "jira",
+    "description": "Create, assign and edit issues, and read users, worklogs and boards.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

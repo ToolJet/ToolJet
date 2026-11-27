@@ -6,6 +6,7 @@
   "source": {
     "name": "Confluence",
     "kind": "confluence",
+    "description": "Read and manage pages and spaces in your wiki.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

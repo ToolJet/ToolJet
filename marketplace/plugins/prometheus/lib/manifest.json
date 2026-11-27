@@ -6,6 +6,7 @@
   "source": {
     "name": "Prometheus",
     "kind": "prometheus",
+    "description": "Run PromQL queries on your metrics, at one point in time or over a range.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

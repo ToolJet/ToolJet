@@ -6,6 +6,7 @@
   "source": {
     "name": "REST API",
     "kind": "restapi",
+    "description": "Call any HTTP API with your own headers, auth and parameters.",
     "options": {
       "url": {
         "type": "string"

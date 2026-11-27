@@ -6,6 +6,7 @@
   "source": {
     "name": "TypeSafe",
     "kind": "typesafe",
+    "description": "Ask typed questions about a ticket, record or message and get structured answers.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

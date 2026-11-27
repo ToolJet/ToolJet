@@ -6,6 +6,7 @@
   "source": {
     "name": "Google Cloud Spanner",
     "kind": "spanner",
+    "description": "Run SQL reads, writes and schema changes on your global relational database.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

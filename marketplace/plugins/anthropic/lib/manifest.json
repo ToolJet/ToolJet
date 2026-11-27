@@ -7,6 +7,7 @@
   "tj:source": {
     "name": "Anthropic",
     "kind": "anthropic",
+    "description": "Run chat prompts with Claude models.",
     "type": "ai"
   },
   "properties": {

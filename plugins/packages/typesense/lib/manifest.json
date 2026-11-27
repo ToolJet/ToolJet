@@ -6,6 +6,7 @@
   "source": {
     "name": "TypeSense",
     "kind": "typesense",
+    "description": "Create collections, then search and manage documents in them.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

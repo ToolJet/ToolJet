@@ -6,6 +6,7 @@
   "source": {
     "name": "Couchbase",
     "kind": "couchbase",
+    "description": "Create, read, update and delete documents, and run queries or full-text search.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

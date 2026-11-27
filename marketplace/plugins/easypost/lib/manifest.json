@@ -6,6 +6,7 @@
   "source": {
     "name": "EasyPost",
     "kind": "easypost",
+    "description": "Buy shipping labels, compare carrier rates and track packages.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

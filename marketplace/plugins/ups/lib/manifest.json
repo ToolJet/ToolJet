@@ -6,6 +6,7 @@
   "source": {
     "name": "UPS",
     "kind": "ups",
+    "description": "Get rates, create shipments, track packages and validate addresses.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

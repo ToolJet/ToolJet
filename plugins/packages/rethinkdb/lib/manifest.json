@@ -6,6 +6,7 @@
   "source": {
     "name": "RethinkDB",
     "kind": "rethinkdb",
+    "description": "Manage databases, tables and JSON documents in your real-time database.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

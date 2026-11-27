@@ -7,6 +7,7 @@
   "source": {
     "name": "Amazon Athena",
     "kind": "athena",
+    "description": "Run SQL queries on data stored in Amazon S3.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

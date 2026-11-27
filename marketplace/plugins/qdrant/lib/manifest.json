@@ -6,6 +6,7 @@
   "source": {
     "name": "Qdrant",
     "kind": "qdrant",
+    "description": "Store, query and manage vectors in collections.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

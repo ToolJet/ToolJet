@@ -6,6 +6,7 @@
   "source": {
     "name": "SendGrid",
     "kind": "sendgrid",
+    "description": "Send emails from your apps.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

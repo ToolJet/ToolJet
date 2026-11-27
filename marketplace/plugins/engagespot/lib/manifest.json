@@ -6,6 +6,7 @@
   "source": {
     "name": "Engagespot",
     "kind": "engagespot",
+    "description": "Send notifications to your users and manage their profiles.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

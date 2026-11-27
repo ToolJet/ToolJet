@@ -25,6 +25,7 @@ import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
 import { camelize, camelizeKeys, decamelizeKeys, decamelize } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { Button as RocketButton } from '@/components/ui/Button/Button';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -62,6 +63,7 @@ const getDummyDefaultOptions = (dataSource) => {
   }
 };
 import MultiEnvTabs from './MultiEnvTabs';
+import { DataSourcePageActionsContext } from './DataSourcePageActionsContext';
 import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import SampleDataSourceBody from './SampleDataSourceBody';
@@ -1116,6 +1118,137 @@ export class DataSourceManagerComponent extends React.Component {
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
+
+    // Full-page mode: no modal. The page supplies its own header (name, environment, test connection, save) through
+    // `renderPageHeader`; this component keeps the form state and passes it the values and actions.
+    if (this.props.pageLayout) {
+      if (!pluginsLoaded || !selectedDataSource) return null;
+
+      const isOAuthCodeFlow =
+        OAuthDs.includes(selectedDataSource.kind) &&
+        options?.auth_type?.value === 'oauth2' &&
+        ['authorization_code', 'authorization_code_pkce'].includes(options?.grant_type?.value);
+      const showFooterContent = !dataSourceMeta.customTesting && shouldRenderFooterComponent && !isOAuthCodeFlow;
+      const showCustomTestingSave = !dataSourceMeta?.hideSave && dataSourceMeta.customTesting && !isOAuthCodeFlow;
+      const canSave = !isSampleDb && this.props.showSaveBtn !== false && (showFooterContent || showCustomTestingSave);
+
+      return (
+        <DataSourcePageActionsContext.Provider value={this.props.pageActionsSlot ?? null}>
+          <div className="datasource-manager-container tw-flex tw-min-h-0 tw-flex-1 tw-flex-col">
+            {this.props.renderPageHeader?.({
+              dataSourceId: selectedDataSource.id,
+              icon: getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon),
+              name: selectedDataSource.is_dummy ? 'Undefined data source' : decodeEntities(selectedDataSource.name),
+              isDummy: Boolean(selectedDataSource.is_dummy),
+              dummyMessage: selectedDataSource.co_relation_id
+                ? `Data source #${selectedDataSource.co_relation_id} is missing, pull from git to resolve this`
+                : 'Data source is missing, pull from git to resolve this',
+              isNameDisabled:
+                (this.props.isWorkspaceBranchLocked &&
+                  (selectedDataSource?.is_synced === true || selectedDataSource?.isSynced === true)) ||
+                !canUpdateDataSource(selectedDataSource.id) ||
+                Boolean(selectedDataSource.is_dummy),
+              onNameChange: this.onNameChanged,
+              docLink,
+              isSampleDb,
+              environments: isSampleDb ? [] : (this.props.environments ?? []),
+              currentEnvironment: this.props.currentEnvironment,
+              // Goes through `handleActions` so unsaved changes prompt before the environment switches.
+              onEnvironmentChange: (env) =>
+                this.props.handleActions(() => this.props.environmentChanged(env, selectedDataSource.id)),
+              testConnectionProps: showFooterContent
+                ? {
+                    kind: selectedDataSource.kind,
+                    pluginId: selectedDataSource.pluginId ?? this.state.selectedDataSourcePluginId,
+                    options,
+                    onConnectionTestFailed: this.onConnectionTestFailed,
+                    environmentId: this.props.currentEnvironment?.id,
+                    dataSourceId: selectedDataSource.id,
+                    dataSourceType: selectedDataSource.type,
+                    appId: this.state.appId,
+                  }
+                : null,
+              onSave: canSave ? this.createDataSource : null,
+              isSaving,
+              isSaveDisabled: Boolean(
+                isSaving || this.props.isVersionReleased || isSaveDisabled || this.props.isSaveDisabled
+              ),
+            })}
+
+            <div className="datasource-modal-container datasource-edit-modal datasource-page-form tw-min-h-0 tw-flex-1 tw-overflow-auto tw-px-20 tw-pb-12 tw-pt-12">
+              <div className="tw-max-w-[45.875rem]">
+                {this.props.environmentLoading ? (
+                  <DataSourceLoader />
+                ) : (
+                  <>
+                    {isSampleDb ? (
+                      this.renderSampleDBModal()
+                    ) : (
+                      <div className="dataSourceWrapper">
+                        {this.renderSourceComponent(selectedDataSource.kind, isPlugin)}
+                      </div>
+                    )}
+
+                    {showFooterContent && !isSampleDb && (
+                      <div className="tw-mt-8 tw-flex tw-h-[52px] tw-items-center tw-gap-2 tw-rounded-md tw-bg-interactive-hover tw-px-3">
+                        <TriangleAlert size={18} className="tw-shrink-0 tw-text-icon-accent" />
+                        <p data-cy="white-list-ip-text" className="tw-m-0 tw-flex-1 tw-font-title-default">
+                          {this.props.t(
+                            'editor.queryManager.dataSourceManager.whiteListIP',
+                            'Please white-list our IP address if the data source is not publicly accessible.'
+                          )}
+                        </p>
+                        {isCopied ? (
+                          <span className="copied tw-px-3" data-cy="label-ip-copied">
+                            {this.props.t('editor.queryManager.dataSourceManager.copied', 'Copied')}
+                          </span>
+                        ) : (
+                          <CopyToClipboard text={config.SERVER_IP} onCopy={() => this.setState({ isCopied: true })}>
+                            <RocketButton
+                              type="button"
+                              isLucid
+                              variant="secondary"
+                              size="medium"
+                              leadingIcon="copy"
+                              data-cy="button-copy-ip"
+                            >
+                              {this.props.t('editor.queryManager.dataSourceManager.copy', 'Copy')}
+                            </RocketButton>
+                          </CopyToClipboard>
+                        )}
+                      </div>
+                    )}
+
+                    {connectionTestError && (
+                      <div className="alert alert-danger datasource-error-alert mt-3" role="alert">
+                        <div className="text-muted" data-cy="connection-alert-text">
+                          {connectionTestError.message}
+                        </div>
+                      </div>
+                    )}
+
+                    {validationError && validationError.length > 0 && (
+                      <div className="alert alert-danger mt-3" role="alert">
+                        {validationError.map((error, index) => (
+                          <div
+                            key={index}
+                            className="text-muted"
+                            data-cy={`${generateCypressDataCy(error)}-field-alert-text`}
+                          >
+                            {error}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </DataSourcePageActionsContext.Provider>
+      );
+    }
+
     return (
       pluginsLoaded && (
         <div className="datasource-manager-container">

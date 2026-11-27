@@ -6,6 +6,7 @@
   "source": {
     "name": "ClickUp",
     "kind": "clickup",
+    "description": "Manage tasks, lists and docs.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

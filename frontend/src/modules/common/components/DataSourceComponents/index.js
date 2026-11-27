@@ -18,6 +18,7 @@ export const getSchemaDetailsForRender = (schema) => {
       name: schema['tj:source'].name,
       kind: schema['tj:source'].kind,
       type: schema['tj:source'].type,
+      description: schema['tj:source'].description,
       options: initialSourceValues,
     };
   }

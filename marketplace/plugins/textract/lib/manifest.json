@@ -6,6 +6,7 @@
   "source": {
     "name": "Amazon Textract",
     "kind": "textract",
+    "description": "Extract text and structure from documents and scanned images.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

@@ -7,6 +7,7 @@
   "tj:source": {
     "name": "Databricks",
     "kind": "databricks",
+    "description": "Query and update data in your SQL warehouses.",
     "type": "database"
   },
   "properties": {

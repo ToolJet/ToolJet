@@ -6,6 +6,7 @@
   "source": {
     "name": "Weaviate",
     "kind": "weaviate",
+    "description": "Store, query and manage objects in a vector database.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

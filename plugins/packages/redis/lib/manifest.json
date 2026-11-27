@@ -6,6 +6,7 @@
   "source": {
     "name": "Redis",
     "kind": "redis",
+    "description": "Run commands on your in-memory key-value store.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

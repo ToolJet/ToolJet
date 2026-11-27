@@ -7,6 +7,7 @@
   "tj:source": {
     "name": "DynamoDB",
     "kind": "dynamodb",
+    "description": "Query, scan and update items in your AWS NoSQL tables.",
     "type": "database"
   },
   "properties": {

@@ -6,6 +6,7 @@
   "source": {
     "name": "AWS S3 plugin",
     "kind": "s3",
+    "description": "Upload, read and remove objects in buckets, and create signed URLs.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

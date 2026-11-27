@@ -6,6 +6,7 @@
   "source": {
     "name": "Azure Blob Storage",
     "kind": "azureblobstorage",
+    "description": "Upload, read and delete blobs in your storage containers.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

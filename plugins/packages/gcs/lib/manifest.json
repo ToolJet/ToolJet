@@ -6,6 +6,7 @@
   "source": {
     "name": "GCS",
     "kind": "gcs",
+    "description": "Upload, read and list files in your buckets, and create signed URLs.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

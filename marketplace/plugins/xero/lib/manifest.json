@@ -6,6 +6,7 @@
   "source": {
     "name": "Xero",
     "kind": "xero",
+    "description": "Read and manage accounting, payroll, assets and projects data.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

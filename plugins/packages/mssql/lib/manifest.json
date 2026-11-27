@@ -7,6 +7,7 @@
   "tj:source": {
     "name": "SQL Server",
     "kind": "mssql",
+    "description": "Read and write tables on Microsoft SQL databases, including Azure SQL.",
     "type": "database"
   },
   "properties": {

@@ -6,6 +6,7 @@
   "source": {
     "name": "Slack",
     "kind": "slack",
+    "description": "Send messages, read channel history and list workspace members.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

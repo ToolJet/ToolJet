@@ -6,6 +6,7 @@
   "source": {
     "name": "Stripe",
     "kind": "stripe",
+    "description": "Read customers and payments, and issue refunds.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

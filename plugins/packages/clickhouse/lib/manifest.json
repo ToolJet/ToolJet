@@ -7,6 +7,7 @@
   "source": {
     "name": "ClickHouse",
     "kind": "clickhouse",
+    "description": "Read and write data in your column-oriented analytics database.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

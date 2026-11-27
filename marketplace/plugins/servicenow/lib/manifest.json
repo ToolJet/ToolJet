@@ -6,6 +6,7 @@
   "source": {
     "name": "ServiceNow",
     "kind": "servicenow",
+    "description": "Read and manage table records, run aggregates, and trigger workflows and flows.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

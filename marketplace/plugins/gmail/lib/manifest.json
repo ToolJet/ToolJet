@@ -6,6 +6,7 @@
   "source": {
     "name": "Gmail",
     "kind": "gmail",
+    "description": "Read, send and organise email in your inbox.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

@@ -6,6 +6,7 @@
   "source": {
     "name": "SharePoint",
     "kind": "sharepoint",
+    "description": "Read and manage sites, pages and lists.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

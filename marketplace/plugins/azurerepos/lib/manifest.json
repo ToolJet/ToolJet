@@ -6,6 +6,7 @@
   "source": {
     "name": "Azure Repos",
     "kind": "azurerepos",
+    "description": "Read repositories, commits, branches, pushes and pull requests.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

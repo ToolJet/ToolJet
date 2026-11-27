@@ -6,6 +6,7 @@
   "source": {
     "name": "Twilio",
     "kind": "twilio",
+    "description": "Send SMS messages from your apps.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

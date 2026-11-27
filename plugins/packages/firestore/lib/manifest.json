@@ -6,6 +6,7 @@
   "source": {
     "name": "Firestore",
     "kind": "firestore",
+    "description": "Query, add and update documents in Google's NoSQL document database.",
     "exposedVariables": {
       "isLoading": false,
       "data": [],

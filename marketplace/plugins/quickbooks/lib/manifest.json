@@ -6,6 +6,7 @@
   "source": {
     "name": "QuickBooks",
     "kind": "quickbooks",
+    "description": "Read and update accounting data such as invoices, customers and bills.",
     "exposedVariables": { "isLoading": false, "data": {}, "rawData": {} },
     "options": {
       "client_id": { "type": "string" },

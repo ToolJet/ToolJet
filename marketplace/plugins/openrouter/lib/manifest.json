@@ -7,6 +7,7 @@
   "tj:source": {
     "name": "OpenRouter",
     "kind": "openrouter",
+    "description": "Run chats and create embeddings with models from many providers.",
     "type": "ai"
   },
   "properties": {

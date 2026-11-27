@@ -6,6 +6,7 @@
   "source": {
     "name": "Pinecone",
     "kind": "pinecone",
+    "description": "Store, query and manage vectors in an index.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

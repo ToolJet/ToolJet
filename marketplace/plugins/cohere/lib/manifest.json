@@ -6,6 +6,7 @@
   "source": {
     "name": "Cohere",
     "kind": "cohere",
+    "description": "Generate text and run chats with language models.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

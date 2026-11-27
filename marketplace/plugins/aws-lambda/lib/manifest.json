@@ -6,6 +6,7 @@
   "source": {
     "name": "AWS Lambda",
     "kind": "aws-lambda",
+    "description": "Invoke serverless functions and use their responses.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

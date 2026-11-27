@@ -6,6 +6,7 @@
   "source": {
     "name": "Asana",
     "kind": "asana",
+    "description": "Manage tasks, projects, workspaces and attachments.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},
