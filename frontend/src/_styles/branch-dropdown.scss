@@ -1162,12 +1162,6 @@
       border-color: var(--indigo8);
     }
 
-    // Waiting for the branch's apps to be approved; the title says which.
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-
     svg {
       flex-shrink: 0;
     }
@@ -1211,7 +1205,7 @@
     }
   }
 
-  // Holds a footer button's reason tooltip, which a disabled button cannot show on its own.
+  // Holds Save version's reason tooltip, which a disabled button cannot show on its own.
   .branch-action-anchor {
     display: flex;
     width: 100%;

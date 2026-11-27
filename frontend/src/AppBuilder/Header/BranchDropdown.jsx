@@ -791,23 +791,12 @@ export function BranchDropdown({ appId, organizationId }) {
                   <>
                     {/* Feature branch footer: Create PR + Switch branch */}
                     {/* Always show Create PR button when on sub-branch */}
-                    {/* The reason shows on the wrapper: a disabled button gets no hover events in every browser. */}
-                    <span
-                      className="branch-action-anchor"
-                      data-tooltip-id={prAction.reason ? 'branch-dropdown-tooltip' : undefined}
-                      data-tooltip-content={prAction.reason ?? undefined}
-                    >
-                      <button
-                        className="create-pr-btn"
-                        onClick={_handleCreatePR}
-                        disabled={prAction.disabled}
-                        data-cy="create-pr-btn"
-                      >
-                        <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
-                        <span>{prAction.label}</span>
-                      </button>
-                    </span>
+                    <button className="create-pr-btn" onClick={_handleCreatePR} data-cy="create-pr-btn">
+                      <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
+                      <span>{prAction.label}</span>
+                    </button>
                     <div className="branch-dropdown-split-row">
+                      {/* The reason shows on the wrapper: a disabled button gets no hover events in every browser. */}
                       <span
                         className="branch-action-anchor save-version-anchor"
                         data-tooltip-id={saveAction.reason ? 'branch-dropdown-tooltip' : undefined}

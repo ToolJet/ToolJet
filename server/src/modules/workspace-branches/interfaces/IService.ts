@@ -14,6 +14,7 @@ export interface WorkspaceBranchListResponse {
 export interface BranchPullRequest {
   number: number;
   url: string;
+  title: string;
   status: 'open' | 'merged' | 'closed';
   mergedAt: string | null;
 }

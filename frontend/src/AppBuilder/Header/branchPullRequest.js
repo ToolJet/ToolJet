@@ -1,26 +1,12 @@
 import { buildGitPrUrl } from '@/_helpers/gitPrUrl';
 
 // What the branch menu's pull request button does, from the branch's review status (see
-// workspaceBranchesService.getBranchReviewStatus). With git branching on, every app committed on the branch needs an
-// approved review before its pull request is created.
-
-const WAITING = new Set(['none', 'open', 'changes_requested']);
-
-export const pullRequestAction = (status) => {
-  if (status?.pullRequest?.status === 'open')
-    return { label: 'View pull request', url: status.pullRequest.url, disabled: false, reason: null };
-  // Unknown (still loading, or the status could not be read): the server-side checks still apply in git.
-  if (!status || status.ready) return { label: 'Create pull request', url: null, disabled: false, reason: null };
-  const waiting = status.apps.filter((app) => WAITING.has(app.status)).map((app) => app.name);
-  return {
-    label: 'Create pull request',
-    url: null,
-    disabled: true,
-    reason: waiting.length
-      ? `Needs an approved review first: ${waiting.join(', ')}`
-      : 'Every app committed on this branch needs an approved review first',
-  };
-};
+// workspaceBranchesService.getBranchReviewStatus). The pull request comes first: reviews are requested on it, and
+// ToolJet's check on it holds the merge until every app committed on the branch is approved.
+export const pullRequestAction = (status) =>
+  status?.pullRequest?.status === 'open'
+    ? { label: 'View pull request', url: status.pullRequest.url, disabled: false, reason: null }
+    : { label: 'Create pull request', url: null, disabled: false, reason: null };
 
 // The commit ToolJet's pull request comment approves, once every app is approved and the pull request is open.
 export const approvedCommitNote = (status) => {
