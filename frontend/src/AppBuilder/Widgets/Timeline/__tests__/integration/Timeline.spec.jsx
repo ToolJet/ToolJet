@@ -331,53 +331,55 @@ describe('Timeline: security', () => {
 });
 
 describe('Timeline: dynamic height', () => {
-  let offsetParentDescriptor;
-
-  beforeEach(() => {
-    // useDynamicHeight treats `element.offsetParent === null` as "mounted under a hidden
-    // ancestor" and takes the ResizeObserver-recovery branch instead of scheduling a reflow.
-    // jsdom's default offsetParent is null for every element, so without this override these
-    // tests would silently exercise the wrong branch of Timeline.jsx's dynamic-height wiring.
-    offsetParentDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetParent');
-    Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
-      configurable: true,
-      get() {
-        return this.parentElement;
-      },
-    });
-    widget.setup();
-  });
-  afterEach(() => {
-    Object.defineProperty(HTMLElement.prototype, 'offsetParent', offsetParentDescriptor);
-    widget.teardown();
-  });
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
 
   const tempLayout = () => widget.session.store.read((state) => state.temporaryLayouts[ID]);
 
-  test('[Timeline-DYN-001] dynamicHeight wiring re-triggers on data/hideDate change', async () => {
-    // Break this catches: narrowing useDynamicHeight's effect dependency away from
-    // JSON.stringify({data, hideDate}) stops the reflow from re-running when only the list
-    // content changes, leaving stale temporary layout height behind.
-    const { container } = widget.render({
-      properties: { dynamicHeight: binding('{{true}}') },
-      currentMode: 'view',
-    });
-    const layoutElement = container.querySelector('[data-cy="draggable-widget-timeline1"]');
-    layoutElement.classList.add(`ele-${ID}`);
-    layoutElement.dataset.layoutContext = 'root';
-    // getDynamicElementSelector also scopes by module; the top-level app is 'canvas'.
-    layoutElement.dataset.moduleId = 'canvas';
+  test('[Timeline-DYN-001] with Dynamic height in the viewer, a Timeline is placed at the height its box is drawn at', async () => {
+    // Break this catches: Timeline no longer taking part in dynamic height (not calling useDynamicHeight, or with
+    // isDynamicHeightEnabled false in the viewer), so its box is never watched and the widgets below never move.
+    //
+    // The browser's ResizeObserver, made to report: the session's `observers` capability installs one that never
+    // does. The app's height registry makes its observer when it first watches a box, so this one is used.
+    const RealResizeObserver = window.ResizeObserver;
+    const observers = [];
+    window.ResizeObserver = class {
+      constructor(callback) {
+        this.callback = callback;
+        this.observed = new Set();
+        observers.push(this);
+      }
+      observe(element) {
+        this.observed.add(element);
+      }
+      unobserve(element) {
+        this.observed.delete(element);
+      }
+      disconnect() {
+        this.observed.clear();
+      }
+    };
+    try {
+      const { container } = widget.render({ currentMode: 'view' });
+      // The canvas box WidgetWrapper draws around the widget (RenderWidget alone does not).
+      const box = container.querySelector(`[data-cy="draggable-widget-${NAME}"]`);
+      box.classList.add(`ele-${ID}`);
+      box.dataset.layoutContext = 'root';
+      box.dataset.moduleId = 'canvas';
 
-    await widget.session.store.act((state) => state.clearTemporaryLayouts());
-    await setProperty(
-      'data',
-      "{{ [{title:'Reflowed', subTitle:'R', date:'2021-01-01', iconBackgroundColor:'#000'}] }}"
-    );
-    await waitFor(() => expect(tempLayout()?.height).toBe(OFFSET_HEIGHT));
+      await setProperty('dynamicHeight', '{{true}}');
+      const registry = await waitFor(() => {
+        const watching = observers.find((observer) => observer.observed.has(box));
+        expect(watching).toBeDefined();
+        return watching;
+      });
 
-    await widget.session.store.act((state) => state.clearTemporaryLayouts());
-    await setProperty('hideDate', true);
-    await waitFor(() => expect(tempLayout()?.height).toBe(OFFSET_HEIGHT));
+      registry.callback([{ target: box, borderBoxSize: [{ blockSize: 260 }] }]);
+      await waitFor(() => expect(tempLayout()?.height).toBe(260));
+    } finally {
+      window.ResizeObserver = RealResizeObserver;
+    }
   });
 
   test('[Timeline-DYN-002] dynamicHeight only applies in Viewer, not in the Editor canvas', async () => {

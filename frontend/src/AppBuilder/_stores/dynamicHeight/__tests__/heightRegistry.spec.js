@@ -8,6 +8,7 @@ class FakeResizeObserver {
   constructor(callback) {
     this.callback = callback;
     this.observed = new Map(); // element → options
+    this.disconnected = false;
     FakeResizeObserver.instances.push(this);
   }
 
@@ -17,6 +18,11 @@ class FakeResizeObserver {
 
   unobserve(element) {
     this.observed.delete(element);
+  }
+
+  disconnect() {
+    this.observed.clear();
+    this.disconnected = true;
   }
 
   // Delivers one batch of reports, as the browser does once per frame. Only
@@ -34,7 +40,8 @@ const widget = (key, extra = {}) => ({ key, id: key, contextIndices: null, modul
 describe('dynamic height: height registry', () => {
   let reports;
   let registry;
-  const observer = () => FakeResizeObserver.instances[0];
+  // The registry's current observer: a new one is made once the last widget was let go (REG-017).
+  const observer = () => FakeResizeObserver.instances.at(-1);
   const reportSizes = (...sizes) => observer().report(sizes);
 
   beforeEach(() => {
@@ -196,5 +203,42 @@ describe('dynamic height: height registry', () => {
 
     registry.unobserve(a);
     expect([...registry.measuredHeights()]).toEqual([{ ...widget('b'), height: 50 }]);
+  });
+
+  it('[DynamicHeight-REG-016] takes the ResizeObserver the page has when it first watches a widget', () => {
+    // A registry made before a ResizeObserver exists (the store is created when the app loads; a polyfill or a test
+    // may install one later) still watches widgets once there is one.
+    const original = globalThis.ResizeObserver;
+    try {
+      delete globalThis.ResizeObserver;
+      const late = createHeightRegistry({ report: (changes) => reports.push(changes) });
+      globalThis.ResizeObserver = FakeResizeObserver;
+      late.observe(document.createElement('div'), widget('a'));
+      expect(FakeResizeObserver.instances).toHaveLength(1);
+    } finally {
+      globalThis.ResizeObserver = original;
+    }
+  });
+
+  it('[DynamicHeight-REG-017] lets its observer go once it watches no widget, and makes a new one for the next', () => {
+    const [a, b] = [document.createElement('div'), document.createElement('div')];
+    registry.observe(a, widget('a'));
+    registry.observe(b, widget('b'));
+    registry.unobserve(a);
+    expect(observer().disconnected).toBe(false);
+    registry.unobserve(b);
+    expect(observer().disconnected).toBe(true);
+
+    registry.observe(a, widget('a'));
+    expect(FakeResizeObserver.instances).toHaveLength(2);
+    expect([...FakeResizeObserver.instances[1].observed.keys()]).toEqual([a]);
+  });
+
+  it('[DynamicHeight-REG-018] counts a widget watched twice once, so letting it go lets the observer go', () => {
+    const element = document.createElement('div');
+    registry.observe(element, widget('a'));
+    registry.observe(element, widget('a'));
+    registry.unobserve(element);
+    expect(observer().disconnected).toBe(true);
   });
 });

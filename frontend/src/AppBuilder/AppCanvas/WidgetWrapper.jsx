@@ -184,9 +184,9 @@ const WidgetWrapper = memo(
       dynamicHeight: isDynamicHeightEnabledInModeView,
       temporaryHeight: temporaryLayouts?.height,
       followsContent: boxFollowsContent(componentType),
-      // A FlexContainer takes its height from its children's layout, never from a DOM measurement, so a stretched card
-      // cannot feed its stretched size back into the reflow; a stretched leaf (a Stat card) is measured unstretched
-      // (dynamicHeightReflow.resolveWidgetMeasuredHeight).
+      // A stretched leaf (a Stat card) is measured as it is drawn, at its line's height: its slot's floor is its drawn
+      // height, never a measured one (followContentInSlot), so the line still shrinks when its tallest child does. A
+      // FlexContainer takes its height from its children's layout, never from a DOM measurement.
       stretch: stretchInRow,
       wraps: flexWraps !== false,
       layoutV2: flexLayoutV2,

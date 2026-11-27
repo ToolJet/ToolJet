@@ -368,6 +368,35 @@ describe('dynamic height scheduler', () => {
     });
   });
 
+  describe('modules being edited (until dynamic height runs in the editor, Phase C)', () => {
+    it('[DynamicHeight-SCHED-025] leaves a module alone while it is edited', () => {
+      seedApp(page());
+      s().setCurrentMode('edit', 'canvas');
+      const stop = useStore.subscribe(scheduler.watchSavedLayouts);
+      s().setComponentLayout({ b: { top: 100, left: 0, width: 10, height: 40 } }, undefined, 'canvas', {
+        skipUndoRedo: true,
+        saveAfterAction: false,
+      });
+      s().setTemporaryLayouts({ a: { top: 0, height: 100 } });
+      s().clearTemporaryLayouts();
+      expect(frames.request).not.toHaveBeenCalled();
+      stop();
+    });
+
+    it('[DynamicHeight-SCHED-026] places a module whole when it is shown in the viewer (preview)', () => {
+      seedApp(page());
+      s().setCurrentMode('edit', 'canvas');
+      s().setTemporaryLayouts({ a: { top: 0, height: 100 } });
+      const stop = useStore.subscribe(scheduler.watchSavedLayouts);
+
+      s().setCurrentMode('view', 'canvas');
+      expect(frames.request).toHaveBeenCalledTimes(1);
+      frames.next();
+      expect(temps().b).toEqual({ top: 120, height: 40 });
+      stop();
+    });
+  });
+
   describe('a pass that fails', () => {
     // A FlexContainer whose width cannot be read: sizing it throws, whether it is asked about or its module is
     // placed whole (its canvas holds a widget, so its height is worked out again).

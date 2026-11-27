@@ -1,9 +1,51 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { getDynamicElementSelector, normalizeLayoutContext } from '@/AppBuilder/_stores/dynamicHeight/layoutKeys';
+import {
+  getDynamicElementSelector,
+  getDynamicLayoutKey,
+  normalizeLayoutContext,
+  serializeLayoutContext,
+} from '@/AppBuilder/_stores/dynamicHeight/layoutKeys';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import useStore from '@/AppBuilder/_stores/store';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// useDynamicHeight: how a widget takes part in dynamic height.
+//
+//   - A widget the engine measures (a leaf: Text, Table, a pack widget, ...)
+//     has its canvas box watched by the app's height registry. The box follows
+//     its content in the viewer (dynamicHeightPolicy.boxFollowsContent), so
+//     the browser reports every size it takes; nothing is read here.
+//   - A container (or a List view row) is sized by the engine from what it
+//     holds, so it asks for a pass whenever that may have changed.
+//
+// Both go through the store's scheduler (dynamicHeight/scheduler.js), which
+// runs the engine once per frame.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// The widget's row context. The two inputs mean different things depending on the caller:
+//
+//  - A widget inside a List view row: its WidgetWrapper is rendered inside the row's SubcontainerContext, so
+//    `contextPath` already holds the row; the `subContainerIndex` prop repeats its last index.
+//  - ListviewSubcontainer's own call (`isRowSubcontainer`): it is rendered outside its own Provider, so `contextPath`
+//    is the parent row's (or empty), and `subContainerIndex` is this row's index, not yet in the path.
+//  - ModalV2 passes the whole context as an array in `subContainerIndex`.
+const contextIndicesOf = (contextPath, subContainerIndex, isRowSubcontainer) => {
+  if (Array.isArray(subContainerIndex)) return normalizeLayoutContext(subContainerIndex);
+  const pathIndices = contextPath.map((segment) => segment.index);
+  if (isRowSubcontainer && isTruthyOrZero(subContainerIndex)) {
+    return normalizeLayoutContext([...pathIndices, subContainerIndex]);
+  }
+  if (pathIndices.length > 0) return normalizeLayoutContext(pathIndices);
+  if (isTruthyOrZero(subContainerIndex)) return normalizeLayoutContext([subContainerIndex]);
+  return normalizeLayoutContext([]);
+};
+
+// A measured widget's own inputs (value, width, ...) don't ask for a pass: the registry sees what they change.
+const NO_CONTAINER_INPUTS = [null, null, null, null, null];
+
+const schedulerOf = () => useStore.getState().getDynamicHeightScheduler();
 
 export const useDynamicHeight = ({
   isDynamicHeightEnabled,
@@ -20,156 +62,59 @@ export const useDynamicHeight = ({
   isRowSubcontainer = false,
 }) => {
   const { contextPath } = useSubcontainerContext();
-  // Resolve moduleId from context so widgets calling this hook don't have to
-  // forward it. When a Module is consumed inside an app, the embedded module's
-  // components live under modules[widgetId] (not 'canvas'); without this the
-  // reflow pipeline silently misses them.
+  // From context, so widgets don't forward it: an embedded module's components live under modules[<instance id>].
   const { moduleId } = useModuleContext();
-  const prevDynamicHeight = useRef(isDynamicHeightEnabled);
-  const prevHeight = useRef(height);
+  const contextIndices = useMemo(
+    () => contextIndicesOf(contextPath, subContainerIndex, isRowSubcontainer),
+    [contextPath, subContainerIndex, isRowSubcontainer]
+  );
+  // A string, so effects re-run when the row changes, not when an equal array is built again.
+  const context = serializeLayoutContext(contextIndices);
+  const measured = !isContainer;
+  const watched = measured && !!isDynamicHeightEnabled;
 
+  // A widget the engine measures: its box is watched while dynamic height is on. The registry reports its first size
+  // and every change, so nothing has to say when its content changed.
   useEffect(() => {
-    // Build contextIndices from contextPath + subContainerIndex. The two
-    // inputs mean different things depending on who is calling:
-    //
-    //  - Leaf widgets (TextArea, CodeEditor, etc.) inside a listview row:
-    //    their WidgetWrapper is rendered INSIDE the row's
-    //    SubcontainerContext.Provider, so `contextPath` ALREADY includes the
-    //    row. They also receive `subContainerIndex=rowIdx` as a prop, which
-    //    duplicates the path's last entry — use contextPath only.
-    //
-    //  - ListviewSubcontainer's own hook call: the component itself is
-    //    rendered OUTSIDE its own Provider (the Provider wraps its children).
-    //    `contextPath` reflects the PARENT row (or is empty at root), and
-    //    `subContainerIndex=rowIdx` is this row's index, NOT yet in the
-    //    path. Append to cover nested listviews: outer row's context +
-    //    inner row's index must both land in the key.
-    //    Callers that need this behavior pass `isRowSubcontainer: true`.
-    //
-    //  - ModalV2 pre-merges contextPath + row into an array and passes it as
-    //    `subContainerIndex` — trust the array and use it as-is.
-    const pathIndices = contextPath.map((segment) => segment.index);
-    let indices;
-    if (Array.isArray(subContainerIndex)) {
-      indices = subContainerIndex;
-    } else if (isRowSubcontainer && isTruthyOrZero(subContainerIndex)) {
-      indices = [...pathIndices, subContainerIndex];
-    } else if (pathIndices.length > 0) {
-      indices = pathIndices;
-    } else if (isTruthyOrZero(subContainerIndex)) {
-      indices = [subContainerIndex];
-    } else {
-      indices = [];
-    }
-    const contextIndices = normalizeLayoutContext(indices);
-    const elementSelector = getDynamicElementSelector(id, contextIndices, moduleId);
-    const element = document.querySelector(elementSelector);
-    // Note: element may be null when the caller is a row-context reflow for a
-    // widget whose own WidgetWrapper lives at a different context (e.g.
-    // ListviewSubcontainer fires for the Listview id at row index [0], but
-    // the Listview's own wrapper has data-layout-context="root"). In that
-    // case we still need to kick off `scheduleReflow` so row
-    // heights get recomputed — we just can't touch the element's inline
-    // style because there isn't one to touch.
+    if (!watched) return undefined;
+    const element = document.querySelector(getDynamicElementSelector(id, contextIndices, moduleId));
+    if (!element) return undefined;
+    const scheduler = schedulerOf();
+    const key = getDynamicLayoutKey(id, contextIndices, '', moduleId);
+    scheduler.observe(element, { key, id, contextIndices, moduleId });
+    return () => scheduler.unobserve(element);
+    // contextIndices is read through `context`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watched, id, context, moduleId]);
 
-    // Defer reflow when the widget lives inside a display:none ancestor
-    // subtree (inactive tab pane, collapsed accordion, closed modal,
-    // hidden container). offsetHeight reads 0 in that state; running the
-    // reflow now would write temp[this]={height:0} and, on re-show, the
-    // delta-based reflow (+fullHeight against a 0 baseline) pushes
-    // siblings far below their authored position.
-    //
-    // ResizeObserver fires when the element gains a content box (display
-    // transitions from none to block / ancestor un-hides). At that point
-    // offsetParent !== null and we can run a one-shot reflow with a real
-    // measurement. Self-recovers for Tabs/Accordion/Modal/visibility
-    // toggles uniformly without a per-widget custom path.
-    //
-    // Excludes the "widget's own visibility turned off" case — that also
-    // produces offsetParent === null, but the reflow must run so siblings
-    // with `collapseWhenHidden` can collapse up.
-    if (isDynamicHeightEnabled && visibility !== false && element && element.offsetParent === null) {
-      const observer = new ResizeObserver(() => {
-        if (element.offsetParent === null) return;
-        requestAnimationFrame(() => {
-          // Re-check inside RAF: if the element hid again between RO fire
-          // and this frame (rapid toggle), skip the reflow and leave the
-          // observer connected so the next show still triggers it.
-          if (element.offsetParent === null) return;
-          observer.disconnect();
-          useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices, moduleId);
-        });
-      });
-      observer.observe(element);
-      return () => observer.disconnect();
-    }
+  // While the widget asks to keep its height (a Table loading its data), its reports are ignored and its box is held
+  // at the height it is placed at, so what is under it stays put rather than a gap opening under a short spinner.
+  useEffect(() => {
+    if (!watched || !skipAdjustment) return undefined;
+    const scheduler = schedulerOf();
+    const key = getDynamicLayoutKey(id, contextIndices, '', moduleId);
+    scheduler.setFrozen(key, true);
+    const element = document.querySelector(getDynamicElementSelector(id, contextIndices, moduleId));
+    const placedHeight = useStore.getState().temporaryLayouts[key]?.height;
+    const inlineHeight = element?.style.height;
+    if (element && placedHeight != null) element.style.height = `${placedHeight}px`;
+    return () => {
+      scheduler.setFrozen(key, false);
+      if (element && placedHeight != null) element.style.height = inlineHeight;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watched, skipAdjustment, id, context, moduleId]);
 
-    if (skipAdjustment && isDynamicHeightEnabled) {
-      if (element) element.style.height = `${prevHeight.current}px`;
-    } else if (isDynamicHeightEnabled) {
-      // For containers, height is calculated from child layout positions (not DOM measurement),
-      // so we can adjust synchronously without setting height to 'auto' first.
-      // For non-containers, we need the element at 'auto' height so the DOM can be measured.
-      if (!isContainer && element) {
-        element.style.height = 'auto';
-        // A flex child's flex-basis governs its MAIN axis: WIDTH in a row
-        // container, HEIGHT in a column one (useFlexWidgetLayout sets
-        // `flex: 0 0 <effectiveWidthPx|effectiveHeightPx>px` accordingly; same
-        // axis rule as gridResizeUtils.computeFlexResizeStyles). For dynamic
-        // height we only care about freeing the basis when it IS the height —
-        // i.e. column direction. Left as-is there, offsetHeight reads the stale
-        // basis (authored height) no matter how much the content grew, so the
-        // reflow measures zero growth and every sibling below stays put. Free it
-        // so the measurement reflects real content height; React re-applies the
-        // correct `flex` shorthand once the measured temp height lands.
-        //
-        // In a ROW container the basis is the WIDTH — freeing it to `auto` would
-        // collapse the child to its content width (the editor/viewer width bug).
-        // Row height growth instead comes from the height:'auto' above, because
-        // height is the cross axis there. Use the parent's COMPUTED direction so
-        // stackBelow stacking (row → effective column) and *-reverse are honored.
-        if (element.classList.contains('flex-child-wrapper')) {
-          const parent = element.parentElement;
-          const flexDirection = parent && getComputedStyle(parent).flexDirection;
-          if (flexDirection && flexDirection.startsWith('column')) element.style.flexBasis = 'auto';
-        }
-      }
-      useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices, moduleId);
-    } else if (!isDynamicHeightEnabled && prevDynamicHeight.current) {
-      if (element) element.style.height = `${height}px`;
-      // Container toggled off: drop the container's own inflated temp so
-      // WidgetWrapper reads canonical height this render. Descendants
-      // keep their own temps — their grown state (e.g., a TextArea's
-      // typed content) is still accurate and self-managed by each
-      // widget's own useDynamicHeight hook.
-      //
-      // Skipped for `isRowSubcontainer` callers: Listview's per-row hook
-      // would otherwise re-clear on every row. The Listview widget file
-      // owns the clear at the widget level instead.
-      if (isContainer && !isRowSubcontainer) {
-        const clearContainerTempLayouts = useStore.getState().clearContainerTempLayouts;
-        clearContainerTempLayouts?.(id, contextIndices, moduleId);
-      }
-      useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices, moduleId);
-    }
-    if (element) prevHeight.current = element.offsetHeight;
-    prevDynamicHeight.current = isDynamicHeightEnabled;
-  }, [
-    isDynamicHeightEnabled,
-    id,
-    value,
-    currentLayout,
-    height,
-    width,
-    isContainer,
-    componentCount,
-    visibility,
-    skipAdjustment,
-    subContainerIndex,
-    isRowSubcontainer,
-    contextPath,
-    moduleId,
-  ]);
-
-  return;
+  // Ask for a pass while Dynamic height is on:
+  //   - a container or row whenever what it holds may have changed (the engine sizes it from that);
+  //   - a measured widget when it is shown or hidden (it may collapse); the registry covers its size.
+  // Turning Dynamic height off needs nothing here: it changes the widget's definition, and the store places the
+  // module again (scheduler.watchSavedLayouts).
+  // Always five entries, so the effect's dependency list keeps its length.
+  const containerInputs = isContainer ? [height, value, currentLayout, width, componentCount] : NO_CONTAINER_INPUTS;
+  useEffect(() => {
+    if (!isDynamicHeightEnabled) return;
+    schedulerOf().scheduleDynamicHeight({ id, contextIndices, moduleId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDynamicHeightEnabled, id, context, moduleId, visibility, ...containerInputs]);
 };

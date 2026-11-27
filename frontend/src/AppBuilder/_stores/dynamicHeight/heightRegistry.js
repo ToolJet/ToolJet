@@ -27,8 +27,10 @@ const borderBoxHeight = (entry) => entry.borderBoxSize?.[0]?.blockSize ?? entry.
  */
 export const createHeightRegistry = (options) => {
   const { report } = options;
-  // `in`, not a default value: a caller passing `undefined` means "no observer here".
-  const Observer = 'ResizeObserver' in options ? options.ResizeObserver : globalThis.ResizeObserver;
+  // Read when the first widget is watched, not now: the app's registry is made when the store is, which may be before
+  // a ResizeObserver exists (a polyfill, a test). `in`, not a default value: a caller passing `undefined` means "no
+  // observer here".
+  const observerClass = () => ('ResizeObserver' in options ? options.ResizeObserver : globalThis.ResizeObserver);
 
   const widgets = new WeakMap(); // element → widget; a detached element is collected with its entry
   // widget key → its last report ({ ...widget, height }). The browser reports only changes, so this is the one
@@ -36,7 +38,10 @@ export const createHeightRegistry = (options) => {
   const lastReports = new Map();
   const frozenKeys = new Set(); // widget keys whose reports are ignored for now
   const awaited = new Set(); // elements observed but not reported on yet
-  let observer = null; // created on first use, so importing this file needs no ResizeObserver
+  // Created when the first widget is watched, and let go when the last one is: a page with no dynamic height widget
+  // left keeps no observer alive.
+  let observer = null;
+  let watchedCount = 0;
 
   const handleResize = (entries) => {
     const changes = [];
@@ -58,8 +63,10 @@ export const createHeightRegistry = (options) => {
   };
 
   const observe = (element, widget) => {
+    const Observer = observerClass();
     if (!Observer || !element) return;
     observer ??= new Observer(handleResize);
+    if (!widgets.has(element)) watchedCount += 1;
     widgets.set(element, widget);
     awaited.add(element);
     // The border box is what the widget takes on the canvas, padding and border included.
@@ -73,6 +80,11 @@ export const createHeightRegistry = (options) => {
     awaited.delete(element);
     widgets.delete(element);
     observer?.unobserve(element);
+    watchedCount -= 1;
+    if (watchedCount === 0) {
+      observer?.disconnect();
+      observer = null;
+    }
   };
 
   // A frozen widget (one showing a loading state, say) keeps its last height:

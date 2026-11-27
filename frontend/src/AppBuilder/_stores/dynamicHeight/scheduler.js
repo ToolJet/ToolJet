@@ -40,6 +40,10 @@ const isEmpty = (object) => {
   return true;
 };
 
+// Dynamic height runs only in the viewer for now (released apps, preview): a module being edited keeps its saved
+// layout until the editor gets dynamic height (Phase C of the plan). Read from a store snapshot, as below.
+const isEdited = (state, moduleId) => state.modeStore?.modules?.[moduleId]?.currentMode === 'edit';
+
 // The components of the page a module shows, read from a store snapshot (the store's own getter reads the live
 // state, so it cannot look at the previous one).
 const shownPageComponents = (state, moduleId) => {
@@ -163,7 +167,8 @@ export const createDynamicHeightScheduler = (options) => {
    * move, an add, a delete, a page switch or a layout switch needs.
    *
    * Every module is solved again when the layout switches, or when the rendered layouts are cleared (the store does
-   * on a layout or page switch, and after changing which components show on mobile).
+   * on a layout or page switch, and after changing which components show on mobile). A module being edited is left
+   * alone, and placed whole once it is shown in the viewer (preview).
    *
    * Runs on every store update, so it does no more than a few comparisons unless one of those changed. A property
    * edit also gives a module new components, and it can change heights too (Row height, Dynamic height itself).
@@ -174,11 +179,14 @@ export const createDynamicHeightScheduler = (options) => {
       state.temporaryLayouts !== previous.temporaryLayouts &&
       isEmpty(state.temporaryLayouts) &&
       !isEmpty(previous.temporaryLayouts);
-    if (!layoutSwitched && !renderedLayoutsCleared && state.modules === previous.modules) return;
+    const modesChanged = state.modeStore !== previous.modeStore;
+    if (!layoutSwitched && !renderedLayoutsCleared && !modesChanged && state.modules === previous.modules) return;
 
     for (const moduleId of Object.keys(state.modules ?? {})) {
+      if (isEdited(state, moduleId)) continue;
       const savedLayoutChanged = shownPageComponents(state, moduleId) !== shownPageComponents(previous, moduleId);
-      if (layoutSwitched || renderedLayoutsCleared || savedLayoutChanged) scheduleFullSolve(moduleId);
+      const shownInViewer = isEdited(previous, moduleId);
+      if (layoutSwitched || renderedLayoutsCleared || savedLayoutChanged || shownInViewer) scheduleFullSolve(moduleId);
     }
   };
 

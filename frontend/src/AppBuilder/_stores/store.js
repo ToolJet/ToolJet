@@ -94,6 +94,10 @@ const useStore = create(
   )
 );
 
+// Dynamic height: a module whose saved layout changes (a widget moved, added or deleted, a page or layout switched) is
+// placed again (dynamicHeight/scheduler.js watchSavedLayouts).
+useStore.subscribe(useStore.getState().getDynamicHeightScheduler().watchSavedLayouts);
+
 exposeCompareProbe(() => useStore.getState());
 
 export default useStore;

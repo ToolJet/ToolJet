@@ -53,27 +53,15 @@ export const createGridSlice = (set, get) => {
   // which are not app state. Widgets reach it through getDynamicHeightScheduler.
   const dynamicHeightScheduler = createDynamicHeightScheduler({ getState: get });
 
-  // Batch reflow scheduler. Collects adjustComponentPositions requests that
-  // arrive in the same JS tick (e.g. 50 Tables in a ListView all reporting
-  // height changes on data load), fires them in one shared rAF, and lets
-  // flushReflows process them together — one setTemporaryLayouts write and
-  // one incrementCanvasUpdater instead of N×2.
-  const _pendingReflows = new Map();
-  let _reflowRafId = null;
-
-  const scheduleReflow = (id, layout, isContainer, contextIndices, moduleId) => {
-    const ctxKey = contextIndices ? contextIndices.join('.') : '';
-    const key = `${id}|${layout}|${isContainer ? '1' : '0'}|${ctxKey}|${moduleId || 'canvas'}`;
-    _pendingReflows.set(key, { id, layout, isContainer, contextIndices, moduleId: moduleId || 'canvas' });
-    if (_reflowRafId === null) {
-      _reflowRafId = requestAnimationFrame(() => {
-        _reflowRafId = null;
-        const pending = [..._pendingReflows.values()];
-        _pendingReflows.clear();
-        get().flushReflows(pending);
-      });
-    }
-  };
+  // The old entry point, kept for its remaining callers (RenderWidget's collapse when hidden; moved in B3): a widget
+  // asks to be sized again, and the scheduler runs the engine on the next frame. The layout and container flag the
+  // old engine needed are worked out by the new one.
+  const scheduleReflow = (id, _layout, _isContainer, contextIndices, moduleId) =>
+    dynamicHeightScheduler.scheduleDynamicHeight({
+      id,
+      contextIndices: contextIndices ?? null,
+      moduleId: moduleId || 'canvas',
+    });
 
   return {
     ...initialState,
