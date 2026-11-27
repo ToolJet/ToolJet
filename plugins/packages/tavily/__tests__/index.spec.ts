@@ -1,7 +1,10 @@
 import Tavily from '../lib/index';
 import axios from 'axios';
 
-jest.mock('axios');
+jest.mock('axios', () => ({
+  __esModule: true,
+  default: { create: jest.fn() },
+}));
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('Tavily Plugin', () => {
@@ -22,10 +25,13 @@ describe('Tavily Plugin', () => {
 
       const result = await plugin.testConnection(mockSourceOptions);
       expect(result).toEqual({ status: 'ok' });
-      expect(mockPost).toHaveBeenCalledWith('/search', expect.objectContaining({
-        api_key: 'tvly-test-api-key-12345',
-        query: 'ping',
+      expect(mockedAxios.create).toHaveBeenCalledWith(expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: `Bearer ${mockSourceOptions.api_key}` }),
       }));
+      expect(mockPost).toHaveBeenCalledWith('/search', {
+        query: 'ping',
+        max_results: 1,
+      });
     });
 
     it('should fail connection test when api_key is missing', async () => {

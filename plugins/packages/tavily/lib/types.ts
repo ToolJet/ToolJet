@@ -18,7 +18,6 @@ export type QueryOptions = {
 };
 
 export type TavilySearchPayload = {
-  api_key: string;
   query: string;
   search_depth?: 'basic' | 'advanced';
   topic?: 'general' | 'news';
@@ -31,6 +30,5 @@ export type TavilySearchPayload = {
 };
 
 export type TavilyExtractPayload = {
-  api_key: string;
   urls: string[];
 };

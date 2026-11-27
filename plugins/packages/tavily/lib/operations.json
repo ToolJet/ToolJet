@@ -1,0 +1,136 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Tavily datasource",
+  "description": "Search the web and extract content with Tavily",
+  "type": "api",
+  "defaults": {
+    "operation": {
+      "value": "search"
+    },
+    "search_depth": {
+      "value": "basic"
+    },
+    "max_results": {
+      "value": 5
+    }
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select a Tavily operation",
+      "list": [
+        {
+          "value": "search",
+          "name": "Search web"
+        },
+        {
+          "value": "qna_search",
+          "name": "Answer a question"
+        },
+        {
+          "value": "extract",
+          "name": "Extract URL content"
+        }
+      ]
+    },
+    "search": {
+      "query": {
+        "label": "Search query",
+        "key": "query",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Text to search for",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "How do solar panels work?"
+      },
+      "search_depth": {
+        "label": "Search depth",
+        "key": "search_depth",
+        "type": "dropdown",
+        "list": [
+          {
+            "value": "basic",
+            "name": "Basic"
+          },
+          {
+            "value": "advanced",
+            "name": "Advanced"
+          }
+        ]
+      },
+      "max_results": {
+        "label": "Max results",
+        "key": "max_results",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Maximum number of search results",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "5"
+      },
+      "include_answer": {
+        "label": "Include answer",
+        "key": "include_answer",
+        "type": "toggle"
+      },
+      "include_raw_content": {
+        "label": "Include full page text",
+        "key": "include_raw_content",
+        "type": "toggle"
+      },
+      "include_domains": {
+        "label": "Include domains",
+        "key": "include_domains",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Comma-separated domains to include",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "example.com"
+      },
+      "exclude_domains": {
+        "label": "Exclude domains",
+        "key": "exclude_domains",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Comma-separated domains to exclude",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "example.com"
+      }
+    },
+    "qna_search": {
+      "query": {
+        "label": "Question",
+        "key": "query",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Question to answer",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "How do solar panels work?"
+      }
+    },
+    "extract": {
+      "urls": {
+        "label": "Target URLs",
+        "key": "urls",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "An array or comma-separated URLs",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "https://example.com/article"
+      }
+    }
+  }
+}

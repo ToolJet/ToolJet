@@ -14,13 +14,13 @@ export default class Tavily implements QueryService {
     try {
       switch (queryOptions.operation) {
         case 'search':
-          result = await search(client, sourceOptions, queryOptions);
+          result = await search(client, queryOptions);
           break;
         case 'qna_search':
-          result = await qnaSearch(client, sourceOptions, queryOptions);
+          result = await qnaSearch(client, queryOptions);
           break;
         case 'extract':
-          result = await extract(client, sourceOptions, queryOptions);
+          result = await extract(client, queryOptions);
           break;
         default:
           throw new Error(`Unsupported operation: ${(queryOptions as any).operation}`);
@@ -47,7 +47,6 @@ export default class Tavily implements QueryService {
     const client = createTavilyClient(sourceOptions);
     try {
       await client.post('/search', {
-        api_key: sourceOptions.api_key,
         query: 'ping',
         max_results: 1,
       });

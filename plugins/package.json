@@ -63,6 +63,7 @@
     "@tooljet-plugins/smtp": "file:packages/smtp",
     "@tooljet-plugins/snowflake": "file:packages/snowflake",
     "@tooljet-plugins/stripe": "file:packages/stripe",
+    "@tooljet-plugins/tavily": "file:packages/tavily",
     "@tooljet-plugins/twilio": "file:packages/twilio",
     "@tooljet-plugins/typesense": "file:packages/typesense",
     "@tooljet-plugins/woocommerce": "file:packages/woocommerce",

@@ -6,6 +6,7 @@ export function createTavilyClient(sourceOptions: SourceOptions): AxiosInstance 
   return axios.create({
     baseURL,
     headers: {
+      Authorization: `Bearer ${sourceOptions.api_key}`,
       'Content-Type': 'application/json',
     },
     timeout: 30000,
@@ -21,13 +22,12 @@ function parseList(input?: string[] | string): string[] | undefined {
     .filter((item) => item.length > 0);
 }
 
-export async function search(client: AxiosInstance, sourceOptions: SourceOptions, queryOptions: QueryOptions) {
+export async function search(client: AxiosInstance, queryOptions: QueryOptions) {
   if (!queryOptions.query) {
     throw new Error('Query parameter is required for search operation');
   }
 
   const payload: TavilySearchPayload = {
-    api_key: sourceOptions.api_key,
     query: queryOptions.query,
     search_depth: queryOptions.search_depth || 'basic',
     topic: queryOptions.topic || 'general',
@@ -43,13 +43,12 @@ export async function search(client: AxiosInstance, sourceOptions: SourceOptions
   return response.data;
 }
 
-export async function qnaSearch(client: AxiosInstance, sourceOptions: SourceOptions, queryOptions: QueryOptions) {
+export async function qnaSearch(client: AxiosInstance, queryOptions: QueryOptions) {
   if (!queryOptions.query) {
     throw new Error('Query parameter is required for Q&A search operation');
   }
 
   const payload = {
-    api_key: sourceOptions.api_key,
     query: queryOptions.query,
     search_depth: queryOptions.search_depth || 'advanced',
     topic: queryOptions.topic || 'general',
@@ -68,14 +67,13 @@ export async function qnaSearch(client: AxiosInstance, sourceOptions: SourceOpti
   };
 }
 
-export async function extract(client: AxiosInstance, sourceOptions: SourceOptions, queryOptions: QueryOptions) {
+export async function extract(client: AxiosInstance, queryOptions: QueryOptions) {
   const urls = parseList(queryOptions.urls);
   if (!urls || urls.length === 0) {
     throw new Error('At least one URL is required for extract operation');
   }
 
   const payload: TavilyExtractPayload = {
-    api_key: sourceOptions.api_key,
     urls,
   };
 
