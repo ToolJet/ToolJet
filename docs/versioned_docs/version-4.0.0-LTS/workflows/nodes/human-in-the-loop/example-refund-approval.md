@@ -7,7 +7,7 @@ title: "Example: Refund Approval"
 
 This example builds a workflow that approves customer refund requests. Refunds of $500 or less are approved immediately. Larger refunds pause at a Human-in-the-loop node until a member of the **Finance** group approves or rejects them. The decision and the approver's note are saved to the request in a ToolJet Database table.
 
-#### 1. Create the Table
+## 1. Create the Refund Requests Table
 
 Create a ToolJet Database table named `refund_requests` with the following columns:
 
@@ -21,7 +21,7 @@ Create a ToolJet Database table named `refund_requests` with the following colum
 | `status` | varchar | Default value `Pending` |
 | `reviewer_note` | varchar | |
 
-#### 2. Build the Workflow
+## 2. Route Refunds Over $500 to Finance
 
 1. Create a workflow named **Refund Approval**.
 2. Open **Workflow inputs** from the left sidebar and add these inputs:
@@ -57,11 +57,11 @@ Create a ToolJet Database table named `refund_requests` with the following colum
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/human-in-the-loop/refund-workflow.png" alt="Refund Approval workflow with the Start, needsApproval, financeApproval, markApproved and markRejected nodes" />
 
-#### 3. Trigger the Workflow
+## 3. Pass Refund Requests to the Workflow
 
 Trigger the workflow from an [application](/docs/workflows/triggers/app) or a [webhook](/docs/workflows/triggers/webhook), and pass the refund request's values as the workflow inputs.
 
-#### 4. Approve the Refund
+## 4. Approve a Refund from the Approvals Tab
 
 When a refund of more than $500 is submitted, the run waits at `financeApproval`. A member of the **Finance** group opens the request from the **Approvals** tab of the **Workflows** page, adds a note and clicks **Approve**.
 
