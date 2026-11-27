@@ -30,9 +30,9 @@ describe('Table-ADDROWFORM-001 allow adding multiple rows default', () => {
 });
 
 describe('Table-ADDROWFORM-002 placement and columns reach the table store', () => {
-  test('Table-ADDROWFORM-002 a missing placement resolves to the table popover', () => {
+  test('Table-ADDROWFORM-002 a missing placement resolves to the dialog, so a saved Table opens it outside the table', () => {
     // Break this catches: the new property missing from the store allowlist, leaving it undefined.
-    expect(propertiesFor({}).addNewRowIn).toBe('table');
+    expect(propertiesFor({}).addNewRowIn).toBe('dialog');
   });
 
   test('Table-ADDROWFORM-002 an explicit dialog placement is kept', () => {
