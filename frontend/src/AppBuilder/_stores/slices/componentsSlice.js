@@ -3584,7 +3584,8 @@ export const createComponentsSlice = (set, get) => ({
             others: componentDefinition.component.definition?.others,
             properties: getComponentProperties(componentDefinition),
             styles: componentDefinition.component.definition?.styles,
-            validation: componentDefinition.component.definition?.validation,
+            // Most widgets have no validation config; the server stores `{}` for them, so match it here.
+            validation: componentDefinition.component.definition?.validation ?? {},
           },
           name: componentName,
           displayName: componentDefinition.component.displayName,
