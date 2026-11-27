@@ -16,7 +16,7 @@ The **Combobox** component is a dropdown that users can type in to search its op
 | Tooltip | Text shown when the user hovers over an info icon after the label. | Text |
 | Layout | `vertical` puts the label above the field; `horizontal` puts it at the left. | `vertical`, `horizontal`. Default: `vertical` |
 | Options | The choices, as plain values or a list of `{label, value}`. Add `disabled: true` to show an option that can't be picked. | Array |
-| Value | Value of the option selected when the app loads. A value no option has is cleared. **Reset field** returns to this value. | Text |
+| Value | Value of the option selected when the app loads. A value no option has is cleared once nonempty options load, unless **Filter option** is off. With **Filter option** off, the value is kept but the placeholder is shown until an option matches it. **Reset field** returns to this value. | Text |
 | Placeholder | Hint shown in the field while nothing is selected. | Text. Default: `Search` |
 | Not found content | Message shown in the list when no option matches the search. | Text. Default: `No matches` |
 | Allow clear | Shows a button in the field that clears the selection. | On or off. Default: On |
@@ -78,7 +78,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `tooltip` | Text shown when the user hovers over an info icon after the label. | `{{components.combobox1.tooltip}}` |
 | `layout` | `vertical` puts the label above the field; `horizontal` puts it at the left. | `{{components.combobox1.layout}}` |
 | `options` | The choices, as plain values or a list of `{label, value}`. Add `disabled: true` to show an option that can't be picked. | `{{components.combobox1.options}}` |
-| `value` | Value of the option selected when the app loads. A value no option has is cleared. **Reset field** returns to this value. | `{{components.combobox1.value}}` |
+| `value` | Value of the option selected when the app loads. A value no option has is cleared once nonempty options load, unless **Filter option** is off. With **Filter option** off, the value is kept but the placeholder is shown until an option matches it. **Reset field** returns to this value. | `{{components.combobox1.value}}` |
 | `placeholder` | Hint shown in the field while nothing is selected. | `{{components.combobox1.placeholder}}` |
 | `notFoundContent` | Message shown in the list when no option matches the search. | `{{components.combobox1.notFoundContent}}` |
 | `allowClear` | Shows a button in the field that clears the selection. | `{{components.combobox1.allowClear}}` |

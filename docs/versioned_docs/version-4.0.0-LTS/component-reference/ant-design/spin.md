@@ -11,7 +11,7 @@ The **Spin** component is Ant Design's loading spinner. It tells users that some
 
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
 |:--|:--|:--|
-| Spinning | Shows the spinner. Turn it off to hide it, for example with `{{queries.getOrders.isLoading}}`. | On or off. Default: On |
+| Spinning | Shows the spinner. Turn it off to hide it, for example with `{{queries.getOrders.isLoading}}`. The spinner also appears while **Loading state** is on. | On or off. Default: On |
 | Tip | Text shown under the spinner, such as `Loading orders`. | Text |
 | Size | Size of the spinner. | `small`, `default`, `large`. Default: `default` |
 
@@ -47,7 +47,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 
 | <div style={{ width:"150px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
-| `spinning` | Shows the spinner. Turn it off to hide it, for example with `{{queries.getOrders.isLoading}}`. | `{{components.spin1.spinning}}` |
+| `spinning` | Shows the spinner. Turn it off to hide it, for example with `{{queries.getOrders.isLoading}}`. The spinner also appears while **Loading state** is on. | `{{components.spin1.spinning}}` |
 | `tip` | Text shown under the spinner, such as `Loading orders`. | `{{components.spin1.tip}}` |
 | `size` | Size of the spinner. | `{{components.spin1.size}}` |
 | `isVisible` | Whether the component is visible. | `{{components.spin1.isVisible}}` |

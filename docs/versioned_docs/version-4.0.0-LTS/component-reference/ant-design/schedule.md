@@ -24,7 +24,7 @@ The **Schedule** component shows bookings on a timeline, with resources such as 
 | Date shown (empty for today) | The day shown, or the first day in the `days` view, such as `2026-11-17`. Leave it empty for today. | Text |
 | Day starts at (hour, or a time such as 09:00) | First hour shown in the `hours` view, from 0 to 23, or a time such as `09:00`. | Number. Default: `8` |
 | Day ends at (hour, or a time such as 18:00) | Last hour shown in the `hours` view, from 1 to 24, or a time such as `18:00`. | Number. Default: `18` |
-| Slot length (minutes) | Length of each clickable empty slot in the `hours` view. | Number. Default: `30` |
+| Slot length (minutes) | Length of each clickable empty slot in the `hours` view. Values are limited to 5 to 240 minutes and may be increased for long schedules. | Number. Default: `30` |
 | Days shown | Number of days shown in the `days` view. | Number. Default: `7` |
 | Hour format | Whether times show on a `12h` or a `24h` clock. | 12h, 24h. Default: 12h |
 | Resource column title | Heading of the resource column. | Text. Default: `Room` |
@@ -89,7 +89,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `date` | The day shown, or the first day in the `days` view, such as `2026-11-17`. Leave it empty for today. | `{{components.schedule1.date}}` |
 | `dayStart` | First hour shown in the `hours` view, from 0 to 23, or a time such as `09:00`. | `{{components.schedule1.dayStart}}` |
 | `dayEnd` | Last hour shown in the `hours` view, from 1 to 24, or a time such as `18:00`. | `{{components.schedule1.dayEnd}}` |
-| `slotMinutes` | Length of each clickable empty slot in the `hours` view. | `{{components.schedule1.slotMinutes}}` |
+| `slotMinutes` | Length of each clickable empty slot in the `hours` view. Values are limited to 5 to 240 minutes and may be increased for long schedules. | `{{components.schedule1.slotMinutes}}` |
 | `days` | Number of days shown in the `days` view. | `{{components.schedule1.days}}` |
 | `hourFormat` | Whether times show on a `12h` or a `24h` clock. | `{{components.schedule1.hourFormat}}` |
 | `resourceTitle` | Heading of the resource column. | `{{components.schedule1.resourceTitle}}` |

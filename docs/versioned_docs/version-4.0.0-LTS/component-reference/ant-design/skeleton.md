@@ -15,7 +15,7 @@ The **Skeleton** component is Ant Design's loading placeholder. It shows gray ba
 | Avatar | Shows a round avatar placeholder at the left. | On or off. Default: Off |
 | Title | Shows a wider bar at the top for a heading. | On or off. Default: On |
 | Paragraph rows | Number of paragraph bars under the title. Only the rows that fit in the component's box are drawn. | Number. Default: `3` |
-| Loading | Shows the placeholder. Turn it off, for example with `{{queries.getOrders.isLoading}}`, to hide it once the content has loaded. | On or off. Default: On |
+| Loading | Shows the placeholder. Turn it off, for example with `{{queries.getOrders.isLoading}}`, to hide it once the content has loaded. The placeholder also appears while **Loading state** is on. | On or off. Default: On |
 
 ### Additional Actions
 
@@ -53,7 +53,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | `avatar` | Shows a round avatar placeholder at the left. | `{{components.skeleton1.avatar}}` |
 | `title` | Shows a wider bar at the top for a heading. | `{{components.skeleton1.title}}` |
 | `rows` | Number of paragraph bars under the title. Only the rows that fit in the component's box are drawn. | `{{components.skeleton1.rows}}` |
-| `loading` | Shows the placeholder. Turn it off, for example with `{{queries.getOrders.isLoading}}`, to hide it once the content has loaded. | `{{components.skeleton1.loading}}` |
+| `loading` | Shows the placeholder. Turn it off, for example with `{{queries.getOrders.isLoading}}`, to hide it once the content has loaded. The placeholder also appears while **Loading state** is on. | `{{components.skeleton1.loading}}` |
 | `isVisible` | Whether the component is visible. | `{{components.skeleton1.isVisible}}` |
 | `isLoading` | Whether the component is in its loading state. | `{{components.skeleton1.isLoading}}` |
 | `isDisabled` | Whether the component is disabled. | `{{components.skeleton1.isDisabled}}` |

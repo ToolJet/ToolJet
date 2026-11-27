@@ -12,7 +12,7 @@ The **QR Code** component is Ant Design's QR code. It turns a URL or any text in
 | <div style={{ width:"150px"}}> Property </div> | <div style={{ width:"300px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
 |:--|:--|:--|
 | Value | Text or URL the code holds. Text too long for a QR code shows a notice instead. | Text. Default: `https://tooljet.com` |
-| Size (px) | Width and height of the code. | Number. Default: `160` |
+| Size (px) | Width and height of the code, from 48 to 600 pixels. | Number. Default: `160` |
 | Color | Color of the code's dots. Leave it empty to follow the theme's text color. | Text |
 | Background | Background color behind the code. Leave it empty to follow the theme. | Text |
 | Error level | How much of the code can be damaged or covered and still scan: `L` about 7%, `M` 15%, `Q` 25% and `H` 30%. Higher levels make denser codes. | `L`, `M`, `Q`, `H`. Default: `M` |
@@ -52,7 +52,7 @@ Run these from an event handler with **Control Component**, or from a RunJS quer
 | <div style={{ width:"150px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"250px"}}> How To Access </div> |
 |:--|:--|:--|
 | `value` | Text or URL the code holds. Text too long for a QR code shows a notice instead. | `{{components.qrcode1.value}}` |
-| `size` | Width and height of the code. | `{{components.qrcode1.size}}` |
+| `size` | Width and height of the code, from 48 to 600 pixels. | `{{components.qrcode1.size}}` |
 | `color` | Color of the code's dots. Leave it empty to follow the theme's text color. | `{{components.qrcode1.color}}` |
 | `bgColor` | Background color behind the code. Leave it empty to follow the theme. | `{{components.qrcode1.bgColor}}` |
 | `errorLevel` | How much of the code can be damaged or covered and still scan: `L` about 7%, `M` 15%, `Q` 25% and `H` 30%. Higher levels make denser codes. | `{{components.qrcode1.errorLevel}}` |
