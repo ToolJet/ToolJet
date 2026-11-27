@@ -24,6 +24,10 @@ export interface DataSourceEntryRow {
   name: string;
   data_source_kind: string | null;
   plugin_id: string | null;
+  data_source_type: string | null;
+  is_synced: boolean | null;
+  is_dummy: boolean | null;
+  co_relation_id: string | null;
   owner_id: string | null;
   folder_id: string | null;
   data_source_count: number | null;
@@ -36,11 +40,12 @@ export interface DataSourceEntryRow {
 }
 
 // Same column list for both kinds so root / search can UNION them.
-const DATA_SOURCE_COLUMNS = `'data_source' AS kind, vd.id, vd.name, vd.data_source_kind, vd.plugin_id, vd.owner_id,
-  vd.folder_id, NULL::int AS data_source_count, NULL::boolean AS has_data_sources_on_any_branch,
+const DATA_SOURCE_COLUMNS = `'data_source' AS kind, vd.id, vd.name, vd.data_source_kind, vd.plugin_id, vd.data_source_type,
+  vd.is_synced, vd.is_dummy, vd.co_relation_id, vd.owner_id, vd.folder_id, NULL::int AS data_source_count, NULL::boolean AS has_data_sources_on_any_branch,
   vd.last_modified_at, vd.modified_by_id, vd.last_viewed_at, vd.activity_at`;
 const FOLDER_COLUMNS = `'folder' AS kind, vf.id, vf.name, NULL::varchar AS data_source_kind, NULL::uuid AS plugin_id,
-  vf.owner_id, NULL::uuid AS folder_id, vf.data_source_count, vf.has_data_sources_on_any_branch,
+  NULL::text AS data_source_type, NULL::boolean AS is_synced, NULL::boolean AS is_dummy,
+  NULL::uuid AS co_relation_id, vf.owner_id, NULL::uuid AS folder_id, vf.data_source_count, vf.has_data_sources_on_any_branch,
   vf.last_modified_at, vf.modified_by_id, vf.last_viewed_at, vf.activity_at`;
 
 const ROOT_ORDER = `${PIN_ORDER}, kind_order, ${ENTRY_ORDER}`;
@@ -53,15 +58,19 @@ function dashboardCtes(s: DataSourceDashboardScope, p: SqlParams): string {
   const defaultBranch = p.add(s.defaultBranchId);
   const user = p.add(s.userId);
   const org = p.add(s.organizationId);
-  const visibleFilter = s.visibleDataSourceIds ? `AND ds.id = ANY(${p.add(s.visibleDataSourceIds)}::uuid[])` : '';
+  // v1 allGlobalDS appends the workspace sample data source for every user, whatever their grants.
+  const visibleFilter = s.visibleDataSourceIds
+    ? `AND (ds.type = ${p.add(DataSourceTypes.SAMPLE)} OR ds.id = ANY(${p.add(s.visibleDataSourceIds)}::uuid[]))`
+    : '';
   return `WITH visible_data_sources AS (
-    SELECT ds.id, ds.kind AS data_source_kind, ds.plugin_id, ds.created_by AS owner_id, dsv.name,
+    SELECT ds.id, ds.kind AS data_source_kind, ds.plugin_id, ds.type::text AS data_source_type, dsv.is_synced,
+           ds.is_dummy, ds.co_relation_id, ds.created_by AS owner_id, dsv.name,
            COALESCE(editor.last_edited_at, dsv.updated_at, ds.updated_at) AS last_modified_at,
            editor.user_id AS modified_by_id,
            fds.folder_id, ua.last_viewed_at, ua.${s.activityColumn} AS activity_at
     FROM data_sources ds
     JOIN LATERAL (
-      SELECT v.name, v.updated_at
+      SELECT v.name, v.updated_at, v.is_synced
       FROM data_source_versions v
       WHERE v.data_source_id = ds.id AND v.is_active AND (
         v.branch_id = ${branch}
@@ -83,7 +92,7 @@ function dashboardCtes(s: DataSourceDashboardScope, p: SqlParams): string {
       ON ua.user_id = ${user} AND ua.data_source_id = ds.id AND ua.branch_id = ${branch}
     WHERE ds.organization_id = ${org}
       AND ds.scope = ${p.add(DataSourceScopes.GLOBAL)}
-      AND ds.type NOT IN (${p.add(DataSourceTypes.SAMPLE)}, ${p.add(DataSourceTypes.STATIC)})
+      AND ds.type <> ${p.add(DataSourceTypes.STATIC)}
       ${visibleFilter}
   ),
   folder_stats AS (

@@ -61,6 +61,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 
 - `GET /api/v2/data-sources?page&page_size&folder_id&search&branch_id` mirrors apps' `GET /api/v2/apps` (`apps/dashboard/`): `queries.ts` CTEs (`visible_data_sources`, `visible_folders`, `pins`) reuse apps' `SqlParams`, `PIN_ORDER`, `ENTRY_ORDER`, `likePattern`.
 - Rules in `dashboard/actions.ts` (pure, unit-tested): visibility copies `allGlobalDS`, folder visibility copies `FolderDataSourcesService.filterFoldersByPermissions`, folder actions copy `FoldersService.checkFolderManagePermission` / `assertFolderDeletable`. A data source's row on a branch = its active DSV there, else (no row at all there) the default branch's active DSV.
+- Sample data source is listed for every caller, whatever their grants (as `allGlobalDS` appends it), with `actions.edit` / `actions.delete` false; static and local-scope rows never are.
 - Ordering column: edit-capable caller → own `last_edited_at`, else own `last_viewed_at`. `DataSourcesDashboardService` is factory-provided (edition-resolved `GitSyncConfigsUtilService`).
 
 ## Dashboard v2 pins

@@ -2,6 +2,7 @@ import { UserFolderPermissions, UserPermissions } from '@modules/ability/types';
 import { MODULES } from '@modules/app/constants/modules';
 import { FolderActions } from '@modules/apps/dashboard/actions';
 import { SqlParams } from '@modules/apps/dashboard/sql-params';
+import { DataSourceTypes } from '../constants';
 
 // Row actions are display hints mirroring data-sources/ability/index.ts, data-sources/repository.ts
 // allGlobalDS and folders/service.ts checkFolderManagePermission. Mutating endpoints re-check for real.
@@ -72,8 +73,10 @@ export function isEditCapable(p: UserPermissions): boolean {
   return isAdmin(p) || !!p.dataSourceCreate || !!d?.isAllConfigurable || !!d?.configurableDataSourceId.length;
 }
 
-export function dataSourceActions(p: UserPermissions, dataSourceId: string): DataSourceActions {
-  return { edit: canEditDataSource(p, dataSourceId), delete: canDeleteDataSource(p), pin: true };
+// The sample data source is read-only (data-sources/util.service.ts findUpdatable, service.ts delete).
+export function dataSourceActions(p: UserPermissions, dataSourceId: string, type: string): DataSourceActions {
+  const sample = type === DataSourceTypes.SAMPLE;
+  return { edit: !sample && canEditDataSource(p, dataSourceId), delete: !sample && canDeleteDataSource(p), pin: true };
 }
 
 // folders/service.ts: updateFolder rejects every rename in multi-branch mode; assertFolderDeletable

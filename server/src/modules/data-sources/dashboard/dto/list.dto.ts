@@ -43,6 +43,10 @@ export class DataSourceDashboardEntryDto {
   @Expose() name: string;
   @Expose({ name: 'data_source_kind' }) dataSourceKind?: string;
   @Expose({ name: 'plugin_id' }) pluginId?: string | null;
+  @Expose() type?: string;
+  @Expose({ name: 'is_synced' }) isSynced?: boolean;
+  @Expose({ name: 'is_dummy' }) isDummy?: boolean;
+  @Expose({ name: 'co_relation_id' }) coRelationId?: string | null;
   @Expose() folder?: RefDto | null;
   @Expose({ name: 'data_source_count' }) dataSourceCount?: number;
   @Expose({ name: 'last_modified_at' }) lastModifiedAt: Date;

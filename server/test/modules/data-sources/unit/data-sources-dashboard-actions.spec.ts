@@ -117,7 +117,7 @@ describe('data sources dashboard actions', () => {
     });
 
     it('should always offer pin', () => {
-      expect(dataSourceActions(perms(), 'a')).toEqual({ edit: false, delete: false, pin: true });
+      expect(dataSourceActions(perms(), 'a', 'default')).toEqual({ edit: false, delete: false, pin: true });
     });
   });
 

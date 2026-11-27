@@ -100,6 +100,17 @@ describe('DataSourcesDashboardController', () => {
         kind: 'restapi',
         createdBy: admin.user.id,
       });
+      const { dataSource: dummy, version: dummyVersion } = await seedDashboardDataSource(nestApp, {
+        organizationId: admin.workspace.id,
+        name: 'Pulled DB',
+      });
+      await updateEntity(DataSource, dummy.id, { is_dummy: true, co_relation_id: loose.id });
+      await updateEntity(DataSourceVersion, dummyVersion.id, { isSynced: true });
+      const { dataSource: sample } = await seedDashboardDataSource(nestApp, {
+        organizationId: admin.workspace.id,
+        name: 'Sample data source',
+      });
+      await updateEntity(DataSource, sample.id, { type: 'sample' });
 
       const res = await list(nestApp, admin.cookie, admin.workspace.id);
 
@@ -107,8 +118,8 @@ describe('DataSourcesDashboardController', () => {
       expect(res.body).toMatchObject({
         page: 1,
         page_size: 50,
-        total: 2,
-        counts: { pinned: 0, folders: 1, data_sources: 1 },
+        total: 4,
+        counts: { pinned: 0, folders: 1, data_sources: 3 },
         folder: null,
         items: [
           {
@@ -129,6 +140,10 @@ describe('DataSourcesDashboardController', () => {
             name: 'Billing API',
             data_source_kind: 'restapi',
             plugin_id: null,
+            type: 'default',
+            is_synced: false,
+            is_dummy: false,
+            co_relation_id: null,
             folder: null,
             last_modified_at: expect.any(String),
             modified_by: null,
@@ -137,6 +152,8 @@ describe('DataSourcesDashboardController', () => {
             pinned: false,
             actions: { edit: true, delete: true, pin: true },
           },
+          { id: dummy.id, is_synced: true, is_dummy: true, co_relation_id: loose.id },
+          { id: sample.id, type: 'sample', actions: { edit: false, delete: false, pin: true } },
         ],
       });
       expect(ids(res.body)).not.toContain(inFolder.id);
@@ -391,7 +408,7 @@ describe('DataSourcesDashboardController', () => {
       expect(inFolder.body).toMatchObject({ total: 1, items: [{ id: granted.id }] });
     });
 
-    it('should give an end user with no grants an empty list', async () => {
+    it('should give an end user with no grants only the sample data source', async () => {
       const admin = await createAdmin(nestApp, 'data-source-dash-vis-none-admin@tooljet.io');
       const endUser = await createEndUser(nestApp, 'data-source-dash-vis-none@tooljet.io', {
         workspace: admin.workspace,
@@ -399,25 +416,29 @@ describe('DataSourcesDashboardController', () => {
       const folder = await dataSourceFolder(admin.workspace.id, 'Folder');
       await seedDashboardDataSource(nestApp, { organizationId: admin.workspace.id, name: 'In folder', folder });
       await seedDashboardDataSource(nestApp, { organizationId: admin.workspace.id, name: 'Loose' });
+      const { dataSource: sample } = await seedDashboardDataSource(nestApp, {
+        organizationId: admin.workspace.id,
+        name: 'Sample data source',
+      });
+      await updateEntity(DataSource, sample.id, { type: 'sample' });
 
       const res = await list(nestApp, endUser.cookie, admin.workspace.id);
 
       expect(res.statusCode).toBe(200);
-      expect(res.body).toMatchObject({ items: [], total: 0, counts: { pinned: 0, folders: 0, data_sources: 0 } });
+      expect(res.body).toMatchObject({
+        total: 1,
+        counts: { pinned: 0, folders: 0, data_sources: 1 },
+        items: [{ id: sample.id, type: 'sample' }],
+      });
     });
 
-    it('should never list another workspace’s data sources or folders, nor sample and local ones', async () => {
+    it('should never list another workspace’s data sources or folders, nor local ones', async () => {
       const mine = await createAdmin(nestApp, 'data-source-dash-vis-xws-a@tooljet.io');
       const theirs = await createAdmin(nestApp, 'data-source-dash-vis-xws-b@tooljet.io');
       const { dataSource: own } = await seedDashboardDataSource(nestApp, {
         organizationId: mine.workspace.id,
         name: 'Own',
       });
-      const { dataSource: sample } = await seedDashboardDataSource(nestApp, {
-        organizationId: mine.workspace.id,
-        name: 'Sample',
-      });
-      await updateEntity(DataSource, sample.id, { type: 'sample' });
       const { dataSource: local } = await seedDashboardDataSource(nestApp, {
         organizationId: mine.workspace.id,
         name: 'Local',

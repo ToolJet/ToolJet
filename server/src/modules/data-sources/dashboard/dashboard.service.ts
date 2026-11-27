@@ -356,8 +356,12 @@ export class DataSourcesDashboardService {
         ...common,
         dataSourceKind: r.data_source_kind,
         pluginId: r.plugin_id,
+        type: r.data_source_type,
+        isSynced: !!r.is_synced,
+        isDummy: !!r.is_dummy,
+        coRelationId: r.co_relation_id,
         folder: ref(folders, r.folder_id),
-        actions: dataSourceActions(permissions, r.id),
+        actions: dataSourceActions(permissions, r.id, r.data_source_type),
       });
     });
   }
