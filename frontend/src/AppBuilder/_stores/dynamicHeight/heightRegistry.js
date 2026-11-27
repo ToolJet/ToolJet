@@ -31,7 +31,9 @@ export const createHeightRegistry = (options) => {
   const Observer = 'ResizeObserver' in options ? options.ResizeObserver : globalThis.ResizeObserver;
 
   const widgets = new WeakMap(); // element → widget; a detached element is collected with its entry
-  const lastHeights = new Map(); // widget key → last reported height
+  // widget key → its last report ({ ...widget, height }). The browser reports only changes, so this is the one
+  // place a widget's height is still known after the rendered layouts were cleared (see measuredHeights).
+  const lastReports = new Map();
   const frozenKeys = new Set(); // widget keys whose reports are ignored for now
   const awaited = new Set(); // elements observed but not reported on yet
   let observer = null; // created on first use, so importing this file needs no ResizeObserver
@@ -46,10 +48,11 @@ export const createHeightRegistry = (options) => {
       const height = Math.round(borderBoxHeight(entry));
       if (height <= NOT_DRAWN_MAX_HEIGHT) continue;
       if (frozenKeys.has(widget.key)) continue;
-      if (lastHeights.get(widget.key) === height) continue;
+      if (lastReports.get(widget.key)?.height === height) continue;
 
-      lastHeights.set(widget.key, height);
-      changes.push({ ...widget, height });
+      const change = { ...widget, height };
+      lastReports.set(widget.key, change);
+      changes.push(change);
     }
     if (changes.length > 0) report(changes);
   };
@@ -66,7 +69,7 @@ export const createHeightRegistry = (options) => {
   const unobserve = (element) => {
     const widget = element && widgets.get(element);
     if (!widget) return;
-    lastHeights.delete(widget.key); // a remount reports its first height even if it matches
+    lastReports.delete(widget.key); // a remount reports its first height even if it matches
     awaited.delete(element);
     widgets.delete(element);
     observer?.unobserve(element);
@@ -89,5 +92,9 @@ export const createHeightRegistry = (options) => {
   // detached), so one lost widget cannot delay every later pass.
   const forgetAwaitedMeasurements = () => awaited.clear();
 
-  return { observe, unobserve, setFrozen, isAwaitingMeasurement, forgetAwaitedMeasurements };
+  // The last height reported for each watched widget, with what it registered with. A frozen widget, or one not
+  // drawn for now, keeps its last real height. The scheduler hands these to a pass that places a whole module again.
+  const measuredHeights = () => lastReports.values();
+
+  return { observe, unobserve, setFrozen, isAwaitingMeasurement, forgetAwaitedMeasurements, measuredHeights };
 };

@@ -176,4 +176,25 @@ describe('dynamic height: height registry', () => {
     expect(bare.isAwaitingMeasurement()).toBe(false); // nothing will ever report, so nothing is awaited
     expect(() => bare.unobserve(element)).not.toThrow();
   });
+
+  it('[DynamicHeight-REG-015] remembers the last height of each watched widget, until it is unobserved', () => {
+    // The browser reports only changes, so a pass that has lost its rendered layouts (a layout switch clears them)
+    // gets the widgets' heights from here.
+    const [a, b] = [document.createElement('div'), document.createElement('div')];
+    registry.observe(a, widget('a', { contextIndices: [1] }));
+    registry.observe(b, widget('b'));
+    reportSizes([a, 100], [b, 50]);
+    reportSizes([a, 120]);
+    // Not drawn, and frozen: the last real height is kept.
+    reportSizes([b, 0]);
+    registry.setFrozen('a', true);
+    reportSizes([a, 300]);
+    expect([...registry.measuredHeights()]).toEqual([
+      { ...widget('a', { contextIndices: [1] }), height: 120 },
+      { ...widget('b'), height: 50 },
+    ]);
+
+    registry.unobserve(a);
+    expect([...registry.measuredHeights()]).toEqual([{ ...widget('b'), height: 50 }]);
+  });
 });
