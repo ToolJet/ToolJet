@@ -338,6 +338,7 @@ const sidebars = {
             'data-sources/grpc',
             'data-sources/influxdb',
             'data-sources/mailgun',
+            'data-sources/mailtrap',
             'data-sources/mariadb',
             'data-sources/minio',
             'data-sources/mongodb',
