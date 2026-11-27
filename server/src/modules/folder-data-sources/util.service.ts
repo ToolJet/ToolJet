@@ -144,7 +144,8 @@ export class FolderDataSourcesUtilService implements IFolderDataSourcesUtilServi
         await manager.delete(FolderDataSource, { id: In(toMove.map((r) => r.id)) });
       }
 
-      const toCreate = dataSourceIds.filter((id) => !alreadyInFolder.has(id));
+      // Set de-dupes repeated ids in the request; otherwise two identical rows hit the unique index.
+      const toCreate = Array.from(new Set(dataSourceIds)).filter((id) => !alreadyInFolder.has(id));
       if (toCreate.length === 0) return [];
 
       const rows = toCreate.map((dataSourceId) =>

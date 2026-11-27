@@ -339,7 +339,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         await manager.delete(FolderApp, { id: In(toRemove.map((fa) => fa.id)) });
       }
 
-      const toCreate = appIds.filter((id) => !alreadyInFolder.has(id));
+      // Set de-dupes repeated ids in the request; otherwise two identical rows hit the unique index.
+      const toCreate = Array.from(new Set(appIds)).filter((id) => !alreadyInFolder.has(id));
       if (toCreate.length === 0) return [];
 
       const newFolderApps = toCreate.map((appId) =>
