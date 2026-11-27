@@ -43,6 +43,24 @@ describe('Table-RECCOUNT Show record count toggle in the Inspector', () => {
     expect(toggle.checked).toBe(true);
   });
 
+  // The old count rule reads these keys without checking enablePagination, so the toggle must too
+  test.each([
+    ['old client-side key on', { clientSidePagination: { value: '{{true}}' } }, true],
+    [
+      'old server-side key on',
+      { serverSidePagination: { value: '{{true}}' }, totalRecords: { value: '{{42}}' } },
+      true,
+    ],
+    [
+      'old server-side key on, Total records 0',
+      { serverSidePagination: { value: '{{true}}' }, totalRecords: { value: '{{0}}' } },
+      false,
+    ],
+  ])('Table-RECCOUNT-012 pagination off, %s: toggle matches the count', (_label, oldKeys, checked) => {
+    const toggle = renderToggle({ enablePagination: { value: '{{false}}' }, ...oldKeys });
+    expect(toggle.checked).toBe(checked);
+  });
+
   test('Table-RECCOUNT-011 a saved value wins over pagination', () => {
     const toggle = renderToggle({ enablePagination: { value: '{{true}}' }, showRecordCount: { value: '{{false}}' } });
     expect(toggle.checked).toBe(false);

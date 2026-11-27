@@ -42,11 +42,15 @@ const getTableDefinitionInitialValue = (
 export const getMissingShowRecordCountValue = (component) => {
   if (component?.component?.component !== 'Table') return undefined;
   const properties = component.component.definition?.properties;
-  if (properties?.enablePagination) return properties.enablePagination.value;
-  const legacyPagination = ['clientSidePagination', 'serverSidePagination'].some((key) =>
-    resolveReferences(properties?.[key]?.value)
-  );
-  return `{{${legacyPagination}}}`;
+  const resolve = (key) => resolveReferences(properties?.[key]?.value);
+  // Same order as the old count rule, which reads the old keys without checking enablePagination
+  if (resolve('serverSidePagination')) {
+    const totalRecords = resolve('totalRecords');
+    // missing falls back to 10 in the store; an expression cannot resolve here and is usually set
+    return `{{${totalRecords === undefined || !!totalRecords}}}`;
+  }
+  if (resolve('clientSidePagination')) return '{{true}}';
+  return properties?.enablePagination?.value ?? '{{false}}';
 };
 
 const ensureLegacyTextComponentCompatibility = (param, definition) => {
