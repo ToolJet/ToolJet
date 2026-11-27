@@ -282,7 +282,7 @@ export const tableConfig = {
     addNewRowIn: {
       type: 'switch',
       displayName: 'Add new row in',
-      validation: { schema: { type: 'string' }, defaultValue: 'table' },
+      validation: { schema: { type: 'string' }, defaultValue: 'dialog' },
       options: [
         { displayName: 'Table', value: 'table' },
         { displayName: 'Dialog', value: 'dialog' },
@@ -856,7 +856,7 @@ export const tableConfig = {
       hideColumnSelectorButton: { value: '{{false}}' },
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
-      addNewRowIn: { value: 'table' },
+      addNewRowIn: { value: 'dialog' },
       allowAddingMultipleRows: { value: '{{true}}' },
       showRefreshButton: { value: '{{false}}' },
       allowSelection: { value: '{{true}}' },

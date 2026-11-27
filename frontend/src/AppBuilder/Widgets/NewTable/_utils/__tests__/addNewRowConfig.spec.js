@@ -20,11 +20,11 @@ describe('Table-ADDROWFORM-002 add new row placement', () => {
   test.each([
     ['table', 'table'],
     ['dialog', 'dialog'],
-    [undefined, 'table'],
-    [null, 'table'],
-    ['', 'table'],
-    ['popup', 'table'],
-    [{ a: 1 }, 'table'],
+    [undefined, 'dialog'],
+    [null, 'dialog'],
+    ['', 'dialog'],
+    ['popup', 'dialog'],
+    [{ a: 1 }, 'dialog'],
   ])('Table-ADDROWFORM-002 %p resolves to %p', (value, expected) => {
     // Break this catches: an unset or garbled `addNewRowIn` yielding a placement that renders nothing.
     expect(resolveAddNewRowIn(value)).toBe(expected);
