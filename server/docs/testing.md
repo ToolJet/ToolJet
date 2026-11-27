@@ -187,6 +187,7 @@ A spec lives where the code it needs lives.
 
 - `test/` is the public tree. It runs as CE and must pass on a clone without the private submodules. CI checks this in the `Test Suite · server (CE, no submodules)` job. A bare `initTestApp()` here boots a CE app.
 - A spec that imports `@ee/`, `@licensing/` or `@instance-settings/`, or only passes against an `ee`/`cloud` app, goes in the submodule's `ee/test/`. That tree uses the same `modules/<module>/{e2e,unit}` layout. `server/scripts/check-ee-leak.sh` runs on pre-push and in CI, and rejects EE imports under `test/`.
+- `test/helpers/` holds the helper library only; Jest does not collect specs there. A spec for `src/helpers/<name>.helper.ts` goes in `test/modules/<module that owns or uses it>/unit/` (e.g. `test/modules/data-sources/unit/sample-ds-role.spec.ts`).
 - A spec with both kinds of cases gets split. The CE cases stay in `test/`, and the rest move to a same-named file under `ee/test/`.
 
 ## Test isolation
