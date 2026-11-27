@@ -7,7 +7,13 @@ import { Response } from 'express';
 import { DataQueryRepository } from './repository';
 import { decamelizeKeys } from 'humps';
 import { serializeDataQueries } from './serialization.helper';
-import { CreateDataQueryDto, IUpdatingReferencesOptions, ListTablesDto, UpdateDataQueryDto } from './dto';
+import {
+  CreateDataQueryDto,
+  IUpdatingReferencesOptions,
+  ListTablesDto,
+  RunDataQueryDto,
+  UpdateDataQueryDto,
+} from './dto';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
 import { isEmpty } from 'lodash';
@@ -20,9 +26,15 @@ import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { AppValidationService } from '@modules/app-validation/service';
 import { lockForValidation } from '@modules/app-validation/lock';
 import { QueryWrite } from '@modules/app-validation/types';
+import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { assertGitSyncEditAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 import { AppVersion } from '@entities/app_version.entity';
+
+/** Maps a run request's cache instruction to execution options. Ignored by editions without a cache. */
+export function runExecutionOptions(dto: RunDataQueryDto): DataQueryExecutionOptions | undefined {
+  return dto?.cacheControl === 'refresh' ? { responseCache: { refresh: true, clearAll: true } } : undefined;
+}
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -308,7 +320,7 @@ export class DataQueriesService implements IDataQueriesService {
     user: User,
     dataQueryId: string,
     environmentId: string,
-    updateDataQueryDto: UpdateDataQueryDto,
+    updateDataQueryDto: RunDataQueryDto,
     ability: AppAbility,
     dataSource: DataSource,
     response: Response,
@@ -339,13 +351,37 @@ export class DataQueriesService implements IDataQueriesService {
       !isEmpty(options) &&
       (await this.isGitSyncEditAllowed(user.organizationId, dataQuery.appVersion))
     ) {
+      // Validated before the pause check below, so invalid options are rejected the same way during an upgrade.
+      const optionsToSave = this.prepareOptionsSavedOnRun(options);
       // The upgrade gate pauses writes (migration-gate.middleware.ts): the save would wait on the data
       // phase's row locks until lock_timeout, so the run uses the posted options without saving them.
-      if (!response?.locals?.writesPaused) await this.dataQueryRepository.updateOne(dataQueryId, { options });
-      dataQuery['options'] = options;
+      if (!response?.locals?.writesPaused) {
+        await this.dataQueryRepository.updateOne(dataQueryId, { options: optionsToSave });
+      }
+      dataQuery['options'] = optionsToSave;
     }
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
+    return this.runAndGetResult(
+      user,
+      dataQuery,
+      resolvedOptions,
+      response,
+      environmentId,
+      mode,
+      app,
+      runExecutionOptions(updateDataQueryDto)
+    );
+  }
+
+  /**
+   * Called when an editor run may author the query, i.e. its posted options replace the saved ones. That holds
+   * even while the upgrade gate pauses writes and nothing is saved: the run then uses these options in memory.
+   * Editions apply the save-time rules here (throwing to reject the run) so a run never stores, or runs with,
+   * options a save would refuse. Runs that may not author the query (view mode, the released version, app-scoped
+   * tokens, read-only git-sync versions) ignore their posted options and never call this.
+   */
+  protected prepareOptionsSavedOnRun(options: object): object {
+    return options;
   }
 
   // GitSyncQueryEditGuard's rule as a check: read-only versions still run, but don't persist options.
@@ -368,7 +404,7 @@ export class DataQueriesService implements IDataQueriesService {
   async runQueryForApp(
     user: User,
     dataQueryId: string,
-    updateDataQueryDto: UpdateDataQueryDto,
+    updateDataQueryDto: RunDataQueryDto,
     response: Response,
     app?: App
   ) {
@@ -379,7 +415,16 @@ export class DataQueriesService implements IDataQueriesService {
       appVersion: true,
     });
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
+    return this.runAndGetResult(
+      user,
+      dataQuery,
+      resolvedOptions,
+      response,
+      undefined,
+      'view',
+      app,
+      runExecutionOptions(updateDataQueryDto)
+    );
   }
 
   async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {
@@ -393,7 +438,8 @@ export class DataQueriesService implements IDataQueriesService {
     response: Response,
     environmentId?: string,
     mode?: string,
-    app?: App
+    app?: App,
+    opts?: DataQueryExecutionOptions
   ): Promise<object> {
     let result = {};
 
@@ -406,7 +452,7 @@ export class DataQueriesService implements IDataQueriesService {
         environmentId,
         mode,
         app,
-        undefined // opts parameter
+        opts
       );
     } catch (error) {
       if (error.constructor.name === 'QueryError') {

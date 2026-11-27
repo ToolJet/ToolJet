@@ -23,6 +23,7 @@ import { customToggles, mockDataQueryAsComponent, RestAPIToggles } from '../cons
 import { DataSourceTypes } from '@/modules/common/components/DataSourceComponents';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
 import ConfirmationInputs from './ConfirmationInputs';
+import PeriodicRunInputs from './PeriodicRunInputs';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import ParameterList from './ParameterList';
@@ -39,7 +40,13 @@ import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
-export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null, surface = 'bottom' }) => {
+export const BaseQueryManagerBody = ({
+  darkMode,
+  activeTab,
+  renderCopilot = null,
+  renderResponseCache = null,
+  surface = 'bottom',
+}) => {
   const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const getResolvedValue = useStore((state) => state.getResolvedValue);
@@ -346,7 +353,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     return (
       <div className={cx({ 'disabled ': isFreezed })}>
         <div
-          className={cx(`d-flex pb-1`, {
+          className={cx(`d-flex pb-1 tw-mb-3`, {
             'disabled ': isFreezed,
             'query-option-field': true,
           })}
@@ -405,6 +412,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
                       queryName={queryName}
                     />
                   )}
+                  {config.action === 'showSuccessNotification' && (
+                    <SuccessNotificationInputs options={options} optionchanged={optionchanged} />
+                  )}
+                  {config.action === 'runPeriodically' && (
+                    <PeriodicRunInputs options={options} darkMode={darkMode} optionchanged={optionchanged} />
+                  )}
                 </React.Fragment>
               );
             })}
@@ -421,16 +434,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
               ))}
           </div>
         </div>
-        <div className="d-flex query-option-field query-success-options">
-          <div className="form-label">{}</div>
-          <SuccessNotificationInputs
-            // currentState={currentState}
-            options={options}
-            darkMode={darkMode}
-            optionchanged={optionchanged}
-          />
-        </div>
         {renderTimeout()}
+        {renderResponseCache?.({ selectedQuery, optionchanged, darkMode, isFreezed })}
         {renderDisableQuery()}
         {renderDisabledMessage()}
         {renderEventManager()}

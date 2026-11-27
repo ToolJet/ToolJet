@@ -94,7 +94,7 @@ sequenceDiagram
 4. `AppEnvironmentUtilService.getOptions` selects environment- and branch-specific source options.
 5. `parseSourceOptions` decrypts credentials; `parseQueryOptions` resolves constants, secrets, and server globals.
 6. `PluginsServiceSelector.getService` chooses ToolJet DB, REST API, workflow, or a built-in/marketplace connector and executes it with a timeout.
-7. The result becomes `queries.<name>.data` in frontend state; dependency resolution updates bound components and query success/failure events run.
+7. The result becomes `queries.<name>.data` in frontend state; dependency resolution updates bound components and query success/failure events run. Starting a run only sets `isLoading`; the previous result stays until the run settles (`queryPanelSlice.runQuery`; see `frontend/AGENTS.md` § Events and queries).
 
 ### 4. Operate on ToolJet Database
 
@@ -158,3 +158,12 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 
 - **Inference:** The architecture favors a modular monolith for control-plane/API behavior, with connector execution and background workers as extension/execution boundaries rather than independently deployed feature services.
 - **Inference:** App Version is the consistency boundary for editor/viewer behavior; environment-specific source options are deliberately resolved late so the same app definition can move between environments.
+
+### Query cache deletion cleanup
+
+EE/Cloud data-query module registration adds a BullMQ cleanup queue only on the main worker import (`WORKER=true`).
+The worker periodically scans cache tracking in cursor batches and compares query IDs with the database before clearing
+orphaned cache entries. This covers cascading deletions without cache I/O on delete requests. Jobs have bounded concurrency,
+rate limiting and retries; later sweeps recover interruptions. With no worker, cleanup depends on expiry and subsequent
+cache activity. A zero cache budget pauses the sweep. Registration and invariants: `server/src/modules/data-queries/module.ts`
+and `server/src/modules/data-queries/AGENTS.md`.

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, ValidateIf, IsObject, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty, ValidateIf, IsObject, IsOptional, IsBoolean, IsIn } from 'class-validator';
 import { isUndefined } from 'lodash';
 
 export class CreateWorkflowExecutionDto {
@@ -52,4 +52,9 @@ export class CreateWorkflowExecutionDto {
   @IsOptional()
   @IsBoolean()
   syncExecution?: boolean;
+
+  // 'refresh' (EE response cache): drop every cached response of the calling query, run, cache the result.
+  @IsOptional()
+  @IsIn(['refresh'])
+  cacheControl?: 'refresh';
 }

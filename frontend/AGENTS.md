@@ -112,7 +112,27 @@ No change may break existing saved applications. Always ask: would an app saved 
 
 - Events: `fireEvent → handleEvent → executeActionsForEventId → executeAction`. Events support `runOnlyIf` and `debounce`
 - Queries: `runQuery` → resolve options → API call → update `exposedValues.queries[name]` → trigger dependency updates
+- Query run start (`queries.<name>`, every query kind, editor and viewer) only sets `isLoading: true`. It doesn't clear `data`, `rawData`, `request`, `response`, `responseHeaders`, `metadata` or `error` first, so bound components keep the previous result until the run settles. `isLoading` is the loading signal; an empty `data` is never one. Once settled, the query holds exactly what it did when the start blanked it: success replaces every result field, failure and abort first write the blank result (`clearedQueryResult`, so the previous `data` doesn't survive a failed run), and reset (`resetQuery`) clears it. Specs: `_stores/__tests__/integration/queryRunPreservesResult.spec.js`
+- "Run this query periodically" timers live outside the store (`componentsSlice.js`, keyed per module instance and query). A change of environment, version, or restored history stops all of them (`useStopPeriodicRunsOnContextChange`), in the app editor and in the standalone module editor alike, so no tick runs against the new context unasked; only a fresh run (Run, an event, or a run-on-page-load query) starts polling again. A hot reload keeps polling. A placed module instance doesn't act on these changes itself: the app holding it stops every timer, its own included, and it clears only its own timers on unmount. Specs: `_hooks/__tests__/integration/useStopPeriodicRunsOnContextChange.spec.js`, `_stores/__tests__/integration/queryPeriodicRun.spec.js`
 - Event definitions live in `eventsSlice`, not in component definitions
+- **Refresh Query Cache** in the event action list is an editor alias for `run-query` with `refreshCache: true`. Preserve this saved contract so parameters, references, and existing events use the normal Run Query path. Selecting another action removes the refresh flag. `executeAction` maps the alias id back through `normalizeEventAction`, because events built outside the Event Manager (Table button labels) can carry `refresh-query-cache` itself.
+- Refresh exists only where it can work: `canRefreshQueryCache` (`_utils/queryResponseCache.js`) needs the
+  `queryResponseCache` license and the query's `responseCache.enabled`. Otherwise `queries.<name>.refresh()` and its hint
+  are absent, the Event Manager hides Refresh Query Cache and shows saved refresh events as Run query, and `runQuery`
+  sends no `cacheControl`, so the query behaves exactly as without the response cache. The refresh() hint follows
+  changes in the same session: `updateDataQuery` and `updateFeatureAccess` run a full `rebuildQueryHints` (no
+  `queryId`, since the result-shape shortcut can't see eligibility) when eligibility flips. Spec:
+  `_stores/__tests__/queryCacheRefreshHints.spec.js`
+- A query with request confirmation keeps its run options in the `queryConfirmationList` entry, and Yes
+  (`onQueryConfirmOrCancel`) resumes `runQuery` with them, so a refresh stays a refresh. A run queued without options
+  resumes as an ordinary run (the trailing callback and run-options arguments are `undefined`); Cancel sends no query
+  request. Specs: `_stores/__tests__/queryConfirmationRefresh.spec.js`,
+  `Popups/__tests__/integration/QueryConfirmPopup.compare.spec.jsx`
+
+- Query result Preview displays `metadata.cache` from the corresponding completed run only when the selected query
+  explicitly enables response caching. Disabling caching hides prior feedback immediately. Every new preview result clears
+  the previous cache status unless its own metadata is supplied; loading hides the old status. Status reports saved/not
+  saved without inferring a refusal reason. Synchronous workflow previews use the workflow result metadata.
 
 ### Grouped error notifications
 

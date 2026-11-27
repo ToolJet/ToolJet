@@ -6,6 +6,7 @@
   },
   "actionIds": [
     "run-query",
+    "refresh-query-cache",
     "reset-query",
     "abort-query",
     "show-alert",
@@ -31,6 +32,7 @@
   ],
   "actionEntityRefs": {
     "run-query": { "field": "queryId", "entity": "query" },
+    "refresh-query-cache": { "field": "queryId", "entity": "query" },
     "reset-query": { "field": "queryId", "entity": "query" },
     "abort-query": { "field": "queryId", "entity": "query" },
     "control-component": { "field": "componentId", "entity": "component" },

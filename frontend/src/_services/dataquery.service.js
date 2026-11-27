@@ -15,7 +15,16 @@ export const dataqueryService = {
   bulkUpdateQueryOptions,
   createWorkflowQuery,
   invoke,
+  clearResponseCache,
 };
+
+// EE only: invalidates every cached response of the query without running it.
+function clearResponseCache(queryId, versionId) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/cache/clear`, requestOptions).then(
+    handleResponse
+  );
+}
 
 function getAll(appVersionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -92,10 +101,12 @@ function del(id, versionId) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options, versionId, environmentId, mode, signal) {
+// refreshCache (EE response cache): drop every cached response of the query, run it, and cache this result.
+function run(queryId, resolvedOptions, options, versionId, environmentId, mode, signal, refreshCache = false) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
+    ...(refreshCache ? { cacheControl: 'refresh' } : {}),
   };
   // Rendering a point in app history: the server runs the query as it was then, without saving.
   const { snapshot } = getPreviewQueryParams();

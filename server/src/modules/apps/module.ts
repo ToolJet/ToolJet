@@ -27,6 +27,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
+import { DataQueriesModule } from '@modules/data-queries/module';
 import { CodeModeSourceModule } from '@modules/code-mode-source/module';
 @Module({})
 export class AppsModule extends SubModule {
@@ -76,6 +77,8 @@ export class AppsModule extends SubModule {
         await AppHistoryModule.register(configs),
         await UsersModule.register(configs),
         await GitSyncConfigsModule.register(configs),
+        // Provides the EE query response cache, which the app-wide Clear uses.
+        await DataQueriesModule.register(configs),
         await CodeModeSourceModule.register(configs),
       ],
       controllers: isMainImport ? [AppsController, WorkflowController] : [],

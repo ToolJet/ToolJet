@@ -97,6 +97,11 @@ const QUERY_OPTION_KEYS_TO_NORMALIZE = [
   'notificationDuration',
   'disableQuery',
   'disabledMessage',
+  'runPeriodically',
+  'runPeriodicallyFx',
+  'queryRunInterval',
+  'pauseAfterFailures',
+  'runPeriodicallyInBackground',
   'workflowId',
   'workflowVersionId',
 ];

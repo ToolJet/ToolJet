@@ -100,6 +100,7 @@ App-definition imports reject malformed declared-variable maps, reserved names, 
 - App content belongs to a Version; non-workflow app name, slug, icon, and public state are stored on version rows (`server/src/modules/apps/AGENTS.md`).
 - End users consume a released version. A public app can bypass login, but query execution remains guarded and throttled (`QueryAuthGuard`; `AppScopedThrottlerGuard`).
 - Query credentials and constants are resolved for the selected Environment on the server; secrets are decrypted there rather than exposed to the browser (`server/src/modules/data-queries/util.service.ts`).
+- A rerunning query keeps showing its previous result while it runs, so bound components don't go blank; `queries.<name>.isLoading` is the loading signal (`frontend/src/AppBuilder/_stores/slices/queryPanelSlice.js::runQuery`).
 - Component configuration must remain backward compatible with previously saved apps, and server/frontend component defaults must change together (`frontend/AGENTS.md`; `server/AGENTS.md`).
 - Feature availability may be constrained by edition, license terms, and resource-count guards (`server/src/modules/licensing/`; `AbilityGuard`).
 
@@ -107,3 +108,16 @@ App-definition imports reject malformed declared-variable maps, reserved names, 
 
 - **Inference:** The public repository is intentionally both the CE implementation and the stable contract/base layer extended by private editions. Evidence: dynamic module selection in `SubModule.getProviders` and the documented edition inheritance/composition patterns in `AGENTS.md`.
 - **Inference:** The App + Version aggregate is the dominant product boundary because pages, components, events, queries, release state, and most access checks converge on it.
+
+### Query cache refresh events
+
+Builders can select **Refresh Query Cache** alongside **Run query** in the event action list, with the same query and parameter controls. It uses the existing `run-query` event with `refreshCache: true`; cache availability remains edition-dependent. Existing saved refresh events display this action automatically. Evidence: `frontend/src/AppBuilder/RightSideBar/Inspector/ActionTypes.js::getEventActionId`, `EventManager.jsx`, and `frontend/src/AppBuilder/_stores/slices/eventsSlice.js`.
+
+### Query cache feedback and disable control
+
+For queries with response caching explicitly enabled, Query Preview displays cache hit/miss/refresh/bypass and
+saved/not-saved outcomes using response metadata. Queries without caching show no cache feedback. It does not
+infer why storage failed. Evidence: `frontend/src/AppBuilder/QueryManager/Components/Preview.jsx` and `QueryCacheStatus.jsx`.
+The shared cache budget defaults to 128 MiB, and each workspace can use at most `QUERY_CACHE_MAX_WORKSPACE_BYTES`
+(default 16 MiB) of it; setting `QUERY_CACHE_MAX_TOTAL_BYTES=0` bypasses cache reads and writes
+without purging retained entries. Environment configuration: `.env.example`.

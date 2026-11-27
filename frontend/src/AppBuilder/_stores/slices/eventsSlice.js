@@ -16,6 +16,7 @@ import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { useCallback } from 'react';
 import moment from 'moment';
+import { normalizeEventAction } from '@/AppBuilder/RightSideBar/Inspector/ActionTypes';
 
 // To unsubscribe from the changes when no longer needed
 // unsubscribe();
@@ -587,7 +588,8 @@ export const createEventsSlice = (set, get) => ({
     },
     executeAction: debounce(
       (eventObj, mode, customVariables = {}, moduleId = 'canvas', sourceSubContainerIndex = null) => {
-        const { event = eventObj } = eventObj;
+        const { event: rawEvent = eventObj } = eventObj;
+        const event = normalizeEventAction(rawEvent);
         const { getExposedValueOfComponent, getResolvedValue } = get();
 
         if (event?.disabled) {
@@ -659,7 +661,7 @@ export const createEventsSlice = (set, get) => ({
             }
             case 'run-query': {
               try {
-                const { queryId, queryName, component, eventId, callbackFns } = event;
+                const { queryId, queryName, component, eventId, callbackFns, refreshCache } = event;
                 const params = event['parameters'];
                 if (!queryId && !queryName) {
                   throw new Error('No query selected');
@@ -698,7 +700,8 @@ export const createEventsSlice = (set, get) => ({
                   false,
                   false,
                   updatedModuleId,
-                  callbackFns
+                  callbackFns,
+                  refreshCache === true ? { refreshCache: true } : undefined
                 );
               } catch (error) {
                 get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {
@@ -1188,7 +1191,7 @@ export const createEventsSlice = (set, get) => ({
       const { executeAction } = eventsSlice;
       const currentComponents = Object.entries(getCurrentPageComponents(moduleId));
 
-      const runQuery = (queryName = '', parameters, moduleId = 'canvas', callbackFns) => {
+      const runQuery = (queryName = '', parameters, moduleId = 'canvas', callbackFns, runOptions) => {
         const query = dataQuery.queries.modules[moduleId].find((query) => {
           const isFound = query.name === queryName;
           if (isPreview) {
@@ -1221,6 +1224,7 @@ export const createEventsSlice = (set, get) => ({
           queryName: query.name,
           parameters: processedParams,
           callbackFns,
+          refreshCache: runOptions?.refreshCache === true,
         };
 
         return executeAction(event, mode, {}, moduleId);
