@@ -77,6 +77,12 @@ The table below describes each configuration values:
 
 Once you've entered the necessary configurations, click **Save changes**. Your workspace is now connected to your GitHub repository.
 
+#### Using Environment Variables
+
+GitHub can also be configured through [environment variables](/docs/setup/env-vars#configure-gitsync-via-environment-variables). After setting the variables and restarting the server, turn on **Apply configurations from environment variables** in the **Configure git sync** tab and click **Continue** to confirm.
+
+While the toggle is on, the form fields are disabled and the values are read from the environment variables. To configure GitHub from the form again, turn the toggle off.
+
 :::note
 You can use the same credentials to configure a specific repository across multiple instances or workspaces.
 :::

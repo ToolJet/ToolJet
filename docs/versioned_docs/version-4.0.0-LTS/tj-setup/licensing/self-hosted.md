@@ -44,6 +44,12 @@ Role Required: **Super Admin**
 3. Within the license tab of the Settings page, you can access the limit tab, which provides details about available total users, builders, and end users. You can also see the expiry date of your license key.
    <img className="screenshot-full" src="/img/licensing/selfhosted-limits.png" alt="Licensing" />
 
+### Using Environment Variables
+
+The license key can also be set through the `TJ_LICENSE` [environment variable](/docs/setup/env-vars#configure-license-key-via-environment-variable). After setting the variable, turn on **Apply configuration from environment variable** in the license key tab and click **Continue** to confirm.
+
+While the toggle is on, the license key field is disabled and shows the `{{TJ_LICENSE_KEY}}` placeholder. To enter the license key in the form again, turn the toggle off.
+
 ## Migrating to New Pricing Plan
 
 Starting from the version **`v3.5.20-ee-lts`**, the basic license will have the following limitations and users on a previous version, will be impacted in the following ways:

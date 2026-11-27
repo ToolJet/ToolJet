@@ -283,42 +283,93 @@ These validations apply to both the instance and workspace levels.
 
 #### Configure GitSync via Environment Variables
 
-:::warning BETA
-This feature is currently in beta and is not recommended for production use.
-For full setup instructions, provider-specific keys, and Docker Compose examples, see [Configure GitSync via Environment Variables](/docs/beta/gitsync-env-vars).
-:::
+GitSync can be configured per workspace using either of the following. Both are read at server startup.
 
-GitSync can be configured using environment variables instead of the ToolJet UI, useful for self-hosted setups where you want to automate or version-control your GitSync configuration.
+- `WORKSPACE_GIT_CONFIGS`: JSON object keyed by workspace name, slug or UUID. Each value is an object with the provider keys below. All values must be strings.
+- `.tj_env.<workspace>` files: one dotenv file per workspace, named by workspace name, slug or UUID, placed in `/app/` inside the container.
 
-ToolJet supports **GitHub (HTTPS)**, **GitLab**, and **Git (SSH)**. For example, to configure GitSync with GitHub (HTTPS), set the following variables:
+```bash
+WORKSPACE_GIT_CONFIGS='{"my-workspace":{"GITHUB_URL":"https://github.com/acme-corp/internal-tools","GITHUB_BRANCH":"main","GITHUB_APP_ID":"123456","GITHUB_INSTALLATION_ID":"98765432","GITHUB_PRIVATE_KEY":"-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"}}'
+```
 
-| **Key** | **Description** |
-| --- | --- |
-| `GITHUB_URL` | The HTTPS URL of your GitHub repository. (e.g. `https://github.com/your-org/your-repo`) |
-| `GITHUB_BRANCH` | The branch to sync with. |
-| `GITHUB_APP_ID` | Your GitHub App ID. |
-| `GITHUB_INSTALLATION_ID` | The installation ID for your GitHub App. |
-| `GITHUB_PRIVATE_KEY` | The private key generated when creating the GitHub App. Escape newlines as `\n`. |
+**GitHub (HTTPS):**
+
+- `GITHUB_URL`: HTTPS URL of the repository. Required.
+- `GITHUB_BRANCH`: Branch to sync with. Required.
+- `GITHUB_APP_ID`: GitHub App ID. Required.
+- `GITHUB_INSTALLATION_ID`: GitHub App installation ID. Required.
+- `GITHUB_PRIVATE_KEY`: GitHub App private key. Required.
+- `GITHUB_ENTERPRISE_URL`: GitHub Enterprise URL.
+- `GITHUB_ENTERPRISE_API_URL`: GitHub Enterprise API URL.
+
+**GitLab:**
+
+- `GITLAB_URL`: URL of the repository. Required.
+- `GITLAB_BRANCH`: Branch to sync with. Required.
+- `GITLAB_PROJECT_ID`: GitLab project ID. Required.
+- `GITLAB_PROJECT_ACCESS_TOKEN`: GitLab project access token.
+- `GITLAB_ENTERPRISE_URL`: Self-hosted GitLab URL.
+
+**Branching:**
+
+- `GIT_BRANCHING_ENABLED`: `true` for multi-branch mode, `false` for single-branch mode.
+
+To apply the variables, turn on **Apply configurations from environment variables** in the GitSync settings. For the steps, see [GitHub](/docs/development-lifecycle/gitsync/connect-to-git-repo/github-config#using-environment-variables) or [GitLab](/docs/development-lifecycle/gitsync/connect-to-git-repo/gitlab-config#using-environment-variables).
+
+#### Configure SSO via Environment Variables
+
+OIDC, SAML and LDAP SSO can be configured using environment variables. They are read at server startup. All values inside the JSON variables must be strings.
+
+**OIDC:**
+
+- `OIDC_NAME`: Provider name. Required.
+- `OIDC_CLIENT_ID`: Client ID. Required.
+- `OIDC_CLIENT_SECRET`: Client secret. Required unless `OIDC_GRANT_TYPE` is `pkce`.
+- `OIDC_WELL_KNOWN_URL`: Well-known URL of the identity provider. Required.
+- `OIDC_GRANT_TYPE`: `authorization_code` or `pkce`. Required.
+- `OIDC_CODE_VERIFIER`: PKCE code verifier.
+- `OIDC_CUSTOM_SCOPES`: Comma-separated additional scopes.
+- `OIDC_ENABLE_GROUP_SYNC`: `true` or `false`.
+- `OIDC_CLAIM_NAME`: Claim that holds the user's groups.
+- `OIDC_GROUP_MAPPING`: JSON object mapping identity provider groups to ToolJet groups.
+
+Set these keys directly for the instance-level OIDC provider. For instance-level group sync in a specific workspace, use `OIDC_GROUP_SYNC_<WORKSPACE>_CLAIM_NAME` and `OIDC_GROUP_SYNC_<WORKSPACE>_MAPPING`, where `<WORKSPACE>` is the workspace name in uppercase with spaces and hyphens replaced by underscores.
+
+- `WORKSPACE_OIDC_CONFIG`: Workspace-level OIDC. JSON object keyed by workspace name, slug or UUID. Each value is an array with one object of OIDC keys per provider. With more than one provider, prefix each key with a provider name, for example `OIDC_OKTA_CLIENT_ID`.
+
+```bash
+WORKSPACE_OIDC_CONFIG='{"my-workspace":[{"OIDC_OKTA_NAME":"Okta","OIDC_OKTA_CLIENT_ID":"...","OIDC_OKTA_CLIENT_SECRET":"...","OIDC_OKTA_WELL_KNOWN_URL":"...","OIDC_OKTA_GRANT_TYPE":"authorization_code"},{"OIDC_AUTH0_NAME":"Auth0","OIDC_AUTH0_CLIENT_ID":"...","OIDC_AUTH0_WELL_KNOWN_URL":"...","OIDC_AUTH0_GRANT_TYPE":"pkce"}]}'
+```
+
+**SAML:**
+
+- `WORKSPACE_SAML_CONFIG`: JSON object keyed by workspace name, slug or UUID. Each value is an object with the following keys:
+  - `SAML_NAME`: Provider name. Required.
+  - `SAML_IDP_METADATA`: Identity provider metadata XML. Required.
+  - `SAML_ENABLE_GROUP_SYNC`: `true` or `false`.
+  - `SAML_GROUP_SYNC_GROUP_ATTRIBUTE`: Attribute that holds the user's groups.
+
+**LDAP:**
+
+- `WORKSPACE_LDAP_CONFIG`: JSON object keyed by workspace name, slug or UUID. Each value is an object with the following keys:
+  - `LDAP_NAME`: Provider name. Required.
+  - `LDAP_HOST_NAME`: LDAP server host name. Required.
+  - `LDAP_PORT`: LDAP server port. Required.
+  - `LDAP_BASE_DN`: Base DN. Required.
+  - `LDAP_SSL`: `true` or `false`.
+  - `LDAP_SSL_CERTIFICATE`: `Certificates` or `None`.
+  - `LDAP_CLIENT_KEY`, `LDAP_CLIENT_CERTIFICATE`, `LDAP_SERVER_CERTIFICATE`: Used when `LDAP_SSL_CERTIFICATE` is `Certificates`.
+  - `LDAP_ENABLE_GROUP_SYNC`: `true` or `false`.
+
+SAML and LDAP keys can also be added to a workspace's `.tj_env.<workspace>` file.
+
+To apply the variables, turn on **Apply configurations from environment variables** in the provider's configuration modal. For the steps, see [OIDC](/docs/user-management/sso/oidc/setup#using-environment-variables), [SAML](/docs/user-management/sso/saml/setup#using-environment-variables) or [LDAP](/docs/user-management/sso/ldap#using-environment-variables).
 
 #### Configure License Key via Environment Variable
 
-:::warning BETA
-This feature is currently in beta and is not recommended for production use.
-:::
+- `TJ_LICENSE`: ToolJet license key.
 
-The license key can be configured via an environment variable to avoid re-entering it through the UI on every new instance. Setting `TJ_LICENSE` ensures the license is applied automatically at startup without any manual configuration.
-
-| **Variable** | **Description** |
-|:--- |:--- |
-| `TJ_LICENSE` | Your ToolJet license key. When set, the license key field on the **Settings** page is populated automatically from this variable. |
-
-**How it works:**
-
-- When `TJ_LICENSE` variable is set, the **Settings** page shows the license key field pre-filled with the placeholder `{{TJ_LICENSE_KEY}}`, indicating the value is sourced from the environment.
-- The field will be disabled and the toggle will be switched to **Env variable** mode automatically.
-- To switch back to entering the key manually via the UI, use the toggle on the **Settings** page to switch to **UI** mode.
-
-<img className="screenshot-full img-m" src="/img/env-vars/prefilled-license-key.png" alt="Prefilled License Key" />
+To apply it, turn on **Apply configuration from environment variable** in the license key tab of **Settings**. For the steps, see [Updating License Key](/docs/tj-setup/licensing/self-hosted#using-environment-variables).
 
 #### Version Reviews
 

@@ -41,6 +41,12 @@ Role Required: **Admin** <br/>
 
 5. Once configured, click **Save Changes**.
 
+### Using Environment Variables
+
+SAML can also be configured through [environment variables](/docs/setup/env-vars#configure-sso-via-environment-variables). After setting the variables and restarting the server, turn on **Apply configurations from environment variables** in the SAML configuration modal and click **Continue** to confirm.
+
+While the toggle is on, the form fields are disabled and the values are read from the environment variables. To configure SAML from the form again, turn the toggle off. This restores the values previously saved in the form.
+
 ## Logging in with SAML
 
 1. Go to the **Workspace login** tab and copy the **Login URL** provided. Through SSO authentication, we check if the user already exists; if so, they can sign in seamlessly. Otherwise, an error will be displayed.
