@@ -38,6 +38,7 @@ export interface IAgentNodeService {
     organizationId: string,
     environmentId: string,
     workflowDefinition: any,
+    appVersionId: string,
     onToolExecuted: (toolNodeIdOnDefinition: string, result: any, state: Record<string, any>) => Promise<void>,
     createAddLogFunction: any,
     logs: any[],
