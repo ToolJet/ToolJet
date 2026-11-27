@@ -14,19 +14,15 @@ Cypress.Commands.add(
   "dragAndDropWidget",
   (
     widgetName,
-    positionX = 100,
+    // The left Components panel overlays the canvas's left ~290px while dragging,
+    // so the default drop point sits just right of it.
+    positionX = 350,
     positionY = 100,
     widgetName2 = widgetName,
     canvas = null // null = auto-detect: #real-canvas, or ModuleContainer's sub-canvas if in module editor
   ) => {
-    // Open widget panel and search. The sidebar button TOGGLES the panel and the
-    // panel can stay open after a drop, so only click it when the search box is
-    // not already showing — a blind click would close it.
-    cy.get("body").then(($body) => {
-      if (!$body.find(`${commonSelectors.searchField}:visible`).length) {
-        cy.get('[data-cy="right-sidebar-components-button"]').click();
-      }
-    });
+    // Open widget panel and search
+    cy.openComponentSidebar();
     cy.get(commonSelectors.searchField)
       .should("be.visible")
       .first()
@@ -67,6 +63,10 @@ Cypress.Commands.add(
         targetY: positionY,
       });
       cy.waitForAutoSave();
+      // The left Components panel stays open after a drop and overlays the canvas's
+      // left edge; close it (and wait out its exit animation) so the canvas is clear.
+      cy.get('[data-cy="components-close-button"]').click();
+      cy.get(commonSelectors.searchField).should("not.exist");
     });
   }
 );
@@ -347,7 +347,7 @@ Cypress.Commands.add("openComponentSidebar", (selector, value) => {
       .is(":visible");
 
     if (!isSearchVisible) {
-      cy.get('[data-cy="right-sidebar-components-button"]').click();
+      cy.get('[data-cy="left-sidebar-components-button"]').click();
     }
   });
 });

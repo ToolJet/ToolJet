@@ -41,6 +41,11 @@ On top of the above:
 - New widgets MUST be lazy-loaded
 - `useBatchedUpdateEffectArray` for batched state updates
 - Widget components must be registered in `AppBuilder/WidgetManager/componentTypes.js`
+- Editor panel chrome (left panel, right panel) comes from `AppBuilder/Shared/Panel`: `PanelHeader` (48px pinned title row), `PanelIconButton` (a tooltipped icon-only button: its required `label` is both the `aria-label` and the `ToolTip`), `PanelCloseButton` (the named X, one line over it), `PanelEmptyState` / `NoMatchesEmptyState`, `PanelSectionHeader` (collapsible section: 12/500 title, muted count, trailing caret). Do not hand-roll a panel header, close button, section header or no-match state. Every icon-only button needs an `aria-label` (`panelSourceAudit` `[UB-04]`) — the numbers live in `Shared/Panel/panel.scss`
+  - Panel names come from one registry in `AppBuilder/panelLayout.js`: `SIDEBAR_ITEMS` (rail item, panel title, close label), `RIGHT_PANEL_ITEMS` (right panel close labels), `RUNTIME_PANEL_ITEMS` (drawer tabs). Use `getPanelCloseLabel` / `getRuntimeToggleLabel`, never a literal
+  - Shared control specs are SCSS mixins in `Shared/Panel/_mixins.scss` (`focus-ring`, `panel-search-input`, `panel-control`, `panel-row`, `panel-switch`, `panel-overlay-surface`); they emit nothing until an editor selector includes them. Bootstrap controls are sized under the `.tj-panel` class on the three panel roots (left panel, right panel, bottom drawer); editor overlays take the surface under `body.app-builder-chrome`
+  - Page row menus keep their action targets separate from the page being edited. `pageMenuSlice` owns the dialog targets. `AppBuilder` hosts the page delete and permission dialogs and the query delete and permission dialogs, so the right panel's header menus work with the Pages or Queries panel closed. Never mount these dialogs inside a panel. The Runtime Drawer uses the measured Code panel edge when Code is docked, including any space already reserved for the right sidebar.
+  - Guards: `src/AppBuilder/__tests__/panelSourceAudit.spec.js` (source rules) and the panels Cypress harness (`cypress-tests/cypress/e2e/happyPath/appbuilder/panels/*`, run with `cypress-panels.config.js`), which measures every panel in both themes at 1440x960 and 683x600
 
 ## Conventions
 
@@ -51,6 +56,11 @@ On top of the above:
 - Prefer Tailwind over Bootstrap for new code; do not extend legacy `react-bootstrap` usage
 - Use typography utilities (`tw-font-title-default`, `tw-font-body-default`) instead of ad-hoc font-size/weight
 - Design tokens: `frontend/src/_styles/designtheme.scss` + `frontend/tailwind.config.js`
+- **Editor chrome never styles a customer's app.** The canvas (and the overlays and modals its widgets open) must render exactly as in the Viewer.
+  - Chrome type and colour variables (`--app-builder-*`, `--editor-text-*`) live on `<body>` only while editing, via `useAppBuilderChrome`. Writing to `<body>` is the exception to "no direct DOM manipulation", because chrome portals render there.
+  - Chrome text that needs AA on dark panels reads `var(--editor-text-accent|danger|success, <shared token>)` or `tw-text-editor-text-danger|success`, never the shared token alone.
+  - Widgets reset those variables (`theme.scss`). An overlay a widget renders (react-bootstrap `Tooltip`/`Popover`, `react-tooltip`) must carry `tj-widget-overlay`.
+  - The guard is `cypress/e2e/happyPath/appbuilder/panels/canvasParity.cy.js` (editor vs Viewer).
 
 ### Imports
 
@@ -179,7 +189,8 @@ Update the closest guide in the same PR when a feature gains a new invariant, co
 - Unused imports
 - Missing `key` props in `.map()`
 - Missing `shallow` in `useStore` selectors
-- Direct DOM manipulation (canvas drop calculations excepted)
+- Direct DOM manipulation (canvas drop calculations and `useAppBuilderChrome`'s `<body>` scope excepted)
+- A widget overlay (tooltip, popover) without `tj-widget-overlay`, or chrome reading `--text-accent/-danger/-success` without the `--editor-text-*` wrapper
 
 ## Decisions log
 

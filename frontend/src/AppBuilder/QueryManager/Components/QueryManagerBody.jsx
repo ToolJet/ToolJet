@@ -344,7 +344,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
         style={{ marginBottom: '16px' }}
       >
         <div className="form-label mt-2" data-cy="query-manager-timeout-label">
-          {t('editor.queryManager.timeout', 'Timeout ( ms )')}
+          {t('editor.queryManager.timeout', 'Timeout (ms)')}
         </div>
         <div className="query-manager-query-timeout">
           <CodeHinter
@@ -570,7 +570,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
             </div>
             {selectedDataSource?.is_dummy && (
               <div
-                className="tw-text-text-danger tw-mt-1 tw-font-body-small tw-pointer-events-auto tw-select-text tw-cursor-text"
+                className="tw-text-editor-text-danger tw-mt-1 tw-font-body-small tw-pointer-events-auto tw-select-text tw-cursor-text"
                 data-cy="query-manager-source-missing-warning"
               >
                 {t(

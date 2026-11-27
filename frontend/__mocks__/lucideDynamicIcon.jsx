@@ -29,9 +29,8 @@ const DynamicIcon = React.forwardRef(({ name, fallback: Fallback, ...props }, re
   if (!icon) return Fallback ? React.createElement(Fallback) : null;
   // Tag the rendered icon so a test can assert on WHICH icon was requested. The barrel's `icons` map
   // holds icon components in current lucide-react, icon-node arrays in older builds.
-  if (Array.isArray(icon))
-    return React.createElement(lucide.Icon, { ref, ...props, 'data-lucide-name': name, iconNode: icon });
-  return React.createElement(icon, { ref, ...props, 'data-lucide-name': name });
+  if (!Array.isArray(icon)) return React.createElement(icon, { ref, ...props, 'data-lucide-name': name });
+  return React.createElement(lucide.Icon, { ref, ...props, 'data-lucide-name': name, iconNode: icon });
 });
 DynamicIcon.displayName = 'DynamicIcon';
 

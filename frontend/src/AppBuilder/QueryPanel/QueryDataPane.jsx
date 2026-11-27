@@ -10,18 +10,17 @@ import cx from 'classnames';
 import FilterandSortPopup from './FilterandSortPopup';
 import { ToolTip } from '@/_components';
 import { Button } from '@/components/ui/Button/Button';
+import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
+import { NoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { Fade, OverlayTrigger, Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { shallow } from 'zustand/shallow';
-import { appPermissionService } from '@/_services';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 import QueryCardMenuBase from './QueryCardMenu';
-import QueryDeleteConfirmation from './QueryDeleteConfirmation';
 import { withEditionSpecificComponent } from '@/modules/common/helpers';
 import {
   getQueryListClassName,
@@ -33,6 +32,8 @@ import {
   getQuerySearchFocusStyle,
   getQueryToolbarClassName,
   isQuerySearchPersistent,
+  getPanelCloseLabel,
+  SIDEBAR_ITEMS,
 } from '@/AppBuilder/panelLayout';
 
 const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
@@ -57,12 +58,6 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
   function isDataSourceLocal(dataQuery) {
     return dataSources.some((dataSource) => dataSource.id === dataQuery.data_source_id);
   }
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
-  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
-  const showQueryPermissionModal = useStore((state) => state.queryPanel.showQueryPermissionModal);
-  const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
-  const setQueries = useStore((state) => state.dataQuery.setQueries);
   const sortBy = useStore((state) => state.dataQuery.sortBy);
   const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
   const folders = allFolders;
@@ -133,7 +128,8 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
         setSearchTermForFilters(val.target.value);
       }}
       onClearCallback={() => setSearchTermForFilters('')}
-      placeholder={t('globals.search', 'Search')}
+      placeholder={t('globals.searchQueries', 'Search queries')}
+      ariaLabel={t('globals.searchQueries', 'Search queries')}
       customClass="query-manager-search-box-wrapper flex-grow-1"
       showClearButton
       clearTextOnBlur={false}
@@ -143,27 +139,15 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
   return (
     <div className={getQueryListClassName(surface)} style={getQuerySearchFocusStyle(surface)}>
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
-        <div className={getQueryPanelHeaderClassName(surface)}>
-          <span className="queries-panel-title">Queries</span>
-          <div className="queries-panel-header-actions">
-            {headerPlacement.add === 'title' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
-            {/* The Query Library page shows the list permanently, so it passes no onClose. */}
-            {onClose && (
-              <ToolTip message="Close queries" placement="bottom">
-                <Button
-                  isLucid
-                  iconOnly
-                  size="medium"
-                  variant="ghost"
-                  leadingIcon="x"
-                  aria-label="Close queries"
-                  onClick={onClose}
-                  data-cy="close-query-panel"
-                />
-              </ToolTip>
-            )}
-          </div>
-        </div>
+        <PanelHeader
+          title={SIDEBAR_ITEMS.queries.name}
+          onClose={onClose}
+          closeLabel={getPanelCloseLabel('queries')}
+          closeDataCy="close-query-panel"
+          className={getQueryPanelHeaderClassName(surface)}
+        >
+          {headerPlacement.add === 'title' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
+        </PanelHeader>
         <div className={getQueryToolbarClassName(surface, showSearchBox)}>
           {headerPlacement.add === 'toolbar' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
           {headerPlacement.search === 'toolbar' && (
@@ -185,6 +169,7 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
                   size="medium"
                   variant="ghost"
                   leadingIcon="search"
+                  aria-label="Open quick search"
                   onClick={() => {
                     showSearchBox && setSearchTermForFilters('');
                     setShowSearchBox((showSearchBox) => !showSearchBox);
@@ -245,38 +230,23 @@ export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
                 shouldFreeze={isFreezed}
               />
               {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
-              <QueryDeleteConfirmation darkMode={darkMode} />
-              {licenseValid && (
-                <AppPermissionsModal
-                  modalType="query"
-                  resourceId={selectedQuery?.id}
-                  resourceName={selectedQuery?.name}
-                  showModal={showQueryPermissionModal}
-                  toggleModal={toggleQueryPermissionModal}
-                  darkMode={darkMode}
-                  fetchPermission={(id, appId) => appPermissionService.getQueryPermission(appId, id)}
-                  createPermission={(id, appId, body) => appPermissionService.createQueryPermission(appId, id, body)}
-                  updatePermission={(id, appId, body) => appPermissionService.updateQueryPermission(appId, id, body)}
-                  deletePermission={(id, appId) => appPermissionService.deleteQueryPermission(appId, id)}
-                  onSuccess={(data) => {
-                    const updatedDataQueries = dataQueries.map((query) => {
-                      if (query.id === selectedQuery.id) {
-                        return {
-                          ...query,
-                          permissions: data.length === 0 || data.length === undefined ? [] : [data[0]],
-                        };
-                      }
-                      return query;
-                    });
-                    setQueries(updatedDataQueries);
-                  }}
-                />
-              )}
             </div>
             {filteredQueries.length === 0 &&
               (folders.length === 0 || dataSourcesForFilters.length > 0 || !!searchTermForFilters) && (
                 <div className="query-empty-state-wrapper">
-                  <EmptyDataSource />
+                  {searchTermForFilters || dataSourcesForFilters.length > 0 ? (
+                    <NoMatchesEmptyState
+                      term={searchTermForFilters}
+                      description="Search matches query names."
+                      onClearSearch={() => {
+                        setSearchTermForFilters('');
+                        setDataSourcesForFilters([]);
+                      }}
+                      dataCy="queries-no-matches"
+                    />
+                  ) : (
+                    <EmptyDataSource />
+                  )}
                 </div>
               )}
           </div>
@@ -332,6 +302,7 @@ const AutoSortButton = ({ darkMode: _darkMode }) => {
           size="medium"
           variant="ghost"
           disabled={disabled}
+          aria-label={tooltipMsg}
           onClick={() => !disabled && autoSort?.()}
           data-cy="query-autosort-button"
           style={!disabled ? { color: '#F3A53C' } : undefined}
@@ -400,6 +371,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled, surface = 'bottom'
         <Button
           isLucid
           iconOnly={surface !== 'left'}
+          aria-label="New query"
           size={buttonPresentation.size}
           variant={buttonPresentation.variant}
           style={buttonPresentation.style}

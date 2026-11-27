@@ -7,7 +7,7 @@ import { CreateRow } from './CreateRow';
 import { UpdateRows } from './UpdateRows';
 import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
-import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { querySelectStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
 import { JoinTable } from './JoinTable';
 import { difference } from 'lodash';
@@ -21,10 +21,10 @@ import { isSqlModeDisabled } from '@/TooljetDatabase/constants';
 
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import useStore from '@/AppBuilder/_stores/store';
 import QueryCodeLabel from '@/AppBuilder/QueryManager/Components/QueryCodeLabel';
 import Select from '@/_ui/Select';
 import { getTooljetDbModeControlPresentation, TOOLJET_DB_MODE_OPTIONS } from '@/AppBuilder/panelLayout';
+import useStore from '@/AppBuilder/_stores/store';
 
 const ToolJetDbOperations = ({
   optionchanged,
@@ -34,9 +34,10 @@ const ToolJetDbOperations = ({
   optionsChanged,
   renderCopilot,
   environmentId,
+  surface,
 }) => {
   const computeSelectStyles = (darkMode, width) => {
-    return queryManagerSelectComponentStyle(darkMode, width);
+    return querySelectStyle(surface, darkMode, width);
   };
   const navigate = useNavigate();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
@@ -541,7 +542,7 @@ const ToolJetDbOperations = ({
   ];
 
   const ComponentToRender = getComponent(operation);
-  const modeControlPresentation = getTooljetDbModeControlPresentation();
+  const modeControlPresentation = getTooljetDbModeControlPresentation(surface);
 
   return (
     <ToolJetDbOperationsProvider value={value}>
@@ -589,10 +590,7 @@ const ToolJetDbOperations = ({
               <div
                 className={cx(
                   { 'flex-grow-1': isHorizontalLayout },
-                  'border',
-                  'rounded',
-                  'overflow-hidden',
-                  'minw-400-w-400'
+                  'tooljetdb-table-picker border rounded overflow-hidden minw-400-w-400'
                 )}
               >
                 <DropDownSelect

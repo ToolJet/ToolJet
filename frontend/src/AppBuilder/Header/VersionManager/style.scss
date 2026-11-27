@@ -5,17 +5,20 @@
     font-family: 'IBM Plex Sans', sans-serif;
   }
 
-  // Fixed body height keeps the popover steady across environment tabs; the list scrolls
-  // inside it and loading/empty states fill the same box.
+  // The body fits its rows: at least three (the loading skeleton's 3 x 48px rows plus list
+  // padding and gaps), at most 264px, past which the list scrolls.
   .version-manager-body {
     display: flex;
     flex-direction: column;
-    height: 264px;
+    min-height: 160px;
+    max-height: 264px;
   }
 
   .versions-list {
     flex: 1 1 auto;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     // The enter slide offsets rows sideways; never let that become a horizontal scrollbar.
     overflow-x: hidden;
@@ -49,7 +52,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100%;
+      flex: 1 1 auto;
       padding: 0 12px;
       text-align: center;
       color: var(--text-placeholder);
@@ -213,7 +216,7 @@
 
     &.released {
       background-color: var(--background-success-weak);
-      color: var(--text-success);
+      color: var(--editor-text-success, var(--text-success));
     }
   }
 

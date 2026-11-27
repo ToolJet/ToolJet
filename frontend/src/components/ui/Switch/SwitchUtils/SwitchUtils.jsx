@@ -1,9 +1,10 @@
 import React from 'react';
 import { Label } from '../../Label/Label';
 
-export const SwitchLabel = ({ label, size, disabled }) => {
+export const SwitchLabel = ({ label, size, disabled, id }) => {
   return (
     <Label
+      id={id}
       htmlFor="label"
       type="label"
       size={size || 'default'}

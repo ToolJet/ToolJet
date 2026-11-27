@@ -78,6 +78,8 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
           className="text-decoration-none"
           style={{ color: 'var(--text-default)' }}
           data-cy="editor-preview-Link"
+          // One tab stop: the inner button takes focus, and its click bubbles to this link.
+          tabIndex={-1}
         >
           <ButtonComponent
             size="default"

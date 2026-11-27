@@ -39,6 +39,7 @@ export const QueryRenameInput = ({ dataQuery, darkMode, onUpdate }) => {
       className="query-name query-rename-input"
       type="text"
       value={value}
+      onClick={(event) => event.stopPropagation()}
       onChange={handleChange}
       autoFocus={true}
       onKeyDown={handleKeyDown}

@@ -348,7 +348,7 @@ export function Workflows({ options, optionsChanged, currentState, darkMode }) {
             </div>
             {isConflictingParamsRow(param, params, declaredInputKeys) && (
               <div
-                className="col-11 tw-text-text-danger tw-font-body-small mt-1"
+                className="col-11 tw-text-editor-text-danger tw-font-body-small mt-1"
                 data-cy={`workflow-param-input-conflict-${param.key}`}
               >
                 {`${param.key} is an input of this version. Set it under Inputs.`}

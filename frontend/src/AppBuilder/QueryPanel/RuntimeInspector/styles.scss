@@ -1,3 +1,5 @@
+@import '../../Shared/Panel/mixins';
+
 // Split-view Inspector for the bottom runtime panel. Type and selection colors follow the
 // editor header (13px / 400, indigo soft fill for the active item).
 .runtime-inspector {
@@ -37,29 +39,29 @@
     gap: 6px;
     flex-shrink: 0;
     width: 220px;
-    height: 28px;
+    height: 32px;
     margin: 0;
     padding: 0 8px;
     border: 1px solid var(--border-default);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--icon-default);
     transition: border-color 0.12s ease;
 
     &:focus-within {
-      border-color: var(--indigo7);
+      border-color: var(--border-accent-strong);
     }
 
     input {
       flex: 1;
       min-width: 0;
-      height: 26px;
+      height: 30px;
       padding: 0;
       border: 0;
       outline: 0;
       background: transparent;
       box-shadow: none;
       color: var(--text-default);
-      font-size: 13px;
+      font-size: 12px;
 
       &::placeholder {
         color: var(--text-placeholder);
@@ -99,7 +101,7 @@
     }
 
     &.is-active {
-      color: var(--indigo9) !important;
+      color: var(--editor-text-accent, var(--indigo9)) !important;
       background: var(--indigo3) !important;
       border-color: var(--indigo5) !important;
     }
@@ -122,8 +124,10 @@
       outline: none;
       background: var(--surfaces-surface-01);
       color: var(--text-default);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 400;
+      // Older WebKit ignores the unprefixed one and draws its own arrow next to the chevron.
+      -webkit-appearance: none;
       appearance: none;
       cursor: pointer;
 
@@ -154,12 +158,18 @@
     flex-shrink: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 4px 6px 12px;
+    padding: 6px 12px 12px;
     border-right: 1px solid var(--border-weak);
   }
 
-  &__group + &__group {
-    margin-top: 2px;
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    & + & {
+      margin-top: 2px;
+    }
   }
 
   &__group-header {
@@ -168,30 +178,16 @@
     gap: 6px;
     width: 100%;
     height: 28px;
-    padding: 0 6px !important;
+    padding: 0 4px !important;
     border-radius: 4px;
-    color: var(--text-placeholder) !important;
+    color: var(--text-default) !important;
     font-size: 12px !important;
+    font-weight: 500 !important;
 
     &:hover {
       color: var(--text-default) !important;
       background: var(--interactive-hover) !important;
     }
-  }
-
-  &__chevron {
-    flex-shrink: 0;
-    transition: transform 0.15s ease;
-
-    &.is-open {
-      transform: rotate(90deg);
-    }
-  }
-
-  &__count {
-    margin-left: auto;
-    font-size: 11px;
-    color: var(--text-placeholder);
   }
 
   &__entry {
@@ -200,18 +196,22 @@
     gap: 2px;
     height: 26px;
     padding-right: 6px;
-    border-radius: 4px;
+    @include panel-row;
 
     &:hover {
       background: var(--interactive-hover);
     }
 
+    &:has(> .runtime-inspector__entry-label:focus-visible) {
+      box-shadow: inset 0 0 0 2px var(--border-accent-strong);
+    }
+
     &.is-selected {
-      background: var(--indigo3);
-      color: var(--indigo9);
+      background: var(--background-accent-weak);
+      color: var(--editor-text-accent, var(--indigo9));
 
       .runtime-inspector__twisty {
-        color: var(--indigo9);
+        color: var(--editor-text-accent, var(--indigo9));
       }
     }
   }
@@ -250,9 +250,16 @@
 
   &__entry-icon {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
     width: 14px;
     height: 14px;
+
+    // Some query icons have an inline top margin for baseline alignment in other views.
+    > :is(svg, img) {
+      margin-top: 0 !important;
+    }
 
     &:empty {
       display: none;
@@ -329,12 +336,13 @@
 
   &__icon-btn {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    color: var(--icon-default) !important;
+    color: var(--icon-strong) !important;
     transition:
       background-color 0.12s ease,
       color 0.12s ease;
@@ -342,11 +350,6 @@
     &:hover {
       color: var(--icon-strong) !important;
       background: var(--interactive-hover) !important;
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--indigo7);
-      outline-offset: -2px;
     }
 
     &.is-done {

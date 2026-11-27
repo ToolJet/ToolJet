@@ -10,7 +10,7 @@ import ObjectNode from './ObjectNode';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ToolTip } from '@/_components/ToolTip';
-import { copyToClipboard, extractComponentName, formatPathForCopy } from '../../utils';
+import { appendPathSegment, copyToClipboard, formatPathForCopy } from '../../utils';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
@@ -35,6 +35,9 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
   const Node = () => {
     if (typeof value === 'string') {
       return <StringNode value={value} />;
+    } else if (value instanceof Date) {
+      // As Copy value gives it (JSON), not an empty object.
+      return <StringNode value={Number.isNaN(value.getTime()) ? 'Invalid Date' : value.toISOString()} />;
     } else if (typeof value === 'undefined' || value === null) {
       return <NullNode value={value} />;
     } else if (typeof value === 'number') {
@@ -50,8 +53,14 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
     }
   };
 
-  const isObject = typeof value === 'object' && !Array.isArray(value) && value !== null;
-  const isArray = Array.isArray(value);
+  // Empty objects and arrays have nothing to expand, so they get no caret (DB-11b).
+  const isObject =
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value !== null &&
+    !(value instanceof Date) &&
+    Object.keys(value).length > 0;
+  const isArray = Array.isArray(value) && value.length > 0;
 
   return (
     <div style={{ marginLeft: `${level === 1 ? '0px' : '0.5rem'}` }}>
@@ -103,6 +112,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
                     copyToClipboard(formatPathForCopy(absolutePath), false);
                   }}
                   className="copy-to-clipboard json-viewer-action-icon"
+                  data-cy="copy-path-to-clipboard"
                 >
                   <Link2 size={12} />
                 </button>
@@ -132,7 +142,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
               label={key}
               value={val}
               level={level + 1}
-              absolutePath={`${absolutePath}.${key}`}
+              absolutePath={appendPathSegment(absolutePath, key)}
               iconsList={iconsList}
               darkMode={darkMode}
               showPathCopy={showPathCopy}
@@ -149,7 +159,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, 
                 label={`${index}`}
                 value={item}
                 level={level + 1}
-                absolutePath={`${absolutePath}.${index}`}
+                absolutePath={appendPathSegment(absolutePath, index)}
                 iconsList={iconsList}
                 darkMode={darkMode}
                 showPathCopy={showPathCopy}

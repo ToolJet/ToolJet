@@ -298,7 +298,7 @@ const VersionPicker = ({ library }) => {
                   <span className="version-menu-title">
                     Dev preview
                     {current === `dev:${userId}` && currentUserId === userId && (
-                      <span className="before:tw-content-[''] before:tw-inline-block before:tw-size-2 before:tw-rounded-full before:tw-bg-background-success-strong before:tw-mr-1 tw-text-text-success">
+                      <span className="before:tw-content-[''] before:tw-inline-block before:tw-size-2 before:tw-rounded-full before:tw-bg-background-success-strong before:tw-mr-1 tw-text-editor-text-success">
                         Live
                       </span>
                     )}
@@ -322,15 +322,12 @@ const VersionPicker = ({ library }) => {
 // It draws as a ToolJet widget tile in the palette: its role's widget icon (or its initials) over its name.
 export const SdkComponentCard = ({ componentType, dragComponent, name, displayName, description, role, onDropped }) => {
   const darkMode = useStore((state) => state.isTJDarkMode);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
-  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { handleDrop } = useCanvasDropHandler() || noop;
 
-  const [{ isDragging }, drag, preview] = useDrag(
+  const [, drag, preview] = useDrag(
     () => ({
       type: 'box',
       item: { componentType, component: dragComponent },
-      collect: (monitor) => ({ isDragging: monitor.isDragging() }),
       end: (item, monitor) => {
         // Released over the component panel: the drag is cancelled. The panel overlays the canvas, so the
         // position lookup below would otherwise find the canvas underneath and add the component.
@@ -355,14 +352,6 @@ export const SdkComponentCard = ({ componentType, dragComponent, name, displayNa
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
-
-  // The panel stays open during a drag: closing it unmounts this card, the browser then never fires dragend,
-  // and react-dnd only finishes the drop on the next mouse move.
-  useEffect(() => {
-    if (isDragging && !isRightSidebarPinned) {
-      setRightSidebarOpen(true);
-    }
-  }, [isDragging, isRightSidebarPinned, setRightSidebarOpen]);
 
   // As a ToolJet widget in the palette (WidgetBox): its widget's icon over its name.
   const { icon } = paletteFor(role);

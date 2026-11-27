@@ -1,6 +1,6 @@
 import React from 'react';
 import Select from '@/_ui/Select';
-import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { querySelectStyle } from '@/_ui/Select/styles';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
@@ -75,7 +75,7 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
 
   const customSelectStyles = (darkMode, width) => {
     return {
-      ...queryManagerSelectComponentStyle(darkMode, width),
+      ...querySelectStyle(restProps.surface, darkMode, width),
       control: (provided) => ({
         ...provided,
         boxShadow: 'none',

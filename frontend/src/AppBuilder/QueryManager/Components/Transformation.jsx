@@ -69,6 +69,7 @@ const WriteTransformationButton = () => {
           size="small"
           variant="ghost"
           iconOnly
+          aria-label="Write transformations"
           aria-selected={isPressed}
           className={isPressed ? '!tw-bg-button-outline-hover' : ''}
           onClick={openChat}

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { Check, PencilLine, X } from 'lucide-react';
-import { QueryDocumentationLink } from './QueryDocumentationLink';
 import {
   EDIT_APP_NAME_ICON_PROPS,
   EDIT_ICON_REVEAL_CLASS,
@@ -16,12 +15,11 @@ import {
 import {
   getInlineQueryNameCursorPosition,
   getInlineQueryNameStyle,
-  getQueryDocumentationPresentation,
   normalizeQueryName,
   validateInlineQueryName,
 } from './QueryRename.utils';
 
-export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSave, disabled, queryDocumentation }) => {
+export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSave, disabled }) => {
   const [draftName, setDraftName] = useState(value);
   const [errorText, setErrorText] = useState('');
   const [isClosing, setIsClosing] = useState(false);
@@ -30,10 +28,11 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
   // Set the moment editing starts to close, so a blur from the same action can't save a second time.
   const isClosingRef = useRef(false);
 
-  // Editing can also start from outside: a newly created query opens in rename mode while another query's name
-  // is still on screen. So the draft follows the name whenever it changes or editing starts.
+  // Also while editing: creating a query selects it and opens this editor in one step, and the box
+  // must show the new query's name, not the one that was selected before.
   useEffect(() => {
     setDraftName(value);
+    setErrorText('');
   }, [isEditing, value]);
 
   useEffect(() => () => window.clearTimeout(exitTimeoutRef.current), []);
@@ -178,9 +177,6 @@ export const QueryInlineNameEditor = ({ value, isEditing, onEditingChange, onSav
             </span>
           )}
         </button>
-      )}
-      {queryDocumentation && (
-        <QueryDocumentationLink {...queryDocumentation} {...getQueryDocumentationPresentation()} />
       )}
     </div>
   );

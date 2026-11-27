@@ -1,3 +1,5 @@
+@import '../../Shared/Panel/mixins';
+
 .left-sidebar-dependency-viewer {
   // Fills the popover that hosts it rather than carrying a width of its own. The host is
   // `.PopoverContent` (350px, with its padding removed by the `p-0` class the sidebar
@@ -21,73 +23,6 @@
 
 }
 
-/* ---------- empty states ---------- */
-
-.dependency-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 40px 16px;
-
-  .dependency-empty-state-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-  }
-
-  .dependency-empty-state-spot {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px;
-    border-radius: 8px;
-    background: var(--surfaces-surface-02);
-  }
-
-  .dependency-empty-state-icon {
-    color: var(--icon-default);
-  }
-
-  .dependency-empty-state-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    width: 100%;
-    text-align: center;
-  }
-
-  .dependency-empty-state-title {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
-    color: var(--text-default);
-  }
-
-  .dependency-empty-state-description {
-    font-size: 12px;
-    line-height: 18px;
-    color: var(--text-placeholder);
-  }
-
-  .dependency-empty-state-action {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
-    color: var(--primary-brand);
-
-    &:hover {
-      background: var(--interactive-overlays-fill-hover);
-    }
-  }
-}
-
 /* ---------- section ---------- */
 
 .dependency-section-header {
@@ -100,28 +35,8 @@
   user-select: none;
 
   &:hover {
-    background: var(--interactive-overlays-fill-hover);
+    background: var(--interactive-hover);
   }
-}
-
-.dependency-section-chevron-box {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.dependency-section-chevron {
-  color: var(--icon-strong);
-}
-
-.dependency-section-title {
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
-  color: var(--text-default);
 }
 
 .dependency-section-body {
@@ -150,7 +65,7 @@
 }
 
 .dependency-subsection-title {
-  font-size: 11px;
+  font-size: var(--app-builder-small-font-size, 11px);
   font-weight: 500;
   line-height: 16px;
   color: var(--text-placeholder);
@@ -169,7 +84,7 @@
 .dependency-row {
   display: flex;
   gap: 8px;
-  border-radius: 4px;
+  @include panel-row;
   overflow: hidden;
 
   &.compact {
@@ -188,11 +103,11 @@
   }
 
   &:hover {
-    background: var(--interactive-overlays-fill-hover);
+    background: var(--interactive-hover);
   }
 
   &.selected {
-    background: var(--interactive-overlays-fill-selected);
+    background: var(--background-accent-weak);
   }
 
   .dependency-row-icon {
@@ -318,7 +233,7 @@
   padding: 8px 16px 4px 24px;
 
   .dependency-detail-value-label {
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     font-weight: 500;
     line-height: 16px;
     color: var(--text-placeholder);
@@ -350,7 +265,7 @@
   border-radius: 6px;
 
   &:hover {
-    background: var(--interactive-overlays-fill-hover);
+    background: var(--interactive-hover);
   }
 }
 
@@ -407,7 +322,7 @@
     cursor: pointer;
 
     &:hover {
-      background: var(--interactive-overlays-fill-hover);
+      background: var(--interactive-hover);
     }
   }
 

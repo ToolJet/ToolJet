@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
+import { getRuntimeSearchName } from '@/AppBuilder/panelLayout';
 import InputComponent from '@/components/ui/Input/Index';
 import '../panelHeader.scss';
 
@@ -8,15 +9,7 @@ const InspectorHeader = ({ darkMode, onClose, searchValue, onSearchChange, onSea
     <div className={`inspector-header ${darkMode ? 'dark-theme' : ''}`}>
       <div className="inspector-header-top">
         <span className="inspector-header-title">Inspector</span>
-        <ButtonComponent
-          iconOnly
-          leadingIcon="x"
-          onClick={onClose}
-          variant="ghost"
-          size="medium"
-          isLucid={true}
-          data-cy="inspector-close-button"
-        />
+        <PanelCloseButton label="Close inspector" onClose={onClose} dataCy="inspector-close-button" />
       </div>
       {!hideSearch && (
         <div className="inspector-header-search">
@@ -25,7 +18,8 @@ const InspectorHeader = ({ darkMode, onClose, searchValue, onSearchChange, onSea
             onChange={(e) => onSearchChange(e.target.value)}
             onClear={onSearchClear}
             size="medium"
-            placeholder="Search"
+            placeholder={getRuntimeSearchName('inspect')}
+            aria-label={getRuntimeSearchName('inspect')}
             value={searchValue}
             {...(searchValue && { trailingAction: 'clear' })}
             data-cy="inspector-search-input"

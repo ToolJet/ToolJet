@@ -121,6 +121,7 @@ function EditAppName() {
   };
 
   const handleSave = async () => {
+    if (isSaving || isClosing) return;
     const nextName = normalizeAppName(draftName);
     const validation = validateInlineAppName(nextName);
     setDraftName(nextName);
@@ -182,7 +183,7 @@ function EditAppName() {
   );
 
   return (
-    <div className="tw-h-full tw-min-w-0 tw-max-w-full tw-flex tw-items-start tw-justify-start">
+    <div className="tw-h-full tw-min-w-0 tw-max-w-full tw-flex tw-items-center tw-justify-start">
       {isEditing ? (
         <div className="app-name-inline-editor tw-relative tw-flex tw-h-8 tw-min-w-0 tw-max-w-full tw-items-center tw-gap-1.5">
           <input
@@ -192,7 +193,9 @@ function EditAppName() {
             maxLength={APP_NAME_MAX_LENGTH}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            disabled={isSaving || isClosing}
+            // Read-only, not disabled: a disabled input loses focus, and after a duplicate-name error the
+            // user keeps typing to fix the name.
+            readOnly={isSaving || isClosing}
             aria-label={`${appTypeName} name`}
             aria-invalid={!!errorText}
             data-cy={`${appTypeName.toLowerCase()}-name-input`}
@@ -235,7 +238,7 @@ function EditAppName() {
           {(errorText || isAtLimit) && (
             <span
               className={`tw-absolute tw-left-0 tw-top-[34px] tw-z-20 tw-whitespace-nowrap tw-rounded tw-bg-[var(--surfaces-surface-01)] tw-px-1.5 tw-py-0.5 tw-text-[10px] tw-shadow-sm ${
-                errorText ? 'tw-text-[var(--text-danger)]' : 'tw-text-[var(--text-warning)]'
+                errorText ? 'tw-text-editor-text-danger' : 'tw-text-[var(--text-warning)]'
               }`}
               role={errorText ? 'alert' : 'status'}
               data-cy={`${appTypeName.toLowerCase()}-name-error-label`}

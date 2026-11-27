@@ -9,22 +9,14 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { RIGHT_SIDE_BAR_TAB } from './rightSidebarConstants';
 import QueryManager from '@/AppBuilder/QueryManager/QueryManager';
 import QueryKeyHooks from '@/AppBuilder/QueryPanel/QueryKeyHooks';
-import {
-  getQueryHeaderControlPresentation,
-  getLeftPanelState,
-  getRightPanelClassName,
-  getRightPanelStyle,
-  PANEL_MOTION,
-} from '@/AppBuilder/panelLayout';
+import { getLeftPanelState, getRightPanelClassName, getRightPanelStyle, PANEL_MOTION } from '@/AppBuilder/panelLayout';
 import { AddEditPagePopup } from './PageSettingsTab/PageMenu/AddNewPagePopup';
 import { QueryPanelResizeHandle } from './QueryPanelResizeHandle';
 import { LEFT_SIDEBAR_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './rightSidebar.scss';
-import { Button } from '@/components/ui/Button/Button';
 import { useCodeMode, useCodeModePin, CodeInspectorSidebar } from '@/AppBuilder/_helpers/codeModeHooks';
 
 export const RightSideBar = ({ darkMode }) => {
-  const closeControl = getQueryHeaderControlPresentation('close');
   const { isModuleEditor } = useModuleContext();
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const activeTab = useStore((state) => state.activeRightSideBarTab);
@@ -39,9 +31,6 @@ export const RightSideBar = ({ darkMode }) => {
   const leftPanelWidth = isLeftPanelOpen ? (LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default) : 0;
   const [isPanelMounted, setIsPanelMounted] = useState(isRightSidebarOpen);
   const [renderedTab, setRenderedTab] = useState(activeTab);
-  const pinned = useCodeModePin();
-  const codeMode = useCodeMode();
-  const isBlockedByBranch = useIsAiBlockedOnDefaultBranch();
 
   useEffect(() => {
     if (activeTab) setRenderedTab(activeTab);
@@ -57,8 +46,11 @@ export const RightSideBar = ({ darkMode }) => {
     return () => window.clearTimeout(exitTimer);
   }, [isRightSidebarOpen]);
 
-  if (codeMode && isBlockedByBranch) return null;
-  if (!isRightSidebarOpen && !isPanelMounted) return null;
+  const pinned = useCodeModePin();
+  const codeMode = useCodeMode();
+  const isBlockedByBranch = useIsAiBlockedOnDefaultBranch();
+
+  if ((!isRightSidebarOpen && !isPanelMounted) || (codeMode && isBlockedByBranch)) return null;
 
   const displayedTab = activeTab ?? renderedTab;
 
@@ -70,8 +62,8 @@ export const RightSideBar = ({ darkMode }) => {
           getRightPanelClassName(displayedTab, isLeftPanelOpen),
           { 'dark-theme theme-dark': darkMode },
           // The query panel freezes its own controls; Run, Preview and close stay usable on a frozen version.
-          // Code mode stays interactive too.
-          { 'tw-pointer-events-none': shouldFreeze && displayedTab !== RIGHT_SIDE_BAR_TAB.QUERY && !codeMode }
+          // Code mode never freezes the right panel.
+          { 'tw-pointer-events-none': shouldFreeze && !codeMode && displayedTab !== RIGHT_SIDE_BAR_TAB.QUERY }
         )}
         data-state={isRightSidebarOpen ? 'open' : 'closed'}
       >
@@ -115,34 +107,18 @@ export const RightSideBar = ({ darkMode }) => {
                 </div>
               </FallbackBoundary>
             )}
-            {/* Add component lives only in the left panel; the right side never shows it.
-                A pinned code-mode inspector takes this slot instead of component configuration. */}
-            {pinned ? (
-              <FallbackBoundary label="Style inspector" location="Style inspector" darkMode={darkMode}>
-                <CodeInspectorSidebar darkMode={darkMode} />
-              </FallbackBoundary>
-            ) : (
-              displayedTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION && (
+            {/* Add component lives only in the left panel; the right side never shows it. */}
+            {displayedTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION &&
+              (pinned ? (
+                <FallbackBoundary label="Style inspector" location="Style inspector" darkMode={darkMode}>
+                  <CodeInspectorSidebar darkMode={darkMode} />
+                </FallbackBoundary>
+              ) : (
                 <ComponentConfigurationTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
-              )
-            )}
+              ))}
             {displayedTab === RIGHT_SIDE_BAR_TAB.QUERY && (
               <FallbackBoundary label="Query configuration" location="Right SideBar Query" darkMode={darkMode}>
                 <div className="right-sidebar-query-configuration">
-                  <Button
-                    isLucid
-                    iconOnly
-                    size={closeControl.size}
-                    variant="ghost"
-                    leadingIcon="x"
-                    className={cx('right-sidebar-query-close', closeControl.className)}
-                    style={{ '--query-header-close-icon-size': `${closeControl.iconSizePx}px` }}
-                    aria-label="Close query configuration"
-                    onClick={() => {
-                      setActiveRightSideBarTab(null);
-                      setRightSidebarOpen(false);
-                    }}
-                  />
                   {/* Run, preview and stop shortcuts, live while the query is on screen. */}
                   <QueryKeyHooks isExpanded={isRightSidebarOpen}>
                     <QueryManager darkMode={darkMode} surface="right" />

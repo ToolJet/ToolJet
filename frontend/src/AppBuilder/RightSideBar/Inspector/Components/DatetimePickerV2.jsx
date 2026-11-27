@@ -519,7 +519,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
 
   items.push({
     id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-    title: t('widget.common.additionalActions', 'Additional Actions'),
+    title: t('widget.common.additionalActions', 'Additional actions'),
     isOpen: true,
     children: additionalActions.map((property) => {
       return renderElement(

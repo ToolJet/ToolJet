@@ -391,6 +391,6 @@ export function checkAndExtractEntityId(errorString) {
   };
 }
 
-export const computeCanvasContainerHeight = (queryPanelHeight, isDraggingQueryPane) => {
-  return `calc(${100}% - ${APP_HEADER_HEIGHT + getCanvasReservedBottom(queryPanelHeight, isDraggingQueryPane)}px)`;
+export const computeCanvasContainerHeight = (queryPanelHeight, isMobile) => {
+  return `calc(${100}% - ${APP_HEADER_HEIGHT + getCanvasReservedBottom(queryPanelHeight, isMobile)}px)`;
 };

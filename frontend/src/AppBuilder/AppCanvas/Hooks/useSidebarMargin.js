@@ -18,8 +18,6 @@ const useSidebarMargin = (canvasContainerRef) => {
     mode !== 'view' && isLeftPanelOpen ? (LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default) : 0;
   const scrollLeftRef = useRef(0);
   const appliedLeftSidebarWidthRef = useRef(0);
-  // Derived in render, not set from an effect: the offset must land in the same frame the sidebar opens,
-  // or one frame paints the canvas already scrolled by the sidebar's width but not yet offset by it.
 
   useEffect(() => {
     const handleScroll = () => {

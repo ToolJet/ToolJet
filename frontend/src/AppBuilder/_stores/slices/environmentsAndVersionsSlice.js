@@ -642,7 +642,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           );
           get().setQueryMapping(moduleId);
           if (dataQueries?.length > 0) {
-            get().queryPanel.setSelectedQuery(dataQueries[0]?.id, moduleId);
+            get().queryPanel.setSelectedQuery(dataQueries[0]?.id, moduleId, { reveal: false });
           }
         }
 

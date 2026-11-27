@@ -20,7 +20,8 @@ const useInspectorTreeData = ({ moduleId, appType }) => {
   const exposedModuleInputs = useStore((state) => state.getAllExposedValues(moduleId).input || {}, shallow);
   const allComponentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
   const getComponentDefinition = useStore((state) => state.getComponentDefinition, shallow);
-  // In Code mode a page's one component is the code page itself, which has nothing to inspect here.
+  // In Code mode a page's one component is the code page itself (the whole React app), which has nothing to inspect
+  // here: it is left out, and the Components section with it when nothing else is on the page.
   const codeMode = useCodeMode(moduleId);
   const componentIdNameMapping = useMemo(
     () =>
@@ -124,8 +125,15 @@ const useInspectorTreeData = ({ moduleId, appType }) => {
       ],
     };
 
-    if (codeMode && sortedComponents.length === 0) {
-      jsontreeData.children = jsontreeData.children.filter((child) => child.id !== 'components');
+    if (codeMode) {
+      // React builder apps manage UI state in React and route via useNavigation(), so ToolJet's
+      // app-level Variables and Page state do not apply (nor does an empty Components section).
+      jsontreeData.children = jsontreeData.children.filter(
+        (child) =>
+          child.id !== 'variables' &&
+          child.id !== 'page' &&
+          !(child.id === 'components' && sortedComponents.length === 0)
+      );
     }
 
     if (appType === 'module') {

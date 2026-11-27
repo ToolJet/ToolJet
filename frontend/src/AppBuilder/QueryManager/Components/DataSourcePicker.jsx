@@ -294,7 +294,7 @@ function DataSourcePicker({ darkMode }) {
         <div className="datasource-picker-search-wrap">
           <SearchBox2
             width="100%"
-            placeholder="Search for datasources"
+            placeholder="Search for data source"
             customClass={darkMode ? 'dark-theme-placeholder' : ''}
             callBack={(e) => setSearchTerm(e.target.value)}
             onClearCallback={() => setSearchTerm('')}

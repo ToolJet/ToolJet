@@ -33,6 +33,7 @@ import {
   getLeftPanelState,
   PANEL_MOTION,
   shouldShowLibraries,
+  SIDEBAR_ITEMS,
 } from '@/AppBuilder/panelLayout';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
@@ -43,22 +44,6 @@ import { railClick } from './railClick';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import LegalReasonsErrorModal from '@/_components/LegalReasonsErrorModal';
 import { fetchEdition } from '@/modules/common/helpers/utils';
-
-// Human names for the error-boundary label/location of each sidebar panel.
-const LEFT_SIDEBAR_PANEL_LABELS = {
-  pages: 'Pages',
-  components: 'Components',
-  queries: 'Queries',
-  search: 'Code search',
-  libraries: 'Libraries',
-  dependencies: 'Dependencies',
-  apphistory: 'App history',
-  tooljetai: 'AI chat',
-  debugger: 'Debugger',
-  security: 'Security',
-  access: 'Access',
-  settings: 'App settings',
-};
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -75,7 +60,6 @@ export const BaseLeftSidebar = ({
   const codeMode = useCodeMode(moduleId);
   const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
   const buildMode = useStore((state) => state.appStore?.modules?.[moduleId]?.app?.buildMode);
-  const resetUnreadErrorCount = useStore((state) => state.debugger.resetUnreadErrorCount);
   const [
     pinned,
     selectedSidebarItem,
@@ -135,11 +119,8 @@ export const BaseLeftSidebar = ({
 
   const handleSelectedSidebarItem = (item) => {
     if (isAiBlockedByBranch && item === 'tooljetai') return;
-    if (item === 'debugger') resetUnreadErrorCount();
     // Only a search result opens Settings with a way back to the search panel.
     setCodeSearchReturnToSearch(false);
-    // Left-rail clicks never close the right panel; it closes only from its own ×.
-    setAnimatePanelSwitch(!isSidebarOpen || item !== selectedSidebarItem);
     const click = railClick({
       item,
       selected: selectedSidebarItem,
@@ -154,6 +135,8 @@ export const BaseLeftSidebar = ({
       localStorage.setItem('selectedSidebarItem', 'tooljetai');
       return;
     }
+    // Left-rail clicks never close the right panel; it closes only from its own ×.
+    setAnimatePanelSwitch(!isSidebarOpen || item !== selectedSidebarItem);
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
     // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
@@ -217,7 +200,7 @@ export const BaseLeftSidebar = ({
 
   const renderPopoverContent = () => {
     if (panelItem === null) return null;
-    const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[panelItem] || 'Left sidebar';
+    const panelLabel = SIDEBAR_ITEMS[panelItem]?.name || 'Left sidebar';
     return (
       // Every sidebar panel gets its own labelled boundary; switching panels auto-recovers.
       <FallbackBoundary
@@ -230,6 +213,9 @@ export const BaseLeftSidebar = ({
           key={panelItem}
           className={cx('left-sidebar-panel-content', {
             'left-sidebar-panel-content--switching': animatePanelSwitch,
+            // The panel renders in a portal, outside the editor's .theme-dark ancestor that dark-mode
+            // rules (tabs, Bootstrap inputs) key on.
+            'theme-dark': darkMode,
           })}
         >
           {renderSelectedPanel()}
@@ -299,38 +285,37 @@ export const BaseLeftSidebar = ({
       <>
         {/* The AI chat sits first on the rail and opens in the left panel like every other item. */}
         {renderAISideBarTrigger({ darkMode, setSideBarBtnRefs, selectedSidebarItem, handleSelectedSidebarItem })}
+        {/* A React builder app has no visual canvas, so no pages or widget palette (LP-M05, as on main). */}
+        {!codeMode && (
+          <>
+            <SidebarItem
+              selectedSidebarItem={selectedSidebarItem}
+              onClick={() => handleSelectedSidebarItem('pages')}
+              darkMode={darkMode}
+              panel="pages"
+              className="left-sidebar-item left-sidebar-layout"
+              ref={setSideBarBtnRefs('pages')}
+            >
+              <Files size={16} strokeWidth={1.8} />
+            </SidebarItem>
+            <SidebarItem
+              panel="components"
+              selectedSidebarItem={selectedSidebarItem}
+              darkMode={darkMode}
+              onClick={() => handleSelectedSidebarItem('components')}
+              className="left-sidebar-item left-sidebar-layout"
+              ref={setSideBarBtnRefs('components')}
+            >
+              <Blocks size={16} strokeWidth={1.8} />
+            </SidebarItem>
+          </>
+        )}
         <SidebarItem
-          selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('pages')}
-          darkMode={darkMode}
-          icon="pages"
-          className="left-sidebar-item left-sidebar-layout"
-          tip="Pages"
-          railLabel="Pages"
-          ref={setSideBarBtnRefs('pages')}
-        >
-          <Files size={16} strokeWidth={1.8} />
-        </SidebarItem>
-        <SidebarItem
-          icon="components"
-          selectedSidebarItem={selectedSidebarItem}
-          darkMode={darkMode}
-          onClick={() => handleSelectedSidebarItem('components')}
-          className="left-sidebar-item left-sidebar-layout"
-          tip="Components"
-          railLabel="Add"
-          ref={setSideBarBtnRefs('components')}
-        >
-          <Blocks size={16} strokeWidth={1.8} />
-        </SidebarItem>
-        <SidebarItem
-          icon="queries"
+          panel="queries"
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
           onClick={() => handleSelectedSidebarItem('queries')}
           className="left-sidebar-item left-sidebar-layout"
-          tip="Queries"
-          railLabel="Queries"
           ref={setSideBarBtnRefs('queries')}
         >
           <DatabaseZap size={16} strokeWidth={1.8} />
@@ -343,82 +328,77 @@ export const BaseLeftSidebar = ({
             setSideBarBtnRefs={setSideBarBtnRefs}
           />
         )}
-        {(codeMode || buildMode === 'code') && !isModuleEditor && (
-          <SidebarItem
-            icon="security"
-            selectedSidebarItem={selectedSidebarItem}
-            darkMode={darkMode}
-            onClick={() => handleSelectedSidebarItem('security')}
-            className="left-sidebar-item left-sidebar-layout"
-            tip="Security"
-            ref={setSideBarBtnRefs('security')}
-          >
-            <ScanSearch width="16" height="16" className="tw-text-icon-strong" />
-          </SidebarItem>
-        )}
-        {(codeMode || buildMode === 'code') && !isModuleEditor && (
-          <SidebarItem
-            icon="access"
-            selectedSidebarItem={selectedSidebarItem}
-            darkMode={darkMode}
-            onClick={() => (accessInPlan ? handleSelectedSidebarItem('access') : setShowAccessUpgrade(true))}
-            className="left-sidebar-item left-sidebar-layout"
-            tip="Access"
-            ref={setSideBarBtnRefs('access')}
-          >
-            <LockKeyhole width="16" height="16" className="tw-text-icon-strong" />
-          </SidebarItem>
-        )}
       </>
     );
   };
 
   const renderManageItems = () => (
     <>
-      <div className="left-sidebar-section-divider" role="separator" aria-label="Manage tools" />
+      <div className="left-sidebar-section-divider" role="separator" />
       {!codeMode && (
         <SidebarItem
-          icon="search"
+          panel="search"
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
           onClick={() => handleSelectedSidebarItem('search')}
           className="left-sidebar-item left-sidebar-layout tw-overflow-visible"
-          tip="Code search"
-          railLabel="Search"
           ref={setSideBarBtnRefs('search')}
         >
           <Search size={16} strokeWidth={1.8} />
           <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
         </SidebarItem>
       )}
+      {(codeMode || buildMode === 'code') && !isModuleEditor && (
+        <SidebarItem
+          panel="security"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('security')}
+          className="left-sidebar-item left-sidebar-layout"
+          ref={setSideBarBtnRefs('security')}
+        >
+          <ScanSearch size={16} strokeWidth={1.8} />
+        </SidebarItem>
+      )}
+      {(codeMode || buildMode === 'code') && !isModuleEditor && (
+        <SidebarItem
+          panel="access"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => (accessInPlan ? handleSelectedSidebarItem('access') : setShowAccessUpgrade(true))}
+          className="left-sidebar-item left-sidebar-layout"
+          ref={setSideBarBtnRefs('access')}
+        >
+          <LockKeyhole size={16} strokeWidth={1.8} />
+        </SidebarItem>
+      )}
       {!codeMode && (
         <SidebarItem
-          icon="dependencies"
+          panel="dependencies"
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
           onClick={() => handleSelectedSidebarItem('dependencies')}
           className="left-sidebar-item left-sidebar-layout"
-          tip="Dependencies"
-          railLabel="Deps"
           ref={setSideBarBtnRefs('dependencies')}
         >
           <Network size={16} strokeWidth={1.8} />
         </SidebarItem>
       )}
+      {/* Code mode: shown on every plan; below Pro it opens the upgrade prompt (the edition's component decides). */}
       {codeMode && !isModuleEditor && (
         <SidebarItem
+          panel="apphistory"
           selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('apphistory')}
           darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('apphistory')}
           className="left-sidebar-item left-sidebar-layout"
-          tip="App history"
           ref={setSideBarBtnRefs('apphistory')}
-          icon="apphistory"
         >
-          <History width="16" height="16" className="tw-text-icon-strong" />
+          <History size={16} strokeWidth={1.8} />
         </SidebarItem>
       )}
-      {!codeMode && !isModuleEditor && featureAccess?.appHistory && (
+      {/* Shown on every plan; below Pro it opens the upgrade prompt (LP-M08). */}
+      {!codeMode && !isModuleEditor && (
         <AppHistoryIcon
           darkMode={darkMode}
           selectedSidebarItem={selectedSidebarItem}
@@ -432,18 +412,15 @@ export const BaseLeftSidebar = ({
 
   const renderSettingsItem = (isModuleEditor) => (
     <SidebarItem
-      icon="settings"
+      panel="settings"
       selectedSidebarItem={selectedSidebarItem}
       darkMode={darkMode}
       // eslint-disable-next-line no-unused-vars
       onClick={(e) => handleSelectedSidebarItem('settings')}
       className={`left-sidebar-item  left-sidebar-layout`}
       badge={true}
-      tip="Settings"
-      railLabel="Settings"
       ref={setSideBarBtnRefs('settings')}
       isModuleEditor={isModuleEditor}
-      data-cy="left-sidebar-settings-button"
     >
       <Settings size={16} strokeWidth={1.8} />
     </SidebarItem>
@@ -464,15 +441,6 @@ export const BaseLeftSidebar = ({
         style={{ zIndex: 9999, maxWidth: '304px' }}
       >
         {renderLeftSidebarItems()}
-        {showAccessUpgrade && (
-          <LegalReasonsErrorModal
-            showModal
-            toggleModal={() => setShowAccessUpgrade(false)}
-            darkMode={darkMode}
-            edition={fetchEdition()}
-            message="Screen and query permissions are not included in your current plan. Upgrade your plan to use Access permissions."
-          />
-        )}
         {shouldMountLeftPanel && (
           <Popover
             forceMount
@@ -480,7 +448,7 @@ export const BaseLeftSidebar = ({
             // outside click (canvas, right panel, bottom panel, AI chat).
             onInteractOutside={(e) => e.preventDefault()}
             open={isLeftPanelOpen}
-            popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${panelItem} left-sidebar-overflow-${getLeftPanelOverflow(
+            popoverContentClassName={`tj-panel p-0 left-sidebar-scrollbar sidebar-h-100-popover ${panelItem} left-sidebar-overflow-${getLeftPanelOverflow(
               panelItem
             )}`}
             side="right"
@@ -500,6 +468,15 @@ export const BaseLeftSidebar = ({
           </div>
         </div>
       </div>
+      {showAccessUpgrade && (
+        <LegalReasonsErrorModal
+          showModal
+          toggleModal={() => setShowAccessUpgrade(false)}
+          darkMode={darkMode}
+          edition={fetchEdition()}
+          message="Screen and query permissions are not included in your current plan. Upgrade your plan to use Access permissions."
+        />
+      )}
     </>
   );
 };

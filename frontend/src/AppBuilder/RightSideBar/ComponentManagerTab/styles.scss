@@ -3,9 +3,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 16px 8px 16px; // top right bottom left - 8px bottom for gap before tabs
-  min-height: 40px;
+  // Same numbers as the shared PanelHeader (Shared/Panel/panel.scss); pinned while the panel scrolls.
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  flex: 0 0 48px;
+  height: 48px;
+  padding: 0 16px;
   gap: 8px;
+  background-color: var(--background-surface-layer-01);
 
   .panel-header-title {
     font-family: 'IBM Plex Sans', sans-serif;
@@ -49,25 +55,53 @@
 // renders in the left panel, so keep its visual contract local to that surface rather
 // than depending on which side of the editor owns it.
 .components-container--left {
+  .tj-widgets-search-input {
+    width: auto;
+    margin-inline: 16px;
+  }
+
+  .component-card-group-container {
+    margin-inline: 16px;
+  }
+
+  .component-card-group-wrapper {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 12px;
+
+    .draggable-box {
+      width: 100%;
+    }
+  }
+
+  .draggable-box-wrapper,
+  .component-title {
+    width: 100%;
+  }
+
+  .component-image-wrapper {
+    width: 100% !important;
+  }
+
   .component-image-holder {
     box-sizing: border-box;
     border-radius: 4px;
-    background-color: var(--slate3);
+    background-color: var(--surfaces-surface-02);
+    border: 1px solid transparent;
     transition: background-color 160ms ease, border-color 160ms ease;
 
     &:hover {
-      border: 1px solid var(--slate4);
-      background-color: var(--slate4);
+      border-color: var(--border-default);
+      background-color: var(--interactive-hover);
     }
 
     &:active {
-      border: 1px solid var(--slate6);
-      background-color: var(--slate4);
+      border-color: var(--border-strong);
+      background-color: var(--interactive-hover);
     }
   }
 
   .component-title {
-    width: 72px;
     height: 26px;
     max-width: 100%;
     margin-top: 4px;
@@ -196,7 +230,7 @@
 
   .custom-components-empty-subtitle {
     margin: 0;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     line-height: 18px;
     color: var(--text-placeholder);
   }
@@ -283,7 +317,7 @@
     gap: 6px;
     padding: 1px 6px;
     border-radius: 100px;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     font-weight: 500;
     color: var(--primary-accent-strong);
     background: var(--background-accent-weak, #ecf0fe);
@@ -304,6 +338,39 @@
     min-width: 84px !important;
   }
 }
+
+// Component search: same field as the other panels (32px, 8px radius, panel surface, shared
+// border / placeholder / focus tokens). The legacy .tj-app-input rules need !important to lose.
+.components-container .tj-widgets-search-input {
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--background-surface-layer-01) !important;
+
+  .form-control {
+    height: 32px;
+    margin-bottom: 0 !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: 8px !important;
+    background: var(--background-surface-layer-01) !important;
+    color: var(--text-default) !important;
+
+    &::placeholder {
+      color: var(--text-placeholder) !important;
+    }
+
+    &:hover {
+      background: var(--background-surface-layer-01) !important;
+      border-color: var(--border-default) !important;
+    }
+
+    &:focus,
+    &:focus-visible {
+      background: var(--background-surface-layer-01) !important;
+      border-color: var(--border-accent-strong) !important;
+    }
+  }
+}
+
 // The app's component library (LibraryPicker): the Components tab's label, with a chevron.
 .component-library-picker-trigger {
   display: inline-flex;
@@ -349,7 +416,7 @@
 
   .component-library-picker-group {
     padding: 4px 8px;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     font-weight: 500;
     color: var(--text-placeholder);
   }

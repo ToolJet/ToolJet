@@ -66,7 +66,7 @@ describe("App Slug", () => {
     cy.clearAndType(commonWidgetSelector.appSlugInput, data.slug);
     verifySuccessfulSlugUpdate(Cypress.env("workspaceId"), data.slug);
 
-    cy.get('[data-cy="left-sidebar-debugger-button"]').click();
+    cy.get('[data-cy="left-sidebar-pages-button"]').click();
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
     cy.get(commonWidgetSelector.appSlugInput).should("have.value", data.slug);
 

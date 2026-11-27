@@ -320,8 +320,8 @@ const VersionDropdownItem = ({
                 <span
                   className="tj-text-xsm"
                   style={{
-                    backgroundColor: 'var(--background-warning-weak)',
-                    color: 'var(--text-warning)',
+                    backgroundColor: 'var(--orange3)',
+                    color: 'var(--orange11)',
                     padding: '0 8px',
                     borderRadius: '4px',
                     fontWeight: 400,
@@ -339,8 +339,8 @@ const VersionDropdownItem = ({
                 <span
                   className="tj-text-xsm"
                   style={{
-                    backgroundColor: 'var(--background-success-weak)',
-                    color: 'var(--text-success)',
+                    backgroundColor: 'var(--grass3)',
+                    color: 'var(--grass11)',
                     padding: '0 8px',
                     borderRadius: '4px',
                     fontWeight: 400,
@@ -471,6 +471,7 @@ const VersionDropdownItem = ({
                           size="small"
                           iconOnly
                           leadingIcon="morevertical01"
+                          aria-label={`${version.name} options`}
                           className={cx({ 'dark-theme theme-dark': darkMode })}
                           onClick={(e) => e.stopPropagation()}
                           data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-more-menu-button`}

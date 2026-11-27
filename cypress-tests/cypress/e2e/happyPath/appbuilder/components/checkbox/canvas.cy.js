@@ -32,7 +32,6 @@ describe('Checkbox — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-Canvas`);
         cy.openApp();
         cy.dragAndDropWidget('Checkbox', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('drag-and-drop places the widget', () => {
@@ -87,10 +86,8 @@ describe('Checkbox — canvas facet', { testIsolation: false }, () => {
     });
 
     it('multi-select then select-all', () => {
-        // add a second widget (toggle panel closed so dragAndDrop re-opens it)
-        cy.get('[data-cy="right-sidebar-components-button"]').click();
+        // add a second widget
         cy.dragAndDropWidget('Checkbox', 650, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
 
         multiSelectWidgets(['checkbox1', 'checkbox2']);
         verifySelectedWidgetCount(2);

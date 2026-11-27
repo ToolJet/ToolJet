@@ -247,21 +247,20 @@ export const createDataQuerySlice = (set, get) => ({
       const versionId = get().currentVersionId;
       const setIsAppSaving = get().setIsAppSaving;
       setIsAppSaving(true);
+      // A row's menu can delete a query that isn't selected (QM-62): the selection moves only when the selected
+      // query is the one deleted, and the mapping removed is the deleted query's.
+      const deletedQuery = get().dataQuery.queries.modules[moduleId].find((query) => query.id === queryId);
+      const wasSelected = get().queryPanel.selectedQuery?.id === queryId;
       dataqueryService
         .del(queryId, versionId)
         .then(() => {
           const dataQueries = get().dataQuery.queries.modules[moduleId];
-          // const deletedQueryName = dataQueries.find((query) => query.id === queryId).name;
           const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
-          const setSelectedQuery = get().queryPanel.setSelectedQuery;
-          const setSelectedDataSource = get().queryPanel.setSelectedDataSource;
-          const selectedQuery = get().queryPanel.selectedQuery;
-          setSelectedQuery(newSelectedQuery?.id || null);
-          get().deleteQueryMapping(selectedQuery?.name, selectedQuery?.id, moduleId);
-
-          if (!newSelectedQuery?.id) {
-            setSelectedDataSource(null);
+          if (wasSelected) {
+            get().queryPanel.setSelectedQuery(newSelectedQuery?.id || null, moduleId, { reveal: false });
+            if (!newSelectedQuery?.id) get().queryPanel.setSelectedDataSource(null);
           }
+          get().deleteQueryMapping(deletedQuery?.name, queryId, moduleId);
           set((state) => {
             state.dataQuery.isDeletingQueryInProcess = false;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].filter(

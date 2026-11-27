@@ -3,7 +3,7 @@
 .runtime-debugger {
   &__count {
     margin-left: 4px;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     color: var(--text-placeholder);
   }
 
@@ -12,7 +12,7 @@
     align-items: center;
 
     &.is-active .runtime-debugger__count {
-      color: var(--indigo9);
+      color: var(--editor-text-accent, var(--indigo9));
     }
 
     &.is-empty:not(.is-active) {
@@ -43,7 +43,7 @@
       }
 
       &.is-active {
-        color: var(--indigo9) !important;
+        color: var(--editor-text-accent, var(--indigo9)) !important;
         background: var(--indigo3) !important;
         border-color: var(--indigo5) !important;
       }
@@ -76,7 +76,12 @@
     }
 
     &.is-selected {
-      background: var(--indigo3) !important;
+      background: var(--background-accent-weak) !important;
+
+      .runtime-debugger__row-source,
+      .runtime-debugger__row-time {
+        color: var(--text-medium);
+      }
     }
   }
 
@@ -125,7 +130,7 @@
   }
 
   &__row-time {
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     color: var(--text-placeholder);
     white-space: nowrap;
   }
@@ -134,22 +139,22 @@
     flex-shrink: 0;
     padding: 1px 6px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     line-height: 16px;
 
     &.is-error {
-      color: var(--text-danger);
-      background: var(--background-error-weak);
+      color: var(--red11);
+      background: var(--red3);
     }
 
     &.is-warning {
-      color: var(--text-warning);
-      background: var(--background-warning-weak);
+      color: var(--orange11);
+      background: var(--orange3);
     }
 
     &.is-success {
-      color: var(--text-success);
-      background: var(--background-success-weak);
+      color: var(--grass11);
+      background: var(--grass3);
     }
 
     &.is-info {
@@ -158,7 +163,19 @@
     }
   }
 
+  // A narrow drawer moves the log action and copy button to a second row rather than squeeze the
+  // title, which keeps its full width up to the drawer's (UC-08).
+  &__detail-header.runtime-inspector__detail-header {
+    flex-wrap: wrap;
+    row-gap: 0;
+    height: auto;
+    min-height: 40px;
+    padding-block: 6px;
+  }
+
   &__detail-title {
+    flex: 1 0 auto;
+    max-width: 100%;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -172,7 +189,7 @@
     height: 28px;
     padding: 0 8px !important;
     border-radius: 6px;
-    color: var(--indigo9) !important;
+    color: var(--editor-text-accent, var(--indigo9)) !important;
     font-size: 12px !important;
     white-space: nowrap;
 

@@ -132,6 +132,7 @@ export const CountrySelect = ({ value, onChange, options, dataCy, ...rest }) => 
         hasSearch={false}
         useCustomStyles={true}
         menuPortalTarget={document.body}
+        classNames={{ menuPortal: () => 'tj-widget-overlay' }}
         isCurrencyInput={isCurrencyInput}
         showFlag={showFlag}
         isCountryChangeEnabled={isCountryChangeEnabled}

@@ -85,7 +85,7 @@ const QueryManager = ({ mode, darkMode, surface = 'bottom' }) => {
         'd-none': loadingDataSources,
       })}
     >
-      <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} surface={surface} />
+      <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} />
       <CodeHinterContext.Provider value={codeHinterContext}>
         <QueryManagerBody darkMode={darkMode} activeTab={activeTab} surface={surface} />
       </CodeHinterContext.Provider>

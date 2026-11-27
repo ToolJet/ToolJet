@@ -2,6 +2,8 @@
 // useInspectorTreeData: root → categories (queries, components, …) → entries (a query, a component, …),
 // where component entries may nest their child components.
 
+import { splitPath } from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/utils';
+
 export const ALL_CATEGORIES = 'all';
 
 // Short labels for the category filter; the tree's own names carry qualifiers such as "(current page)".
@@ -44,9 +46,19 @@ export const getEntryPath = (entry) => entry?.metadata?.path ?? entry?.id;
 
 // True when `selectedPath` is the entry itself or a value inside it (e.g. components.table1.data).
 export const isPathWithin = (selectedPath, entryPath) =>
-  Boolean(selectedPath && entryPath) && (selectedPath === entryPath || selectedPath.startsWith(`${entryPath}.`));
+  Boolean(selectedPath && entryPath) &&
+  selectedPath.startsWith(entryPath) &&
+  (selectedPath.length === entryPath.length || ['.', '['].includes(selectedPath[entryPath.length]));
+
+// True when the selected path is at or inside one of the entry's descendants. Needed because a
+// component nested in a container keeps its own path (components.text2), not one under the container.
+export const containsSelectedPath = (entry, selectedPath) =>
+  Boolean(selectedPath) &&
+  (entry?.children ?? []).some(
+    (child) => isPathWithin(selectedPath, getEntryPath(child)) || containsSelectedPath(child, selectedPath)
+  );
 
 // Entity-level actions (run query, go to component, …) only make sense on the entity, not a nested value.
-export const isEntityPath = (path) => typeof path === 'string' && path.split('.').length === 2;
+export const isEntityPath = (path) => typeof path === 'string' && splitPath(path).length === 2;
 
-export const getPathCategory = (path) => (typeof path === 'string' ? path.split('.')[0] : null);
+export const getPathCategory = (path) => (typeof path === 'string' ? (splitPath(path)[0] ?? null) : null);

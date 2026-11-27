@@ -24,6 +24,7 @@ import {
   viewedLibraryVersionId,
 } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { QUERY_PANEL_RESIZE, parseStoredQueryPanelWidth } from '@/AppBuilder/panelLayout';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { emptyPreviewParameters } from '@/AppBuilder/QueryManager/Components/previewParameters';
 import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
 import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
@@ -91,6 +92,7 @@ const initialState = {
   queryPanelSearchTem: '',
   showQueryPermissionModal: false,
   targetBtnForMenu: null,
+  menuQueryId: null,
   showQueryHandlerMenu: false,
   showDeleteConfirmation: false,
   renamingQueryId: null,
@@ -155,7 +157,7 @@ export const createQueryPanelSlice = (set, get) => ({
         false,
         'setRuntimePanelTab'
       ),
-    // Every "inspect this" entry point (State inspector, Entity usage links) lands here.
+    // Every "inspect this" entry point (Open inspector, Entity usage links) lands here.
     openRuntimeInspector: (path) => {
       get().setSelectedNodePath(path);
       set(
@@ -178,7 +180,10 @@ export const createQueryPanelSlice = (set, get) => ({
         'setQueryPanelHeight'
       );
     }, // updateQueryPanelHeight
-    setSelectedQuery: (queryId, moduleId = 'canvas', { fromServer = false } = {}) => {
+    // Selecting a different query also shows its editor in the right panel. Selections the editor makes
+    // by itself (first query on load or version switch, next query after a delete) pass `reveal: false`
+    // so they never open the right panel or replace what the user has open there.
+    setSelectedQuery: (queryId, moduleId = 'canvas', { fromServer = false, reveal = true } = {}) => {
       if (isQueryLibraryMode(get()) && get().queryPanel.selectedQuery?.id !== queryId) {
         get().dataQuery.saveData.flush?.();
         for (const controller of queryAbortControllers.values()) controller.abort();
@@ -186,6 +191,7 @@ export const createQueryPanelSlice = (set, get) => ({
         get().queryPanel.setPreviewData('');
       }
       set((state) => {
+        const isNewSelection = state.queryPanel.selectedQuery?.id !== queryId;
         if (queryId === null) {
           state.queryPanel.selectedQuery = null;
           state.queryPanel.selectedDataSource = null;
@@ -209,7 +215,10 @@ export const createQueryPanelSlice = (set, get) => ({
         if (fromServer) state.queryPanel.queryHydrationRevision += 1;
         state.queryPanel.selectedQuery = query;
         state.queryPanel.selectedDataSource = get().queryPanel.resolveDataSourceForQuery(query);
-        return;
+        if (reveal && isNewSelection) {
+          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.QUERY;
+          state.isRightSidebarOpen = true;
+        }
       });
       if (isQueryLibraryMode(get())) get().dataQuery.refreshLibrarySaveStatus?.();
     },
@@ -2227,9 +2236,14 @@ export const createQueryPanelSlice = (set, get) => ({
         state.queryPanel.showQueryPermissionModal = show;
       });
     },
-    toggleQueryHandlerMenu: (show, id) => {
+    // queryId: the row whose ⋮ opened the menu. The menu acts on it without selecting it, so a closed
+    // query editor stays closed (QM-62).
+    toggleQueryHandlerMenu: (show, id, queryId) => {
       set((state) => {
-        if (show) state.queryPanel.targetBtnForMenu = id;
+        if (show) {
+          state.queryPanel.targetBtnForMenu = id;
+          state.queryPanel.menuQueryId = queryId ?? null;
+        }
         state.queryPanel.showQueryHandlerMenu = show;
       });
     },
@@ -2240,6 +2254,14 @@ export const createQueryPanelSlice = (set, get) => ({
     deleteDataQuery: (queryId) =>
       set((state) => {
         state.queryPanel.deletingQueryId = queryId;
+      }),
+    // Shows the selected query's editor in the right panel, even when that query was already selected
+    // (setSelectedQuery only opens the panel for a new selection). The bottom drawer holds the
+    // Inspector and Debugger, so it is left as the user had it.
+    revealQueryEditor: () =>
+      set((state) => {
+        state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.QUERY;
+        state.isRightSidebarOpen = true;
       }),
     expandQueryPaneIfNeeded: () => {
       const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {

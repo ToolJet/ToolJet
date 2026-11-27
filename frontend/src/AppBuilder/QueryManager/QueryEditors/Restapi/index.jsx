@@ -6,7 +6,7 @@ import Tabs from './Tabs';
 import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
 import { BaseUrl } from './BaseUrl';
-import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { querySelectStyle } from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -252,7 +252,7 @@ class Restapi extends React.Component {
 
   customSelectStyles = (darkMode, width) => {
     return {
-      ...queryManagerSelectComponentStyle(darkMode, width),
+      ...querySelectStyle(this.props.surface, darkMode, width),
       control: (provided) => ({
         ...provided,
         boxShadow: 'none',

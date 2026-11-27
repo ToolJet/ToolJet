@@ -28,6 +28,7 @@ const DynamicSelector = ({
   computeSelectStyles,
   disableMenuPortal = false,
   queryName,
+  animateMenu = false,
   propertyKey,
   value,
   fxEnabled = false,
@@ -762,7 +763,7 @@ const DynamicSelector = ({
               }}
             >
               <Select
-                animateMenu={!!queryName}
+                animateMenu={animateMenu}
                 options={fetchedData}
                 value={getCurrentValue()}
                 onChange={handleSelectionChange}

@@ -60,7 +60,7 @@
     }
 
     &.active {
-      color: var(--text-accent);
+      color: var(--editor-text-accent, var(--indigo9));
       border-color: var(--border-accent-weak);
       background: var(--background-accent-weak);
     }
@@ -90,7 +90,7 @@
     border-radius: 999px;
     background: transparent;
     color: var(--text-default);
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     line-height: 18px;
 
     &:hover {
@@ -98,7 +98,7 @@
     }
 
     &.active {
-      color: var(--text-accent);
+      color: var(--editor-text-accent, var(--indigo9));
       border-color: var(--border-accent-weak);
       background: var(--background-accent-weak);
     }
@@ -116,7 +116,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     color: var(--text-placeholder);
   }
 
@@ -136,7 +136,7 @@
   }
 
   .code-search-error {
-    color: var(--text-danger);
+    color: var(--editor-text-danger, var(--text-danger));
   }
 
   // Shared header-row reset: group and entity headers are buttons so they toggle on click / Enter.
@@ -157,22 +157,17 @@
     }
   }
 
-  // Section header (Components / Queries / Events / Pages & app): the top level, so it reads largest.
+  // Section header (Components / Queries / Events / Pages & app): same 12px/500 as every panel's section heading.
   .code-search-group-header {
     height: 32px;
     padding: 0 12px 0 8px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     color: var(--text-default);
   }
 
   .code-search-group + .code-search-group {
     margin-top: 8px;
-  }
-
-  .code-search-group-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .code-search-entity-header {
@@ -192,14 +187,15 @@
 
   // The name is what the builder scans for, so it keeps its width; type and page give way first.
   .code-search-entity-name {
-    flex-shrink: 0;
-    max-width: 55%;
+    flex: 0 1 auto;
+    min-width: 48px;
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .code-search-entity-type {
+    flex-shrink: 0;
     color: var(--text-placeholder);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -207,15 +203,15 @@
 
   // The page a component is on; the current page in accent so it's easy to spot.
   .code-search-entity-page {
-    flex-shrink: 2;
-    min-width: 0;
+    flex-shrink: 0;
+    max-width: 96px;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 11px;
+    font-size: var(--app-builder-small-font-size, 11px);
     color: var(--text-placeholder);
 
     &.current {
-      color: var(--text-accent);
+      color: var(--editor-text-accent, var(--indigo9));
     }
   }
 
@@ -224,7 +220,7 @@
     margin-left: auto;
     padding: 0 6px;
     border-radius: 999px;
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
     line-height: 16px;
     color: var(--text-default);
     background: var(--interactive-default, var(--slate3));
@@ -234,9 +230,9 @@
     flex-shrink: 0;
     padding: 0 4px;
     border-radius: 4px;
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
     line-height: 16px;
-    color: var(--text-accent);
+    color: var(--editor-text-accent, var(--indigo9));
     background: var(--background-accent-weak);
   }
 
@@ -311,7 +307,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: var(--font-family-mono, monospace);
-    font-size: 11.5px;
+    font-size: var(--app-builder-small-font-size, 11.5px);
     color: var(--text-placeholder);
 
     mark {

@@ -1,7 +1,8 @@
 /**
- * Clicking empty canvas clears the canvas selection but must not change anything on the right side:
- * the open tab and what it is configuring (a component, the canvas header, or the footer) stay as
- * they were. The right panel never switches to the Add component picker.
+ * Clearing the canvas selection (clearSelectedComponents, called from many places) changes nothing on the
+ * right side: the open tab and what it is configuring (a component, the canvas header, or the footer) stay
+ * as they were. The right panel never switches to the Add component picker. The empty-canvas click itself
+ * closes the properties panel: propertiesPanelOnlyForAComponent.spec.jsx.
  */
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition } from '@/test/app-builder';
@@ -41,7 +42,7 @@ describe('right panel subject', () => {
   });
 });
 
-describe('clicking empty canvas', () => {
+describe('clearing the canvas selection', () => {
   it('should keep the component properties open', () => {
     state().setSelectedComponents(['c1']);
     const before = rightSide();

@@ -75,7 +75,7 @@ export const ControlButtons = memo(
     const hideColumnsPopover = () => (
       <Popover
         data-cy={`dropdown-hide-column`}
-        className={`table-widget-popup hide-column-popup ${darkMode && 'dark-theme'}`}
+        className={`table-widget-popup hide-column-popup tj-widget-overlay ${darkMode && 'dark-theme'}`}
         style={{ maxHeight: `${height - 79}px` }}
         placement="top-end"
       >
@@ -121,7 +121,7 @@ export const ControlButtons = memo(
       <Popover
         id="popover-basic"
         data-cy="popover-card"
-        className={`table-widget-popup download-popup ${darkMode && 'dark-theme'}`}
+        className={`table-widget-popup download-popup tj-widget-overlay ${darkMode && 'dark-theme'}`}
         placement="top-end"
       >
         <Popover.Body>
@@ -154,7 +154,7 @@ export const ControlButtons = memo(
       return (
         <>
           <span>
-            <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
+            <Tooltip id="tooltip-for-add-new-row" className="tooltip tj-widget-overlay" />
             <RenderButton
               icon="IconPlus"
               data-cy={`${generateCypressDataCy(componentName)}-add-new-row-button`}
@@ -172,7 +172,7 @@ export const ControlButtons = memo(
       return (
         <>
           <span>
-            <Tooltip id="tooltip-for-refresh" className="tooltip" />
+            <Tooltip id="tooltip-for-refresh" className="tooltip tj-widget-overlay" />
             <RenderButton
               icon="IconReload"
               data-cy={`${generateCypressDataCy(componentName)}-refresh-button`}
@@ -194,7 +194,7 @@ export const ControlButtons = memo(
         };
         return (
           <>
-            <Tooltip id="tooltip-for-download-serverside-pagingation" className="tooltip" />
+            <Tooltip id="tooltip-for-download-serverside-pagingation" className="tooltip tj-widget-overlay" />
             <RenderButton
               icon="IconFileDownload"
               onClick={onClick}
