@@ -1,11 +1,4 @@
-import {
-  getNextBubbleContext,
-  getNextBubbleTargetId,
-  resolveContainerHeight,
-  resolveListviewHeightFromRows,
-} from '../../dynamicHeightReflow';
-import useStore from '@/AppBuilder/_stores/store';
-import { seedApp, componentDefinition, binding } from '@/test/app-builder';
+import { resolveContainerHeight, resolveListviewHeightFromRows } from '../dynamicHeightReflow';
 
 // Pins how the native Listview's rows and widget height come out of the reflow on main, so changes made for the UI 2.0
 // lists (which share these paths) cannot move them. A row with no DOM to measure (jsdom here, a mobile canvas in the
@@ -140,52 +133,5 @@ describe('Listview reflow (pinned)', () => {
         temporaryLayouts: { 'lv-1': { height: 80 } },
       })
     ).toBe(50 + 80 + 61 + 18);
-  });
-
-  it('bubbles a row to the list itself one context up', () => {
-    const target = getNextBubbleTargetId({
-      componentId: 'lv',
-      componentType: 'Listview',
-      parentId: 'canvas-parent',
-      contextIndices: [2, 1],
-      isScopedContextRenderable: false,
-      currentPageComponents: { lv: {} },
-    });
-    expect(target).toBe('lv');
-    expect(getNextBubbleContext('Listview', [2, 1], 'lv', 'lv')).toEqual([2]);
-    expect(getNextBubbleContext('Listview', [1], 'lv', 'lv')).toBeNull();
-  });
-});
-
-describe('Listview row reflow in the store (pinned)', () => {
-  const listview = () => {
-    const lv = componentDefinition('lv', 'list1', 'Listview', {
-      data: binding('{{[{ n: 1 }, { n: 2 }, { n: 3 }]}}'),
-      rowHeight: binding('{{100}}'),
-      dynamicHeight: binding('{{true}}'),
-    });
-    lv.layouts = { desktop: { top: 0, left: 0, width: 20, height: 400 } };
-    const text = componentDefinition('t', 'text1', 'Text');
-    text.component.parent = 'lv';
-    text.layouts = { desktop: { top: 10, left: 0, width: 10, height: 40 } };
-    const below = componentDefinition('below', 'button1', 'Button');
-    below.layouts = { desktop: { top: 420, left: 0, width: 10, height: 40 } };
-    return { lv, t: text, below };
-  };
-
-  it('writes the row temp, then sums the rows at the widget and moves what is below', () => {
-    seedApp(listview());
-    useStore.getState().setTemporaryLayouts({ 't-1': { top: 10, height: 300 } });
-    useStore
-      .getState()
-      .flushReflows([{ id: 'lv', layout: 'desktop', isContainer: true, contextIndices: [1], moduleId: 'canvas' }]);
-    const temps = useStore.getState().temporaryLayouts;
-    expect(temps['lv-1'].height).toBe(10 + 300);
-    // No sibling temps under the row context: the row pass writes the row and hands over to the widget.
-    expect(temps['below-1']).toBeUndefined();
-    // Rows 0 and 2 fit their text (50). With the registered defaults (rawJson data, a border) the widget pass sums the
-    // rows: 50 + 310 + 50 plus a pixel of border each and the outer chrome is 431, and what is below moves by the 31.
-    expect(temps.lv.height).toBe(431);
-    expect(temps.below.top).toBe(451);
   });
 });

@@ -286,19 +286,21 @@ describe('pack container with Dynamic height', () => {
 });
 
 describe('reflow around a pack container with Dynamic height', () => {
+  // A UUID, as in real apps: a drop area `<id>-body` maps back to its card only for a UUID id (getBaseParentId).
+  const CARD = '00000000-0000-4000-8000-000000000001';
   const page = () => {
-    const card = componentDefinition('card', 'card1', 'PackComponent', {
+    const card = componentDefinition(CARD, 'card1', 'PackComponent', {
       pack: binding('shadcn'),
       componentName: binding('Card'),
       dynamicHeight: binding('{{true}}'),
     });
     card.layouts = { desktop: { top: 0, left: 0, width: 20, height: 200 } };
-    const inner = componentDefinition('inner', 'text1', 'Text');
-    inner.component.parent = 'card-body';
+    const inner = componentDefinition('inner', 'text1', 'Text', { dynamicHeight: binding('{{true}}') });
+    inner.component.parent = `${CARD}-body`;
     inner.layouts = { desktop: { top: 10, left: 0, width: 20, height: 40 } };
     const below = componentDefinition('below', 'text2', 'Text');
     below.layouts = { desktop: { top: 220, left: 0, width: 20, height: 40 } };
-    return { card, inner, below };
+    return { [CARD]: card, inner, below };
   };
 
   test('[PackComponent-DYNHEIGHT-007] a reflow inside its drop area leaves the card at the height it measured', () => {
@@ -306,36 +308,45 @@ describe('reflow around a pack container with Dynamic height', () => {
     // grid container. Its components sit on `<id>-body`, not on the card, so it went back to its drawn 200px over the
     // 420 it had measured, and the Text below it rode up over the card.
     seedApp(page());
-    useStore.getState().setTemporaryLayouts({ card: { top: 0, height: 420 }, below: { top: 440, height: 40 } });
+    const scheduler = useStore.getState().getDynamicHeightScheduler();
+    scheduler.flush(); // the pass seeding the page asked for
+    useStore.getState().setTemporaryLayouts({ [CARD]: { top: 0, height: 420 }, below: { top: 440, height: 40 } });
 
-    useStore
-      .getState()
-      .flushReflows([{ id: 'inner', layout: 'desktop', isContainer: false, contextIndices: null, moduleId: 'canvas' }]);
+    // The Text in the card's body grows: the pass reaches the card, which keeps the height it measured.
+    scheduler.scheduleDynamicHeight({ id: 'inner', height: 100 });
+    scheduler.flush();
 
     const temps = useStore.getState().temporaryLayouts;
-    expect(temps.card.height).toBe(420);
+    expect(temps.inner).toEqual({ top: 10, height: 100 });
+    expect(temps[CARD].height).toBe(420);
     expect(temps.below.top).toBe(440);
   });
 
-  test('[PackComponent-DYNHEIGHT-008] a reflow in a row of a pack list still sizes that row', () => {
+  test("[PackComponent-DYNHEIGHT-008] a change in a pack list's row places that row's components, and leaves the row's height to the pack", () => {
     // Break this catches: the drop-area rule above swallowing a pack list's rows, whose components sit on the list
-    // itself; the row then kept its height while its component grew.
+    // itself, so a component growing in a row no longer pushed the one under it. The row's own height is the pack's:
+    // its host fits each row around the components placed in it (usePackHost), so the engine writes none.
     const list = componentDefinition('list', 'list1', 'PackComponent', {
       pack: binding('shadcn'),
       componentName: binding('ListView'),
       dynamicHeight: binding('{{true}}'),
     });
     list.layouts = { desktop: { top: 0, left: 0, width: 20, height: 100 } };
-    const cell = componentDefinition('cell', 'text1', 'Text');
+    const cell = componentDefinition('cell', 'text1', 'Text', { dynamicHeight: binding('{{true}}') });
     cell.component.parent = 'list';
     cell.layouts = { desktop: { top: 10, left: 0, width: 20, height: 40 } };
-    seedApp({ list, cell });
-    useStore.getState().setTemporaryLayouts({ 'cell-1': { top: 10, height: 300 } });
+    const under = componentDefinition('under', 'text2', 'Text');
+    under.component.parent = 'list';
+    under.layouts = { desktop: { top: 60, left: 0, width: 20, height: 40 } };
+    seedApp({ list, cell, under });
+    const scheduler = useStore.getState().getDynamicHeightScheduler();
+    scheduler.flush(); // the pass seeding the page asked for
 
-    useStore
-      .getState()
-      .flushReflows([{ id: 'cell', layout: 'desktop', isContainer: false, contextIndices: [1], moduleId: 'canvas' }]);
+    scheduler.scheduleDynamicHeight({ id: 'cell', contextIndices: [1], height: 300 });
+    scheduler.flush();
 
-    expect(useStore.getState().temporaryLayouts['list-1']?.height).toBe(10 + 300);
+    const temps = useStore.getState().temporaryLayouts;
+    expect(temps['under-1']).toEqual({ top: 320, height: 40 });
+    expect(temps['list-1']).toBeUndefined();
   });
 });

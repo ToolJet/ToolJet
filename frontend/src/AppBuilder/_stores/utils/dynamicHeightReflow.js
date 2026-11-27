@@ -15,7 +15,6 @@ import {
   getDynamicLayoutKey,
   getEffectiveLayout,
   normalizeLayoutContext,
-  serializeLayoutContext,
 } from '../dynamicHeight/layoutKeys';
 import { resolveWidgetVisibility } from '../dynamicHeight/visibility';
 import {
@@ -78,15 +77,12 @@ const SHRUNK_CARD_MIN_HEIGHT = 40;
 // No anchor selection, no absorbed-slot math, no stored gap map — the
 // authored canonical layout is the single source of truth for offsets.
 //
-// ── Pipeline ────────────────────────────────────────────────────────────────
-//   useDynamicHeight (hook)
-//     → scheduleReflow → flushReflows (gridSlice)
-//       → resolveWidgetVisibility / resolveContainerHeight /
-//         resolveWidgetMeasuredHeight (this file)
-//       → buildReflowPatch (this file) — returns temporary layout patch
-//       → setTemporaryLayouts (gridSlice)
-//       → getNextBubbleTargetId / shouldBubbleToParent (this file) — parent
-//         propagation for containers, tabs, rows, forms, accordions
+// ── Status ──────────────────────────────────────────────────────────────────
+//   The old engine. The pass that drove it (gridSlice.flushReflows, fed by
+//   scheduleReflow) is gone: dynamic height now runs on dynamicHeight/engine.js
+//   through dynamicHeight/scheduler.js. What is left here is still imported by
+//   callers the plan moves in B3 (RenderWidget, appSlice, WidgetWrapper, the
+//   List view, Modal and pack hosts), and is deleted in B4.
 //
 // ── Key concepts ────────────────────────────────────────────────────────────
 //   Context (contextIndices):  null at the canvas root; an index array for
@@ -1432,89 +1428,4 @@ export const buildReflowPatch = ({
   });
 
   return { temporaryLayoutPatch };
-};
-
-// Determine the context indices to use when bubbling to the parent.
-//   - Root context: no bubbling needed at the context level.
-//   - Listview widget-level bubble (nextBubbleTargetId === componentId):
-//     pop one row-index off the context so we target the ancestor's context.
-//   - Otherwise: pass the same context through (parent lives in the same
-//     subcontainer scope).
-export const getNextBubbleContext = (componentType, contextIndices, componentId, nextBubbleTargetId) => {
-  const context = normalizeLayoutContext(contextIndices);
-
-  if (!context) {
-    return null;
-  }
-
-  if (componentType === 'Listview' && nextBubbleTargetId === componentId) {
-    return context.length > 1 ? context.slice(0, -1) : null;
-  }
-
-  return context;
-};
-
-// Resolve the id to reflow next after the current widget's reflow finishes.
-//
-//   - Listview inside a non-renderable scoped context: self-bubble (widget-
-//     level pass still needs to run once the row pass is done).
-//   - Real component parent: use the base ancestor id resolved from
-//     getBaseParentId — handles slot-like parent ids (`<id>-header`,
-//     `<tabsId>-<tabId>`) by climbing to the actual ancestor component.
-//   - Fallback: strip trailing `-suffix` segments until we find a real id.
-export const getNextBubbleTargetId = ({
-  componentId,
-  componentType,
-  parentId,
-  contextIndices,
-  getBaseParentId,
-  isScopedContextRenderable = false,
-  currentPageComponents,
-}) => {
-  if (componentType === 'Listview' && normalizeLayoutContext(contextIndices) && !isScopedContextRenderable) {
-    return componentId;
-  }
-
-  const resolvedBaseParentId = getBaseParentId?.(parentId) || null;
-  if (resolvedBaseParentId && currentPageComponents?.[resolvedBaseParentId]) {
-    return resolvedBaseParentId;
-  }
-
-  if (parentId && currentPageComponents?.[parentId]) {
-    return parentId;
-  }
-
-  // Fallback for slot-like ids (e.g., `<tabsId>-<tabId>`, `<id>-header`):
-  // walk backward through dash-joined segments until a real component id
-  // resolves.
-  if (typeof parentId === 'string') {
-    const parts = parentId.split('-');
-    for (let index = parts.length - 1; index > 0; index--) {
-      const candidateId = parts.slice(0, index).join('-');
-      if (currentPageComponents?.[candidateId]) {
-        return candidateId;
-      }
-    }
-  }
-
-  return resolvedBaseParentId || parentId;
-};
-
-// Guard against self-recursion: don't bubble when the next target is literally
-// the same (component id, context) as the current pass. Handles the Listview
-// widget-level → widget-level no-op and other degenerate chains.
-export const shouldBubbleToParent = ({
-  currentComponentId,
-  nextComponentId,
-  currentContextIndices,
-  nextContextIndices,
-}) => {
-  if (!nextComponentId) {
-    return false;
-  }
-
-  const currentContextKey = serializeLayoutContext(currentContextIndices);
-  const nextContextKey = serializeLayoutContext(nextContextIndices);
-
-  return !(currentComponentId === nextComponentId && currentContextKey === nextContextKey);
 };

@@ -79,4 +79,38 @@ describe('dynamic height: the store’s scheduler', () => {
     s().getDynamicHeightScheduler().flush();
     expect(s().temporaryLayouts[`${LIST}-1`]).toEqual({ height: 40 });
   });
+
+  it('[DynamicHeight-STORE-006] puts a List view back at its drawn height once Dynamic height is off', () => {
+    // Turning it off changes the list's properties, so the module is placed again: nothing has to clear what was grown.
+    const LIST = uuid(2);
+    seedApp({
+      [LIST]: widget(LIST, 'Listview', {
+        top: 0,
+        height: 218,
+        properties: {
+          ...DH,
+          dataSourceSelector: binding('rawJson'),
+          data: binding('{{[{ "n": 0 }, { "n": 1 }]}}'),
+          rowHeight: binding('{{100}}'),
+          showBorder: binding('{{false}}'),
+        },
+      }),
+      rowText: widget('rowText', 'Text', { parent: LIST, top: 0, properties: DH }),
+    });
+    const scheduler = s().getDynamicHeightScheduler();
+    scheduler.flush();
+    scheduler.scheduleDynamicHeight({ id: 'rowText', contextIndices: [1], height: 300 });
+    scheduler.flush();
+    expect(s().temporaryLayouts[`${LIST}-1`]).toEqual({ height: 300 });
+    expect(s().temporaryLayouts[LIST].height).toBeGreaterThan(218);
+
+    s().setComponentProperty(LIST, 'dynamicHeight', '{{false}}', 'properties', 'value', false, 'canvas', {
+      skipUndoRedo: true,
+      saveAfterAction: false,
+    });
+    scheduler.flush();
+    // Its rows are drawn at the Row height again by the list itself (ListviewSubcontainer ignores row heights with
+    // Dynamic height off).
+    expect(s().temporaryLayouts[LIST]).toEqual({ top: 0, height: 218 });
+  });
 });
