@@ -104,7 +104,7 @@ describe('folder-apps FeatureAbilityGuard', () => {
     expect(request.tj_folder_app_type_mismatch).toBe(true);
   });
 
-  it('does not scope create/delete to a specific app on the bulk app_ids path — folder ownership alone is sufficient', async () => {
+  it('applies the single-app owner rule on the bulk app_ids path: create needs every app owned, delete only the folder', async () => {
     dataSource.manager.findOne.mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.MODULE });
     dataSource.manager.find.mockResolvedValueOnce([
       { id: 'app-1', userId: 'u2', type: APP_TYPES.MODULE },
@@ -120,7 +120,8 @@ describe('folder-apps FeatureAbilityGuard', () => {
 
     expect(dataSource.manager.findOne).toHaveBeenCalledTimes(1);
     expect(dataSource.manager.find).toHaveBeenCalledTimes(1);
-    expect(request.tj_allow_owner_folder_app_create).toBe(true);
+    expect(request.tj_allow_owner_folder_app_create).toBe(false);
+    expect(request.tj_allow_owner_folder_app_delete).toBe(true);
   });
 
   it('denies when any target app does not resolve in the requesting org (cross-tenant app)', async () => {

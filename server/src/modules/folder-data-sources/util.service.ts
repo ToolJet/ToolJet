@@ -154,6 +154,12 @@ export class FolderDataSourcesUtilService implements IFolderDataSourcesUtilServi
     });
   }
 
+  async bulkRemove(dataSourceIds: string[], branchId: string): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.delete(FolderDataSource, { dataSourceId: In(dataSourceIds), branchId });
+    });
+  }
+
   async remove(folderId: string, dataSourceId: string, branchId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.delete(FolderDataSource, { folderId, dataSourceId, branchId });

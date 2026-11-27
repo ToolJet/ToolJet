@@ -80,10 +80,11 @@ export class FeatureAbilityGuard extends AbilityGuard {
         where: { id: In(appIds), organizationId: request.user.organizationId },
         select: ['id', 'userId', 'type', 'organizationId'],
       });
-      const allFound = apps.length === new Set(appIds).size;
+      if (apps.length !== new Set(appIds).size) return false;
+
       request.tj_allow_owner_folder_app_create =
-        folderOwnedByUser && allFound && apps.every((app) => app.userId === request.user.id);
-      request.tj_allow_owner_folder_app_delete = folderOwnedByUser && allFound;
+        folderOwnedByUser && apps.every((app) => app.userId === request.user.id);
+      request.tj_allow_owner_folder_app_delete = folderOwnedByUser;
       request.tj_folder_app_type_mismatch = !!folder?.type && apps.some((app) => app.type && app.type !== folder.type);
     }
 

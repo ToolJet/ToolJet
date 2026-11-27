@@ -1,4 +1,5 @@
 import { DataSourcesUtilService } from '../../../../src/modules/data-sources/util.service';
+import { redactEncryptedOptions } from '../../../../src/modules/data-sources/audit-redaction';
 
 // These specs cover option and credential binding, not SSRF: their made-up hosts never resolve, which the SSRF check
 // blocks before the plugin runs. test-connection-ssrf.spec.ts covers the SSRF check itself.
@@ -216,5 +217,30 @@ describe('DataSourcesUtilService.testConnection | option & credential binding', 
         canEditDataSource: true,
       })
     ).rejects.toThrow('credential_id does not belong to this data source');
+  });
+});
+
+describe('redactEncryptedOptions', () => {
+  it('should null encrypted and OAuth token values and leave the rest', () => {
+    const options = [
+      { key: 'host', value: 'db.internal', encrypted: false },
+      { key: 'password', value: 'hunter2', encrypted: true },
+      { key: 'access_token', value: 'a' },
+      { key: 'refresh_token', value: 'r' },
+      { key: 'tokenData', value: { t: 1 } },
+      { key: 'token_data', value: { t: 2 } },
+      { key: 'code', value: 'c' },
+    ];
+
+    expect(redactEncryptedOptions(options)).toEqual([
+      { key: 'host', value: 'db.internal', encrypted: false },
+      { key: 'password', value: null, encrypted: true },
+      { key: 'access_token', value: null },
+      { key: 'refresh_token', value: null },
+      { key: 'tokenData', value: null },
+      { key: 'token_data', value: null },
+      { key: 'code', value: null },
+    ]);
+    expect(options[1].value).toBe('hunter2');
   });
 });

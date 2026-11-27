@@ -23,6 +23,7 @@ import {
   grantAppPermission,
   createApplication,
   createApplicationVersion,
+  createDataQuery,
   ensureAppEnvironments,
   closeTestApp,
   saveEntity,
@@ -47,6 +48,7 @@ import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { ResourceType } from '@modules/group-permissions/constants';
 import { InternalTable } from '@entities/internal_table.entity';
+import { DataSource as DataSourceEntity } from '@entities/data_source.entity';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -584,6 +586,64 @@ describe('ImportExportResourcesController', () => {
       const refs = await moduleViewerRefs(orgId);
       expect(refs.length).toBeGreaterThanOrEqual(3); // seed consumer + 2 imports
       expect(refs.every((r) => r === moduleCoRelationId)).toBe(true);
+    });
+  });
+
+  describe('POST /api/v2/resources/import | data source owner', () => {
+    /** Admin-created global data source + an app whose version queries it, ready to export. */
+    async function seedAppWithGlobalDataSource(admin: Admin, dsName: string) {
+      const dsResponse = await request(app.getHttpServer())
+        .post('/api/data-sources')
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
+        .set('Cookie', admin.cookie)
+        .send({ name: dsName, kind: 'restapi', options: [] })
+        .expect(201);
+      const dataSource = await findEntityOrFail(DataSourceEntity, { id: dsResponse.body.id } as any);
+
+      const application = await createApplication(app, { name: `${dsName}-app`, user: admin.user as any });
+      const appVersion = await createApplicationVersion(app, application as any);
+      await createDataQuery(app, {
+        dataSource,
+        appVersion,
+        options: { method: 'get', url: 'https://example.com', url_params: [], headers: [], body: [] },
+      } as any);
+
+      return { application, dataSource };
+    }
+
+    it('should set the owner of a newly created global data source to the importing user', async () => {
+      const sourceAdmin = await createAdmin(app, 'owner-import-source-admin@tooljet.io');
+      await ensureAppEnvironments(app, sourceAdmin.user.defaultOrganizationId);
+      const { application } = await seedAppWithGlobalDataSource(sourceAdmin, 'owner_import_new_source');
+      const exportBody = await exportApp(sourceAdmin, application.id);
+
+      const targetAdmin = await createAdmin(app, 'owner-import-target-admin@tooljet.io');
+      await ensureAppEnvironments(app, targetAdmin.user.defaultOrganizationId);
+
+      await importPayload(targetAdmin, exportBody, 'owner-import-copy');
+
+      const importedDataSource = await findEntityOrFail(DataSourceEntity, {
+        organizationId: targetAdmin.user.defaultOrganizationId,
+        name: 'owner_import_new_source',
+      } as any);
+      expect(importedDataSource.createdBy).toBe(targetAdmin.user.id);
+    });
+
+    it('should leave the existing owner unchanged when import reuses an existing data source', async () => {
+      const creatorAdmin = await createAdmin(app, 'owner-import-creator-admin@tooljet.io');
+      await ensureAppEnvironments(app, creatorAdmin.user.defaultOrganizationId);
+      const importerAdmin = await createAdmin(app, 'owner-import-importer-admin@tooljet.io', {
+        workspace: creatorAdmin.workspace,
+      });
+
+      const { application, dataSource } = await seedAppWithGlobalDataSource(creatorAdmin, 'owner_import_existing');
+      expect(dataSource.createdBy).toBe(creatorAdmin.user.id);
+
+      const exportBody = await exportApp(creatorAdmin, application.id);
+      await importPayload(importerAdmin, exportBody, 'owner-import-reuse-copy');
+
+      const reusedDataSource = await findEntityOrFail(DataSourceEntity, { id: dataSource.id } as any);
+      expect(reusedDataSource.createdBy).toBe(creatorAdmin.user.id);
     });
   });
 });
