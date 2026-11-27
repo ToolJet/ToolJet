@@ -79,6 +79,28 @@ describe('Table-RECCOUNT Show record count toggle in the Inspector', () => {
     expect(renderToggle({ enablePagination: { value: '{{false}}' }, ...oldKeys })).toBe(expected);
   });
 
+  const footerButtonsOff = {
+    showAddNewRowButton: { value: '{{false}}' },
+    showDownloadButton: { value: '{{false}}' },
+    showRefreshButton: { value: '{{false}}' },
+    hideColumnSelectorButton: { value: '{{true}}' },
+  };
+
+  test('Table-RECCOUNT-013 pagination off, old server-side key on, footer hidden: toggle is off', () => {
+    const properties = {
+      enablePagination: { value: '{{false}}' },
+      serverSidePagination: { value: '{{true}}' },
+      totalRecords: { value: '{{10}}' },
+      ...footerButtonsOff,
+    };
+    expect(renderToggle(properties)).toBe('{{false}}');
+  });
+
+  // With no enablePagination key the store turns pagination on from the old key, so the footer shows
+  test('Table-RECCOUNT-014 no pagination key, old client-side key on, footer buttons off: toggle is on', () => {
+    expect(renderToggle({ clientSidePagination: { value: '{{true}}' }, ...footerButtonsOff })).toBe('{{true}}');
+  });
+
   test('Table-RECCOUNT-011 a saved value wins over pagination', () => {
     expect(renderToggle({ enablePagination: { value: '{{true}}' }, showRecordCount: { value: '{{false}}' } })).toBe(
       '{{false}}'
