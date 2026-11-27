@@ -9,6 +9,7 @@
     "cy:cloud:open": "cypress open --config-file cypress-cloud-platform.config.js --e2e",
     "suite:index": "node tools/suite-index/generate.js",
     "suite:find": "node tools/suite-index/find.js",
+    "suite:check": "node tools/suite-index/spec-check.js",
     "suite:test": "node tools/suite-index/run-tests.js"
   },
   "devDependencies": {
