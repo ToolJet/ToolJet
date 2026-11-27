@@ -343,18 +343,11 @@ export function generateTJDBPasswordForRole(length = 30) {
 
   const allChars = uppercase + lowercase + numbers + symbols;
 
-  const mandatoryChars = [
-    uppercase[Math.floor(Math.random() * uppercase.length)],
-    lowercase[Math.floor(Math.random() * lowercase.length)],
-    numbers[Math.floor(Math.random() * numbers.length)],
-    symbols[Math.floor(Math.random() * symbols.length)],
-  ];
+  const pick = (chars: string) => chars[crypto.randomInt(chars.length)];
 
-  // Fill the rest securely
-  console.log(Array.from(crypto.randomBytes(length - mandatoryChars.length)));
-  const remaining = Array.from(crypto.randomBytes(length - mandatoryChars.length)).map(
-    (b) => allChars[b % allChars.length]
-  );
+  const mandatoryChars = [pick(uppercase), pick(lowercase), pick(numbers), pick(symbols)];
+
+  const remaining = Array.from({ length: length - mandatoryChars.length }, () => pick(allChars));
 
   // Combine and shuffle
   const passwordArray = mandatoryChars.concat(remaining);
