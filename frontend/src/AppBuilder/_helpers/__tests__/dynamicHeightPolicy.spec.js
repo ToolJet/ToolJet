@@ -99,6 +99,7 @@ describe('whose box on the canvas follows its content, once it sizes to it', () 
   // height: auto when this is true: the browser sizes it from what the widget draws, and the height registry
   // measures it. Only for widgets the engine measures: a container is sized from its children, which are placed
   // absolutely, so an auto box would collapse. Dynamic height off is WidgetWrapper's (BOX-003).
+  // "Measures" is the engine's rule (engine.runWidget): no height contract, or a `measured` one.
   it('[DynamicHeight-POLICY-001] a native widget the engine measures', () => {
     for (const type of ['Text', 'TextArea', 'Table', 'Image', 'CodeEditor', 'ModuleViewer', 'Html', 'Navigation']) {
       expect([type, boxFollowsContent(type)]).toEqual([type, true]);
@@ -115,9 +116,18 @@ describe('whose box on the canvas follows its content, once it sizes to it', () 
     }
   });
 
-  it('[DynamicHeight-POLICY-004] not a pack or UI 2.0 widget, which measures itself', () => {
-    for (const type of ['ShadText', 'ShadListView', 'ShadKanban', 'PackComponent', 'LibraryComponent']) {
-      expect([type, boxFollowsContent(type)]).toEqual([type, false]);
+  it('[DynamicHeight-POLICY-004] a pack, SDK or UI 2.0 widget, which the engine measures in the browser too', () => {
+    // Its host draws fitted content at auto and anything else at an explicit height (SdkComponentHost), so an auto box
+    // always holds what it draws: a chart drawn at its box's height (PACK_BOX_SIZED) keeps that height.
+    for (const type of [
+      'ShadText',
+      'ShadLineChart',
+      'ShadListView',
+      'ShadKanban',
+      'PackComponent',
+      'LibraryComponent',
+    ]) {
+      expect([type, boxFollowsContent(type)]).toEqual([type, true]);
     }
   });
 });

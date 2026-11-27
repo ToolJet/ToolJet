@@ -32,23 +32,22 @@ export const fitsContentInView = (componentType, properties = {}) => {
  * content in the viewer: drawn at height: auto, so the browser sizes it from what the widget draws, and the height
  * registry measures it there.
  *
- * - A native widget the engine measures (one with no height contract) does.
+ * - A widget the engine measures in the browser does: one with no height contract (a native leaf, a UI 2.0 or pack
+ *   widget), or a `measured` one (a UI 2.0 or pack list, an SDK component). A pack's host draws fitted content at
+ *   auto and anything else at an explicit height (SdkComponentHost), so an auto box always holds what it draws.
  * - A native List view does: its rows are drawn one under another, so the box is their height.
  * - A container sized from its children does not: they are placed absolutely, so an auto box would collapse. Its
  *   height comes from the engine.
- * - A pack, SDK or UI 2.0 widget does not, for now: each measures itself.
  * @param {string | undefined} componentType
  * @returns {boolean}
  */
 export const boxFollowsContent = (componentType) => {
-  // A UI 2.0 widget has no height contract but measures itself. An SDK widget (a pack list or container) has one.
-  if (isPackWidget(componentType)) return false;
   const contract = heightContractOf(componentType);
-  return contract === null || componentType === 'Listview';
+  return contract === null || contract.measured === true || componentType === 'Listview';
 };
 
-// UI 2.0 widgets drawn at their box's height in the viewer too: they never measure themselves (no useAutoHeight), so
-// nothing makes the box follow their content. Kept in step with the widgets by Ui2/__tests__/integration/dynamicHeightMarker.spec.js.
+// UI 2.0 widgets drawn at their box's height in the viewer too: their host draws them at the box's height
+// (SdkComponentHost, when the component cannot fit its content), so their box never grows with what they show.
 const PACK_BOX_SIZED = [
   'ShadAreaChart',
   'ShadAvatar',
