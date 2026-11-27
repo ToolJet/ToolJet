@@ -38,6 +38,17 @@ const getTableDefinitionInitialValue = (
   }
 };
 
+// A Table saved before "Show record count" existed shows the count only with pagination, so its toggle mirrors pagination
+export const getMissingShowRecordCountValue = (component) => {
+  if (component?.component?.component !== 'Table') return undefined;
+  const properties = component.component.definition?.properties;
+  if (properties?.enablePagination) return properties.enablePagination.value;
+  const legacyPagination = ['clientSidePagination', 'serverSidePagination'].some((key) =>
+    resolveReferences(properties?.[key]?.value)
+  );
+  return `{{${legacyPagination}}}`;
+};
+
 const ensureLegacyTextComponentCompatibility = (param, definition) => {
   if (param !== 'textFormat') return;
 

@@ -58,6 +58,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? false;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
         state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
+        state.components[id].properties.showRecordCount = properties?.showRecordCount;
         state.components[id].properties.serverSideRowsPerPage = properties?.serverSideRowsPerPage ?? '';
         state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true;
         state.components[id].properties.enableNextButton = properties?.enableNextButton ?? true;
@@ -71,7 +72,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.enabledSort = properties?.enabledSort ?? true;
         state.components[id].properties.columnSizes = properties?.columnSizes ?? {};
         state.components[id].properties.allowSelection =
-          (properties?.allowSelection ?? (properties?.showBulkSelector || properties?.highlightSelectedRow))
+          properties?.allowSelection ?? (properties?.showBulkSelector || properties?.highlightSelectedRow)
             ? true
             : false;
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
@@ -239,6 +240,7 @@ export const createInitSlice = (set, get) => ({
           get().components[id].properties.showAddNewRowButton ||
           get().components[id].properties.showDownloadButton ||
           get().components[id].properties.showRefreshButton ||
+          get().components[id].properties.showRecordCount === true ||
           !get().components[id].properties.hideColumnSelectorButton
       : false;
   },

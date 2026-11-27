@@ -495,6 +495,7 @@ export const Table = (props) => {
     'showDownloadButton',
     'showRefreshButton',
     'hideColumnSelectorButton',
+    'showRecordCount',
     'loadingState',
     'showBulkUpdateActions',
     'visibility',

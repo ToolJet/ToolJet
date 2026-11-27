@@ -307,6 +307,13 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    // Deliberately absent from `definition` below: app load merges those defaults into saved Tables, and an old Table
+    // must stay without the key so its record count keeps following pagination
+    showRecordCount: {
+      type: 'toggle',
+      displayName: 'Show record count',
+      validation: { schema: { type: 'boolean' } },
+    },
     selectRowOnCellEdit: {
       type: 'toggle',
       displayName: 'Select row on cell edit',

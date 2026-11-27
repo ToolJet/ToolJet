@@ -307,6 +307,12 @@ export const tableConfig = {
         defaultValue: false,
       },
     },
+    showRecordCount: {
+      type: 'toggle',
+      displayName: 'Show record count',
+      // no defaultValue: a missing value means "follow pagination" for Tables saved before this property
+      validation: { schema: { type: 'boolean' } },
+    },
     selectRowOnCellEdit: {
       type: 'toggle',
       displayName: 'Select row on cell edit',
@@ -859,6 +865,8 @@ export const tableConfig = {
       addNewRowIn: { value: 'table' },
       allowAddingMultipleRows: { value: '{{true}}' },
       showRefreshButton: { value: '{{false}}' },
+      // only here, not in the server copy: its defaults are merged into saved Tables on load
+      showRecordCount: { value: '{{true}}' },
       allowSelection: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
 

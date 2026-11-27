@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeEditor from '@/AppBuilder/CodeEditor';
 import { getFlexAxisAwareMeta } from '../Components/FlexContainer/flexChildInspectorUtils';
-import { getDefinitionInitialValue } from './utils';
+import { getDefinitionInitialValue, getMissingShowRecordCountValue } from './utils';
 
 const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
 
@@ -32,15 +32,15 @@ export const Code = ({
     if (customMeta && customMeta.defaultValue) {
       return customMeta.defaultValue;
     }
-    return !_.isEmpty(definition)
-      ? definition.value
-      : getDefinitionInitialValue(paramType, param.name, component, currentState, definition.value);
+    if (!_.isEmpty(definition)) return definition.value;
+    if (param.name === 'showRecordCount') return getMissingShowRecordCountValue(component);
+    return getDefinitionInitialValue(paramType, param.name, component, currentState, definition.value);
   }
 
   let initialValue = getInitialValue();
   const rawParamMeta = accordian
-    ? (customMeta ?? componentMeta[paramType]?.[param.name])
-    : (customMeta ?? componentMeta[paramType][param.name]);
+    ? customMeta ?? componentMeta[paramType]?.[param.name]
+    : customMeta ?? componentMeta[paramType][param.name];
   const isFlexContainer = component?.component?.component === 'FlexContainer';
   const paramMeta = isFlexContainer ? getFlexAxisAwareMeta(rawParamMeta, component, param.name) : rawParamMeta;
   const displayName = paramMeta.displayName || param.name;
