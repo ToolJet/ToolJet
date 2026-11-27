@@ -6,6 +6,7 @@
   "source": {
     "name": "Intercom",
     "kind": "intercom",
+    "description": "Manage contacts, conversations and support tickets.",
     "exposedVariables": { "isLoading": false, "data": {}, "rawData": {} },
     "options": {
       "access_token": { "type": "string", "encrypted": true }

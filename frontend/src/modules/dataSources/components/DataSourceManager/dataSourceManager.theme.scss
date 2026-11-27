@@ -104,3 +104,33 @@
     margin-bottom: 0;
   }
 }
+// Full-page form (pageLayout). Matches the redesign's 28px inputs with 12px labels; the modal form keeps its styles.
+.datasource-page-form {
+  .form-label {
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--text-default);
+  }
+
+  .form-control {
+    height: 28px;
+    padding: 5px 8px;
+    font-size: 12px;
+    line-height: 18px;
+    border-radius: 6px;
+    border: 1px solid var(--border-default);
+    background-color: var(--page-weak);
+    color: var(--text-default);
+    box-shadow: none;
+
+    &::placeholder {
+      color: var(--text-placeholder);
+    }
+
+    &:disabled {
+      background-color: var(--interactive-default);
+    }
+  }
+}

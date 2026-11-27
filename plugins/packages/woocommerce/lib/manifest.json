@@ -6,6 +6,7 @@
   "source": {
     "name": "WooCommerce",
     "kind": "woocommerce",
+    "description": "Read and manage customers, products, orders and coupons.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

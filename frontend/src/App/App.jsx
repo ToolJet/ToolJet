@@ -510,11 +510,11 @@ class AppComponent extends React.Component {
                   <Route exact path="/:workspaceId/modules" element={<AppsDashboard appType="module" />} />
 
                   {isWorkflowsFeatureEnabled() && (
-                    <Route exact path="/:workspaceId/workflows/*">
-                      <Route exact path="/" element={<AppsDashboard appType="workflow" />} />
+                    <>
+                      <Route exact path="/:workspaceId/workflows" element={<AppsDashboard appType="workflow" />} />
                       <Route
                         exact
-                        path="/approvals"
+                        path="/:workspaceId/workflows/approvals"
                         element={
                           <HomePage
                             switchDarkMode={this.switchDarkMode}
@@ -530,7 +530,7 @@ class AppComponent extends React.Component {
                       />
                       <Route
                         exact
-                        path="/executions"
+                        path="/:workspaceId/workflows/executions"
                         element={
                           <HomePage
                             switchDarkMode={this.switchDarkMode}
@@ -544,7 +544,7 @@ class AppComponent extends React.Component {
                           />
                         }
                       />
-                    </Route>
+                    </>
                   )}
                 </Route>
 

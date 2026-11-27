@@ -6,6 +6,7 @@
   "source": {
     "name": "NocoDB",
     "kind": "nocodb",
+    "description": "List, create, update and delete records in your no-code database tables.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

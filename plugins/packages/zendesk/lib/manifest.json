@@ -7,6 +7,7 @@
   "source": {
     "name": "Zendesk",
     "kind": "zendesk",
+    "description": "Read and update tickets, look up users, and search your help desk.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

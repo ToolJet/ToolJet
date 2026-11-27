@@ -6,6 +6,7 @@
   "source": {
     "name": "Portkey",
     "kind": "portkey",
+    "description": "Run completions, chats and embeddings through an AI gateway.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

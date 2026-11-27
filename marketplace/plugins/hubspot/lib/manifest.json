@@ -6,6 +6,7 @@
   "source": {
     "name": "HubSpot",
     "kind": "hubspot",
+    "description": "Manage CRM records such as contacts, companies, deals and tickets.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

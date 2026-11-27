@@ -6,6 +6,7 @@
   "source": {
     "name": "Authorize.Net",
     "kind": "authorizenet",
+    "description": "Charge, authorize and refund card payments, and manage customer profiles.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

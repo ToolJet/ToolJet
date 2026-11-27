@@ -6,6 +6,7 @@
   "source": {
     "name": "Plivo",
     "kind": "plivo",
+    "description": "Send SMS messages from your apps.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

@@ -6,6 +6,7 @@
   "source": {
     "name": "Google Calendar",
     "kind": "googlecalendar",
+    "description": "Create and manage calendar events.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

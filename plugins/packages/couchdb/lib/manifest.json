@@ -6,6 +6,7 @@
   "source": {
     "name": "CouchDB",
     "kind": "couchdb",
+    "description": "Create, read, update and find JSON documents in your document database.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

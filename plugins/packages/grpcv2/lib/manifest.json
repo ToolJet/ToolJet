@@ -6,6 +6,7 @@
   "source": {
     "name": "gRPC 2.0",
     "kind": "grpcv2",
+    "description": "Call methods on a gRPC service found by server reflection or a proto URL.",
     "options": {
       "url": {
         "type": "string"

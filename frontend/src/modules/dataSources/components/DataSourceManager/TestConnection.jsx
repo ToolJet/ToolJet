@@ -15,6 +15,8 @@ export const TestConnection = ({
   dataSourceId,
   dataSourceType,
   appId,
+  // Lets a page swap in its own button; receives the click handler and the testing flag.
+  renderTrigger,
 }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const { t } = useTranslation();
@@ -58,6 +60,8 @@ export const TestConnection = ({
       }
     );
   }
+
+  if (renderTrigger) return renderTrigger({ onClick: testDataSource, isTesting });
 
   return (
     <div>

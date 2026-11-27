@@ -6,6 +6,7 @@
   "source": {
     "name": "InfluxDB",
     "kind": "influxdb",
+    "description": "Write and query time-series data, and manage buckets.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

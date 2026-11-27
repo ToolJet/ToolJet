@@ -7,6 +7,7 @@
   "tj:source": {
     "name": "MySQL",
     "kind": "mysql",
+    "description": "Read and write tables with SQL queries.",
     "type": "database"
   },
   "properties": {

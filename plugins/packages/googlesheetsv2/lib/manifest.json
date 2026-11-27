@@ -6,6 +6,7 @@
   "source": {
     "name": "Google Sheets 2.0",
     "kind": "googlesheetsv2",
+    "description": "Read, append, update and delete rows in your spreadsheets.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

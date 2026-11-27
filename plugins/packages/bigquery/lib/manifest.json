@@ -6,6 +6,7 @@
   "source": {
     "name": "BigQuery",
     "kind": "bigquery",
+    "description": "Run SQL queries on Google Cloud's data warehouse.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

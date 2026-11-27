@@ -6,6 +6,7 @@
   "source": {
     "name": "SAP HANA",
     "kind": "saphana",
+    "description": "Read and write tables with SQL queries.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

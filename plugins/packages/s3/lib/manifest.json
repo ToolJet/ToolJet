@@ -7,7 +7,8 @@
   "tj:source": {
     "name": "AWS S3",
     "kind": "s3",
-    "type": "cloud-storage"
+    "type": "cloud-storage",
+    "description": "Upload, read and remove objects in buckets, and create signed URLs."
   },
   "properties": {
     "instance_metadata_credentials": {

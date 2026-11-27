@@ -7,6 +7,7 @@
   "source": {
     "name": "n8n",
     "kind": "n8n",
+    "description": "Trigger automation workflows built in n8n through webhook URLs.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

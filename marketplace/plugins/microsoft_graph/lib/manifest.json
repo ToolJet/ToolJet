@@ -6,6 +6,7 @@
   "source": {
     "name": "Microsoft Graph",
     "kind": "microsoft_graph",
+    "description": "Work with Outlook, Calendar, Teams, OneDrive and other Microsoft 365 services.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

@@ -7,6 +7,7 @@
   "tj:source": {
     "name": "OpenAI",
     "kind": "openai",
+    "description": "Run chats, generate images and create embeddings.",
     "type": "ai"
   },
   "properties": {

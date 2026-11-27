@@ -6,6 +6,7 @@
   "source": {
     "name": "Supabase",
     "kind": "supabase",
+    "description": "Read, create, update, delete and count rows in your tables.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

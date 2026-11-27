@@ -6,6 +6,7 @@
   "source": {
     "name": "FedEx",
     "kind": "fedex",
+    "description": "Validate addresses, get rates, create shipments and track packages.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

@@ -6,6 +6,7 @@
   "source": {
     "name": "AWS Redshift",
     "kind": "awsredshift",
+    "description": "Run SQL queries on your AWS data warehouse.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

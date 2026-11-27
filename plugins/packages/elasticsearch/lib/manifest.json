@@ -6,6 +6,7 @@
   "source": {
     "name": "Elasticsearch",
     "kind": "elasticsearch",
+    "description": "Search, index and update documents in your cluster.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},

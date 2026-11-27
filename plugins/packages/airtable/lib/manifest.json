@@ -7,7 +7,8 @@
   "tj:source": {
     "name": "Airtable",
     "kind": "airtable",
-    "type": "api"
+    "type": "api",
+    "description": "Read, create, update and delete records in your bases."
   },
   "properties": {
     "personal_access_token": {

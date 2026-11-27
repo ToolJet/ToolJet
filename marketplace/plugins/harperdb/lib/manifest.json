@@ -6,6 +6,7 @@
   "source": {
     "name": "HarperDB",
     "kind": "harperdb",
+    "description": "Query data with SQL or NoSQL operations.",
     "exposedVariables": {
       "isLoading": false,
       "data": {},
