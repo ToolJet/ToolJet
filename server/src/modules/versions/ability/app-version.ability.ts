@@ -134,11 +134,10 @@ export function defineAppVersionAbility(
   const isAllEditable = !!userAppPermissions?.isAllEditable;
   const isAllViewable = !!userAppPermissions?.isAllViewable;
   const canEditThisApp = isAllEditable || (!!resourceId && !!userAppPermissions?.editableAppsId?.includes(resourceId));
-  if (userPermission.appPromote) {
-    can([FEATURE_KEY.PROMOTE], App);
-    // Whoever may promote versions may approve one, but only on an app they can edit.
-    if (canEditThisApp) can([FEATURE_KEY.REVIEW_APPROVE], App);
-  }
+  if (userPermission.appPromote) can([FEATURE_KEY.PROMOTE], App);
+  // Approving needs edit access to the app. Where git branching is off, the review service also asks for the promote
+  // permission; under branching any editor of the app may review it.
+  if (canEditThisApp) can([FEATURE_KEY.REVIEW_APPROVE], App);
 
   if (isAllEditable) {
     can(
