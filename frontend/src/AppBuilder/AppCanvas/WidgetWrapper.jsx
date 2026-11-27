@@ -1,4 +1,9 @@
-import { fitsContentInView, marksDynamicHeight, stretchesInRow } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import {
+  boxFollowsContent,
+  fitsContentInView,
+  marksDynamicHeight,
+  stretchesInRow,
+} from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 import { leavesFlexFlow } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { usePackRole } from '@/AppBuilder/Widgets/hooks/usePackRole';
 import React, { memo, useEffect, useMemo } from 'react';
@@ -16,30 +21,6 @@ import { useFlexWidgetLayout } from '@/AppBuilder/Widgets/FlexContainer/useFlexW
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { syncSelectionCorner } from './selectionCorner';
 import { isCodePageRoot } from '@/AppBuilder/_helpers/codeModeHooks';
-
-const DYNAMIC_HEIGHT_AUTO_LIST = [
-  'CodeEditor',
-  'Listview',
-  'TextArea',
-  'TagsInput',
-  'TreeSelect',
-  'KeyValuePair',
-  'JSONExplorer',
-  'JSONEditor',
-  'RichTextEditor',
-  'Text',
-  'Table',
-  'ModuleViewer',
-  'Image',
-  'Statistics',
-  'Link',
-  'RadioButtonV2',
-  'Tags',
-  'Timeline',
-  'FilePicker',
-  'ReorderableList',
-  'ButtonGroupV2',
-];
 
 const WidgetWrapper = memo(
   ({
@@ -252,12 +233,12 @@ const WidgetWrapper = memo(
     const layoutContext = indices ?? subContainerIndex;
     const serializedLayoutContext = serializeLayoutContext(layoutContext);
 
-    // Sets height to auto for subcontainer or listview if dynamic height is enabled
+    // In the viewer, a widget that sizes to its content is drawn at height: auto where its box follows that content
+    // (dynamicHeightPolicy.boxFollowsContent), and so is every one inside a List view row.
     const gridOuterStyle = {
       width: gridWidthPx + 'px',
       height:
-        isDynamicHeightEnabledInModeView &&
-        (isTruthyOrZero(subContainerIndex) || DYNAMIC_HEIGHT_AUTO_LIST.includes(componentType))
+        isDynamicHeightEnabledInModeView && (isTruthyOrZero(subContainerIndex) || boxFollowsContent(componentType))
           ? 'auto'
           : gridFinalHeight + 'px',
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,

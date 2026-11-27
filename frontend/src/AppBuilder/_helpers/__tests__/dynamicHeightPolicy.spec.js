@@ -1,4 +1,5 @@
 import {
+  boxFollowsContent,
   fitsContentInView,
   heightHeldInView,
   keepsFittedHeightWhenMoved,
@@ -90,5 +91,33 @@ describe('keepsFittedHeightWhenMoved', () => {
 
   it('floors a native widget at its drawn height', () => {
     expect(keepsFittedHeightWhenMoved('TextInput')).toBe(false);
+  });
+});
+
+describe('whose box on the canvas follows its content, once it sizes to it', () => {
+  // In the viewer, the box (WidgetWrapper) of a widget that sizes to its content (fitsContentInView) is drawn at
+  // height: auto when this is true: the browser sizes it from what the widget draws, and the height registry
+  // measures it. Only for widgets the engine measures: a container is sized from its children, which are placed
+  // absolutely, so an auto box would collapse. Dynamic height off is WidgetWrapper's (BOX-003).
+  it('[DynamicHeight-POLICY-001] a native widget the engine measures', () => {
+    for (const type of ['Text', 'TextArea', 'Table', 'Image', 'CodeEditor', 'ModuleViewer', 'Html', 'Navigation']) {
+      expect([type, boxFollowsContent(type)]).toEqual([type, true]);
+    }
+  });
+
+  it('[DynamicHeight-POLICY-002] a List view, whose rows are drawn one under another', () => {
+    expect(boxFollowsContent('Listview')).toBe(true);
+  });
+
+  it('[DynamicHeight-POLICY-003] never a container sized from its children', () => {
+    for (const type of ['Container', 'Form', 'Tabs', 'Accordion', 'ModalV2', 'ModuleContainer', 'FlexContainer']) {
+      expect([type, boxFollowsContent(type)]).toEqual([type, false]);
+    }
+  });
+
+  it('[DynamicHeight-POLICY-004] not a pack or UI 2.0 widget, which measures itself', () => {
+    for (const type of ['ShadText', 'ShadListView', 'ShadKanban', 'PackComponent', 'LibraryComponent']) {
+      expect([type, boxFollowsContent(type)]).toEqual([type, false]);
+    }
   });
 });

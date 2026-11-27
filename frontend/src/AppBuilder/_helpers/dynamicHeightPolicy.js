@@ -2,6 +2,7 @@
 // the FlexContainer (whether it grows) and the component packs (whether they measure themselves), so the three agree.
 import { usesFlexLayoutV2 } from './flexLayoutVersion';
 import { isSdkComponentType } from './sdkComponentTypes';
+import { heightContractOf } from '@/AppBuilder/_stores/dynamicHeight/contracts';
 
 const CARD_SURFACES = ['shadcnCard'];
 const isPackWidget = (componentType) => /^Shad[A-Z]/.test(componentType ?? '');
@@ -24,6 +25,26 @@ export const fitsContentInView = (componentType, properties = {}) => {
   }
   if (isPackWidget(componentType)) return properties.dynamicHeight !== false;
   return !!properties.dynamicHeight;
+};
+
+/**
+ * Whether the canvas box (WidgetWrapper) of a widget that sizes to its content (fitsContentInView) follows that
+ * content in the viewer: drawn at height: auto, so the browser sizes it from what the widget draws, and the height
+ * registry measures it there.
+ *
+ * - A native widget the engine measures (one with no height contract) does.
+ * - A native List view does: its rows are drawn one under another, so the box is their height.
+ * - A container sized from its children does not: they are placed absolutely, so an auto box would collapse. Its
+ *   height comes from the engine.
+ * - A pack, SDK or UI 2.0 widget does not, for now: each measures itself.
+ * @param {string | undefined} componentType
+ * @returns {boolean}
+ */
+export const boxFollowsContent = (componentType) => {
+  // A UI 2.0 widget has no height contract but measures itself. An SDK widget (a pack list or container) has one.
+  if (isPackWidget(componentType)) return false;
+  const contract = heightContractOf(componentType);
+  return contract === null || componentType === 'Listview';
 };
 
 // UI 2.0 widgets drawn at their box's height in the viewer too: they never measure themselves (no useAutoHeight), so
