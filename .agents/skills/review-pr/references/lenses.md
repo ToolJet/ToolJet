@@ -155,6 +155,10 @@ Authority: `server/AGENTS.md` "Security" (parameterized queries only), `frontend
 - Authorization: every new controller route carries the guard and CASL ability its sibling routes
   carry (`server/AGENTS.md` "Authorization (CASL)"). A route resolving a resource by id without a
   workspace scope is an IDOR.
+- A request credential compared with a configured secret (env token, password, header): the check
+  must fail when the secret is empty or unset, before any comparison, and compare with
+  `equalSecret` (`server/src/modules/mcp-oauth/protocol.ts`), never `===` or `!==`. An unset secret
+  otherwise matches a caller who sends nothing, or the text `undefined`.
 - Secrets and tokens in logs, error messages, fixtures, or the PR description.
 - Private paths or private source quoted in public files or public comments.
 
