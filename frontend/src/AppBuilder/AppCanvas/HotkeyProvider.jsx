@@ -6,6 +6,8 @@ import useKeyHooks, { isFromShadowTree } from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import { isInspectorPopoverOpen } from '@/AppBuilder/_stores/slices/gridSlice';
 
 export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, isModuleMode }) => {
   const { isModuleEditor, moduleId } = useModuleContext();
@@ -67,7 +69,12 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   };
 
   const handleEscapeKeyPress = () => {
+    if (isInspectorPopoverOpen()) return;
     clearSelectedComponents();
+    const { activeRightSideBarTab, isRightSidebarOpen, setRightSidebarOpen } = useStore.getState();
+    if (isRightSidebarOpen && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION) {
+      setRightSidebarOpen(false);
+    }
     const selectedComponents = getSelectedComponents();
     if (selectedComponents.length > 1) {
       selectedComponents.forEach((componentId) => {

@@ -4,6 +4,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import Dropdown from '@/components/ui/Dropdown/Index';
 import Popover from 'react-bootstrap/Popover';
 import { Button } from '@/components/ui/Button/Button';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import { getInputTypeOptions, isPropertyFxControlled, isTrueValue } from '../utils/utils';
 
 const FieldPopoverContent = ({
@@ -114,17 +115,15 @@ const FieldPopoverContent = ({
         <div className="tw-flex">
           {mode === 'edit' ? (
             <>
-              <Button
-                iconOnly
+              <PanelIconButton
+                label="Select component"
                 leadingIcon="inspect"
-                variant="ghost"
                 size="medium"
                 onClick={() => setSelectedComponents([field.componentId])}
               />
-              <Button
-                iconOnly
+              <PanelIconButton
+                label={isCurrentlyVisibility ? 'Hide field' : 'Show field'}
                 leadingIcon={isCurrentlyVisibility ? 'eye' : 'eyedisable'}
-                variant="ghost"
                 size="medium"
                 disabled={isVisibilityFxControlled}
                 className={`${isVisibilityFxControlled ? 'tw-opacity-50' : ''}`}
@@ -134,7 +133,7 @@ const FieldPopoverContent = ({
               />
             </>
           ) : (
-            <Button iconOnly leadingIcon="remove" variant="ghost" size="medium" onClick={onClose} />
+            <PanelIconButton label="Close" leadingIcon="remove" size="medium" onClick={onClose} />
           )}
         </div>
       </Popover.Header>

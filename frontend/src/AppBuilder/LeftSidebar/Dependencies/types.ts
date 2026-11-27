@@ -49,6 +49,7 @@ export type DetailSubject = {
 };
 
 export type DetailMenuItem = {
+  destructive?: boolean;
   label: string;
   icon: ReactNode;
   onClick: () => void;

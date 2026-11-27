@@ -16,8 +16,6 @@ import {
 } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 
 export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
-  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const { isModuleEditor } = useModuleContext();
   const setShowModuleBorder = useStore((state) => state.setShowModuleBorder, shallow) || noop;
   const { handleDrop } = useCanvasDropHandler() || noop;
@@ -57,13 +55,9 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
   }, []);
 
   useEffect(() => {
-    if (isDragging && !isModuleEditor) {
-      if (!isRightSidebarPinned) {
-        setRightSidebarOpen(true);
-      }
-      setShowModuleBorder(true);
-    }
-  }, [isDragging, setShowModuleBorder, isModuleEditor, setRightSidebarOpen]);
+    // The right panel stays as it is during a drag; the drop opens it on what landed.
+    if (isDragging && !isModuleEditor) setShowModuleBorder(true);
+  }, [isDragging, setShowModuleBorder, isModuleEditor]);
 
   return (
     <>

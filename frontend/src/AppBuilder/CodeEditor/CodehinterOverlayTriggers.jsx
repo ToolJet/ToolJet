@@ -17,7 +17,7 @@ export const CodeHinterBtns = ({ view, isPanelOpen, copilotBtnSlot }) => {
           leadingIcon="search"
           size="medium"
           variant="outline"
-          ariaLabel="Open search panel"
+          aria-label="Open search panel"
           className="codehinter-search-btn"
           onClick={() => openSearchPanel(view)}
         />

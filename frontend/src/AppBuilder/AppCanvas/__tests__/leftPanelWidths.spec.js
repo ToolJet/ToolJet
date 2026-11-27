@@ -11,12 +11,14 @@ const panelWidth = (file, item) => {
 };
 
 describe('left panels wider than the default', () => {
-  it.each([
-    ['access', 'Access/access.scss'],
-    ['security', 'Security/security.scss'],
-  ])('the canvas clears the %s panel', (item, file) => {
+  it.each([['security', 'Security/security.scss']])('the canvas clears the %s panel', (item, file) => {
     const width = panelWidth(file, item);
     if (width === null) return; // Not this edition.
     expect(LEFT_SIDEBAR_WIDTH[item]).toBe(width);
+  });
+
+  // QA 2026-11-26: Access matches the other left panels; only Security is wider.
+  it('the Access panel takes the default width', () => {
+    expect(LEFT_SIDEBAR_WIDTH.access).toBeUndefined();
   });
 });

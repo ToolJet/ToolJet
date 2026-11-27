@@ -1,0 +1,370 @@
+@import '../../Shared/Panel/mixins';
+
+// Shared list and contextual configuration chrome; rows use the Dependencies entity list.
+.left-sidebar-variables,
+.variable-configuration-panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .variables-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .variables-body {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 48px;
+  }
+
+  .dependency-row .dependency-row-tag {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .variables-empty {
+    padding: 4px 16px 8px 40px;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder);
+
+    button {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--editor-text-accent, var(--text-accent));
+      font-size: 12px;
+    }
+  }
+
+  .variables-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .variables-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .variables-detail-value {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 16px 0;
+
+    code {
+      font-size: 12px;
+      line-height: 18px;
+      color: var(--text-default);
+      word-break: break-all;
+    }
+  }
+}
+
+.left-sidebar-variables,
+.variable-configuration-panel,
+.variables-references-dialog {
+  .variables-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .variables-label {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--text-default);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .variables-hint {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    color: var(--text-placeholder);
+  }
+
+  .variables-value-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .variables-value-editor {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .variables-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: var(--background-success-weak);
+    word-break: break-all;
+
+    code {
+      display: block;
+      padding: 0;
+      border: none;
+      background: none;
+      font-family: var(--app-builder-code-font-family, 'Source Code Pro', monospace);
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--text-default);
+    }
+  }
+
+  .variables-preview-type {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--editor-text-success, var(--text-success));
+  }
+
+  .variables-preview.error {
+    background: var(--background-error-weak);
+
+    .variables-preview-type {
+      color: var(--editor-text-danger, var(--text-danger));
+    }
+  }
+
+  // Validation text quotes the name, so a long name must wrap instead of widening the panel.
+  .variables-form label,
+  .variables-field-error {
+    overflow-wrap: anywhere;
+  }
+
+  .variables-field-error {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--editor-text-danger, var(--text-danger));
+  }
+
+  // Matches the Code mode command blocks (CodePanel/codePanel.scss `.open-locally-code`).
+  .variables-reference {
+    position: relative;
+    min-width: 0;
+
+    pre {
+      margin: 0;
+      padding: 10px 40px 10px 12px;
+      border: 1px solid var(--border-weak);
+      border-radius: 8px;
+      background: var(--background-surface-layer-02);
+      color: var(--text-default);
+      font-family: var(--app-builder-code-font-family, 'Source Code Pro', monospace);
+      font-size: 12px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    code {
+      padding: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      white-space: inherit;
+    }
+  }
+
+  .variables-reference-copy {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+  }
+
+  .variables-note {
+    display: flex;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: var(--background-surface-layer-02);
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder);
+
+    svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    &.warning {
+      background: var(--background-warning-weak);
+      color: var(--text-default);
+    }
+  }
+
+  .variables-badge-runtime,
+  .variables-badge-possible {
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+
+  .dependency-row .dependency-row-trailing {
+    gap: 6px;
+  }
+
+  // Type label next to the name, coloured by type as the Inspector colours values.
+  .variables-type-label {
+    flex-shrink: 0;
+    font-family: var(--app-builder-code-font-family, 'Source Code Pro', monospace);
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--text-placeholder);
+
+    &.type-string,
+    &.type-number {
+      color: var(--editor-text-success, var(--text-success));
+    }
+
+    &.type-array {
+      color: var(--editor-text-accent, var(--text-accent));
+    }
+
+    &.type-object {
+      color: var(--text-warning);
+    }
+
+    &.type-boolean {
+      color: var(--indigo9);
+    }
+
+    &.type-null {
+      color: var(--editor-text-danger, var(--text-danger));
+    }
+  }
+
+  // Copy path icon: hidden until the row is hovered or focused, as in the Inspector.
+  .variables-row-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    opacity: 0;
+
+    &:hover {
+      background: var(--interactive-overlays-fill-hover);
+    }
+
+    &:focus-visible {
+      opacity: 1;
+    }
+  }
+
+  .dependency-row:hover .variables-row-copy,
+  .dependency-row:focus-visible .variables-row-copy {
+    opacity: 1;
+  }
+
+  .variables-badge-runtime {
+    background: var(--background-warning-weak);
+    color: var(--text-warning);
+  }
+
+  .variables-badge-possible {
+    background: var(--background-surface-layer-01);
+    color: var(--text-placeholder);
+  }
+}
+
+.variables-references-dialog {
+  max-width: 480px !important;
+
+  .variables-references-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--text-placeholder);
+    }
+  }
+
+  .variables-references-list {
+    max-height: 280px;
+    overflow-y: auto;
+    border: 1px solid var(--border-weak);
+    border-radius: 8px;
+    padding: 4px;
+  }
+
+  .variables-references-group-title {
+    padding: 6px 8px 2px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-placeholder);
+  }
+}
+
+.variable-configuration-panel .variables-body {
+  padding-bottom: 16px;
+}
+
+.variable-configuration-panel input:not([type='checkbox'], [type='radio']) {
+  @include panel-control;
+}
+
+.variables-header-icon {
+  display: inline-flex;
+  color: var(--icon-strong);
+}
+
+// Match the shared panel input chrome while retaining Query Manager's code typography.
+.variable-configuration-panel .variables-value-editor {
+  .cm-editor {
+    @include panel-control;
+    height: auto;
+    min-height: 32px;
+    border-color: var(--border-default);
+  }
+
+  .cm-content {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    line-height: 18px;
+  }
+
+  .cm-line {
+    padding-left: 12px;
+  }
+}
+
+.variable-configuration-panel .variables-scope-label {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: auto;
+}

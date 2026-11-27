@@ -434,7 +434,7 @@ export function AddNewRow({
           onInteractOutside={(event) => event.preventDefault()}
           onCloseAutoFocus={() => openerRef.current?.focus?.()}
           className={cn(
-            'tw-max-h-[min(80vh,720px)] tw-max-w-[500px] tw-overflow-hidden',
+            'tj-widget-overlay tw-max-h-[min(80vh,720px)] tw-max-w-[500px] tw-overflow-hidden',
             darkMode && 'dark-theme theme-dark'
           )}
         >

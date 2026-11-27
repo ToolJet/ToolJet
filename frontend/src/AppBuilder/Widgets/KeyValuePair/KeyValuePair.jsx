@@ -279,7 +279,7 @@ export const KeyValuePair = ({
       {showChangeSet && (
         <div className={cx('kv-changeset-popover', { 'kv-changeset-docked': isChangeSetDocked })}>
           <div className="kv-changeset-content">
-            {!showCtaText && <Tooltip id={ctaTooltipId} className="tooltip" place="top" />}
+            {!showCtaText && <Tooltip id={ctaTooltipId} className="tooltip tj-widget-overlay" place="top" />}
             <div className="kv-changeset-actions">
               <ChangeSetButtonAnchor label="Cancel" tooltipId={showCtaText ? undefined : ctaTooltipId}>
                 <button

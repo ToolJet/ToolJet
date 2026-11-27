@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useSpring, animated } from '@react-spring/web';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
 import { useTranslation } from 'react-i18next';
 import classnames from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
@@ -10,6 +8,7 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import { Button } from '@/components/ui/Button/Button';
 import { Moon, Sun } from 'lucide-react';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { ToolTip } from '@/_components/ToolTip';
 
 export const DarkModeToggle = function DarkModeToggle({
   darkMode = false,
@@ -43,26 +42,19 @@ export const DarkModeToggle = function DarkModeToggle({
   };
 
   const { t } = useTranslation();
+  const label = darkMode
+    ? t('header.darkModeToggle.activateLightMode', 'Activate light mode')
+    : t('header.darkModeToggle.activateDarkMode', 'Activate dark mode');
 
   return (
-    <OverlayTrigger
-      placement={tooltipPlacement}
-      delay={{ show: 250, hide: 400 }}
-      trigger={['hover', 'focus']}
-      overlay={
-        <Tooltip id="button-tooltip">
-          {darkMode
-            ? t('header.darkModeToggle.activateLightMode', 'Activate light mode')
-            : t('header.darkModeToggle.activateDarkMode', 'Activate dark mode')}
-        </Tooltip>
-      }
-    >
+    <ToolTip message={label} placement={tooltipPlacement} delay={{ show: 250, hide: 400 }}>
       <Button
         className={classnames('left-sidebar-item', btnClassName)}
         onClick={toggleDarkMode}
         variant="ghost"
         size={toggleSize}
         iconOnly
+        aria-label={label}
       >
         {darkMode ? (
           <Sun width="16" height="16" className="tw-text-icon-strong" />
@@ -70,6 +62,6 @@ export const DarkModeToggle = function DarkModeToggle({
           <Moon width="16" height="16" className="tw-text-icon-strong" />
         )}
       </Button>
-    </OverlayTrigger>
+    </ToolTip>
   );
 };

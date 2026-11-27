@@ -1,46 +1,11 @@
 import React from 'react';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { useTranslation } from 'react-i18next';
-
-const LEGACY_WIDGETS = [
-  'ToggleSwitch',
-  'DropDown',
-  'Multiselect',
-  'RadioButton',
-  'Datepicker',
-  'Modal',
-  'RangeSlider',
-  'ButtonGroup',
-];
-const NEW_WIDGETS = [
-  'RadioButtonV2',
-  'DatetimePickerV2',
-  'DatePickerV2',
-  'TimePicker',
-  'Cascader',
-  'ModalV2',
-  'EmailInput',
-  'PhoneInput',
-  'CurrencyInput',
-  'RangeSliderV2',
-  'PopoverMenu',
-  'AudioRecorder',
-  'Camera',
-  'TagsInput',
-  'Accordion',
-  'ReorderableList',
-  'JSONExplorer',
-  'JSONEditor',
-  'Navigation',
-  'ButtonGroupV2',
-  'KeyValuePair',
-  'ColorPicker',
-  'FileButton',
-];
-const BETA_WIDGETS = ['FlexContainer'];
+import { getWidgetVersionLabel } from './widgetVersionLabel';
 
 export const WidgetBox = ({ component, darkMode }) => {
   const { t } = useTranslation();
+  const versionLabel = getWidgetVersionLabel(component.component);
   return (
     <div style={{ height: '100%' }}>
       <div className="component-image-wrapper" style={{ height: '56px', width: '72px', position: 'relative' }}>
@@ -49,9 +14,7 @@ export const WidgetBox = ({ component, darkMode }) => {
           style={{ height: '100%' }}
           data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
         >
-          {LEGACY_WIDGETS.includes(component.component) && <p className="widget-version-old-identifier">Lgcy</p>}
-          {NEW_WIDGETS.includes(component.component) && <p className="widget-version-new-identifier">New</p>}
-          {BETA_WIDGETS.includes(component.component) && <p className="widget-version-beta-identifier">Beta</p>}
+          {versionLabel && <p className="widget-version-beta-identifier">{versionLabel}</p>}
           <center>
             <div
               className="widget-svg-container"

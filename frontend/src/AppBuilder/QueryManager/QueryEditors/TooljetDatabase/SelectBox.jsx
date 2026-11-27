@@ -400,6 +400,7 @@ function DataSourceSelect({
           handleChangeDataSource(option);
         }}
         classNames={{
+          control: () => 'tooljetdb-popover-search',
           menu: () =>
             isForeignKeyInEditCell
               ? 'tj-scrollbar tjdb-mainCellEdit-scrollbar'

@@ -102,7 +102,6 @@ const useAppData = (
   const setIsEditorReadOnly = useStore((state) => state.setIsEditorReadOnly);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
-  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
   const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
@@ -173,8 +172,7 @@ const useAppData = (
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
   const sendMessage = useStore((state) => state.ai?.sendMessage);
   const getCreditBalance = useStore((state) => state.ai?.getCreditBalance);
-  const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
-  const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
+  const setAiChatOpen = useStore((state) => state.setAiChatOpen);
   const pathParams = useParams();
   // A module instance has its own app slug, distinct from the parent app's route slug.
   let slug = appSlug ?? pathParams?.slug;
@@ -623,8 +621,7 @@ const useAppData = (
           (liveMessages || []).length === 0
         ) {
           promptSentRef.current = true;
-          setSelectedSidebarItem('tooljetai');
-          toggleLeftSidebar(true);
+          setAiChatOpen(true);
           // Structured datasources/tables the user tagged via "@mentions" in the create prompt. Sent
           // alongside the kickoff message so the backend can auto-complete the data-clarification /
           // datasource-selection / table-mapping steps for what was already referenced.
@@ -670,7 +667,6 @@ const useAppData = (
               moduleId
             );
           }
-          setIsQueryPaneExpanded(false);
         }
 
         if (initialLoadRef.current && !isPublicAccess && mode === 'edit') {
@@ -679,25 +675,24 @@ const useAppData = (
         }
 
         if (appData.app_builder_mode === 'ai' || (appData.build_mode ?? appData.buildMode) === 'code') {
-          setSelectedSidebarItem('tooljetai');
-          toggleLeftSidebar(true);
-          setIsQueryPaneExpanded(false);
+          setAiChatOpen(true);
         }
 
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
         }
-        // Skip overriding global settings so an embedded module's own settings never overwrite the app's.
-        if (!isEmbeddedModuleInstance(mode, moduleMode)) {
-          const global_settings = mapKeys(
-            appData.editing_version?.global_settings || appData.global_settings,
-            (value, key) => camelCase(key)
-          );
-          if (!global_settings?.theme) {
-            global_settings.theme = baseTheme;
-          }
-          setGlobalSettings(global_settings);
+        // Retain each instance's declarations without replacing the parent app's theme/settings.
+        const global_settings = mapKeys(
+          appData.editing_version?.global_settings ||
+            appData.editing_version?.globalSettings ||
+            appData.global_settings ||
+            appData.globalSettings,
+          (value, key) => camelCase(key)
+        );
+        if (!global_settings?.theme) {
+          global_settings.theme = baseTheme;
         }
+        setGlobalSettings(global_settings, isEmbeddedModuleInstance(mode, moduleMode) ? moduleId : 'canvas');
 
         setPages(pages, moduleId);
         if (!moduleMode || moduleId === 'canvas') {
@@ -811,7 +806,7 @@ const useAppData = (
         setQueries(dataQueries, moduleId);
 
         if (dataQueries?.length > 0) {
-          !moduleMode && setSelectedQuery(dataQueries[0]?.id);
+          !moduleMode && setSelectedQuery(dataQueries[0]?.id, 'canvas', { reveal: false });
           initialiseResolvedQuery(
             dataQueries.map((query) => query.id),
             moduleId
@@ -1162,7 +1157,8 @@ const useAppData = (
         });
 
         setGlobalSettings(
-          mapKeys(appData.editing_version?.globalSettings || appData.globalSettings, (value, key) => camelCase(key))
+          mapKeys(appData.editing_version?.globalSettings || appData.globalSettings, (value, key) => camelCase(key)),
+          moduleId
         );
 
         setPages(pages, moduleId);
@@ -1233,7 +1229,7 @@ const useAppData = (
         setQueries(dataQueries, moduleId);
 
         if (dataQueries?.length > 0) {
-          setSelectedQuery(dataQueries[0]?.id);
+          setSelectedQuery(dataQueries[0]?.id, 'canvas', { reveal: false });
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
         }
 

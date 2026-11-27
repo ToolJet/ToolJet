@@ -642,6 +642,7 @@ export const MultiselectV2 = ({
             menuBackgroundColor={menuBackgroundColor}
             menuPlacement="auto"
             menuPortalTarget={document.body}
+            classNames={{ menuPortal: () => 'tj-widget-overlay' }}
             // This is not setting minheight, required to help calculate menuPlacement by providing fixed height upfront before rendering (required in the case of modal)
             minMenuHeight={300}
           />

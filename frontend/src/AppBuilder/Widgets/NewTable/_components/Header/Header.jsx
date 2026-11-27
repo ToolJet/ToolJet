@@ -54,7 +54,7 @@ export const Header = memo(
     const renderFilter = () => {
       return (
         <div className="position-relative">
-          <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+          <Tooltip id="tooltip-for-filter-data" className="tooltip tj-widget-overlay" />
           <ButtonSolid
             variant="tertiary"
             customStyles={{ minWidth: '32px' }}

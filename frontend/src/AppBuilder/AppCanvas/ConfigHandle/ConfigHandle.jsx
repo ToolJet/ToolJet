@@ -15,6 +15,7 @@ import Popover from '@/_ui/Popover';
 import dynamicHeightSvg from '@assets/images/dynamic-height-info.svg?url';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { getInvalidLicenseTooltip } from './utils';
+import { getRuntimeToggleLabel } from '@/AppBuilder/panelLayout';
 import { hasCustomComponentAccess } from '@/AppBuilder/_helpers/customComponentAccess';
 
 // Lazy load editor-only component to reduce viewer bundle size
@@ -291,7 +292,8 @@ export const ConfigHandle = ({
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => setComponentToInspect(componentName)}
-        message="State inspector"
+        message={getRuntimeToggleLabel(false, 'inspect')}
+        ariaLabel={getRuntimeToggleLabel(false, 'inspect')}
         show={true}
         dataCy={`${componentName.toLowerCase()}-inspect-button`}
       >

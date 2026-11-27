@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { Button as RawButton } from '@/components/ui/Button/Button';
+import RawPanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
 import RawInputComponent from '@/components/ui/Input/Index';
 import { getDependencySections } from '@/AppBuilder/_utils/entityUsage';
 import type { DependencySections } from '@/AppBuilder/_utils/entityUsage';
@@ -18,10 +19,11 @@ import type {
   DetailView,
   QueriesById,
 } from './types';
+import '../panelHeader.scss';
 import './styles.scss';
 
 // Untyped JS modules — cast at the import site.
-const ButtonComponent = RawButton as React.ComponentType<any>;
+const PanelHeader = RawPanelHeader as React.ComponentType<any>;
 const InputComponent = RawInputComponent as React.ComponentType<any>;
 
 export type DependencyViewerProps = {
@@ -41,6 +43,27 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
   const pageComponents = useStore((state: any) => state.getCurrentPageComponents(moduleId), shallow);
   const queries = useStore((state: any) => state.dataQuery.queries.modules[moduleId]);
   const events = useStore((state: any) => state.eventsSlice.module[moduleId]?.events);
+  const variableMaps = useStore(
+    (state: any) => [
+      state.getGlobalSettings(moduleId)?.variables,
+      state.modules[moduleId]?.pages?.find((page: any) => page.id === state.getCurrentPageId(moduleId))?.variables,
+      state.resolvedStore.modules[moduleId]?.exposedValues?.variables,
+      state.resolvedStore.modules[moduleId]?.exposedValues?.page?.variables,
+    ],
+    shallow
+  );
+  const variablesByScope = useMemo(() => {
+    const names = { app: new Set<string>(), page: new Set<string>() };
+    useStore
+      .getState()
+      .getVariableDefinitions(moduleId)
+      .forEach((definition: any) => {
+        names[definition.scope as 'app' | 'page'].add(definition.name);
+      });
+    Object.keys(variableMaps[2] ?? {}).forEach((name) => names.app.add(name));
+    Object.keys(variableMaps[3] ?? {}).forEach((name) => names.page.add(name));
+    return names;
+  }, [variableMaps, moduleId]);
   // The graph itself. It is a class instance mutated in place, so nothing above changes
   // identity when an edge is added — and graph writes are batched, landing a tick after the
   // definition write that triggered them. Without this the panel renders against the graph
@@ -58,7 +81,7 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
   const sections = useMemo<DependencySections>(
     () => getDependencySections(useStore.getState(), moduleId),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pageComponents, queries, events, graphVersion, moduleId]
+    [pageComponents, queries, events, graphVersion, variableMaps, moduleId]
   );
 
   const queriesById = useMemo<QueriesById>(
@@ -93,28 +116,22 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
   }, [selectedComponentId]);
 
   const detail = useMemo<DetailView | null>(
-    () => buildDetail(selected, sections, { queriesById, componentsById, navigateToEntity }),
+    () => buildDetail(selected, sections, { queriesById, componentsById, variablesByScope, navigateToEntity }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selected, sections, queriesById, componentsById]
+    [selected, sections, queriesById, componentsById, variablesByScope]
   );
 
   return (
     <div className={`left-sidebar-dependency-viewer ${darkMode ? 'dark-theme' : ''}`}>
       <div className={`inspector-header ${darkMode ? 'dark-theme' : ''}`}>
-        <div className="inspector-header-top">
-          <span className="inspector-header-title" data-cy="dependency-viewer-title">
-            Dependencies
-          </span>
-          <ButtonComponent
-            iconOnly
-            leadingIcon="x"
-            onClick={onClose}
-            variant="ghost"
-            size="medium"
-            isLucid={true}
-            data-cy="dependency-viewer-close-button"
-          />
-        </div>
+        <PanelHeader
+          title={SIDEBAR_ITEMS.dependencies.name}
+          titleDataCy="dependency-viewer-title"
+          onClose={onClose}
+          closeLabel={getPanelCloseLabel('dependencies')}
+          closeDataCy="dependency-viewer-close-button"
+          divider={false}
+        />
         {detail ? (
           <DetailHeader
             subject={detail.subject}
@@ -130,7 +147,8 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
               onChange={(e: any) => setSearchValue(e.target.value)}
               onClear={() => setSearchValue('')}
               size="medium"
-              placeholder="Search"
+              placeholder="Search dependencies"
+              aria-label="Search dependencies"
               value={searchValue}
               {...(searchValue && { trailingAction: 'clear' })}
               data-cy="dependency-viewer-search-input"
@@ -146,6 +164,10 @@ const DependencyViewer = ({ darkMode, onClose, moduleId }: DependencyViewerProps
             groups={detail.groups}
             moduleId={moduleId}
             onSelect={setSelected}
+            onNavigateRoot={() => {
+              setSearchValue('');
+              setSelected(null);
+            }}
             darkMode={darkMode}
           />
         ) : (
@@ -174,6 +196,7 @@ type GroupExtra = {
 type BuildDetailContext = {
   queriesById: QueriesById;
   componentsById: ComponentsById;
+  variablesByScope: { app: Set<string>; page: Set<string> };
   navigateToEntity: NavigateToEntity;
 };
 
@@ -185,7 +208,7 @@ type BuildDetailContext = {
 function buildDetail(
   selected: DependencySelection | null,
   sections: DependencySections,
-  { queriesById, componentsById, navigateToEntity }: BuildDetailContext
+  { queriesById, componentsById, variablesByScope, navigateToEntity }: BuildDetailContext
 ): DetailView | null {
   if (!selected) return null;
 
@@ -213,7 +236,17 @@ function buildDetail(
   });
 
   if (selected.kind === 'query') {
-    const item = sections.queries.find((q) => q.id === selected.id);
+    const query = queriesById[selected.id];
+    const item =
+      sections.queries.find((q) => q.id === selected.id) ??
+      (query && {
+        id: selected.id,
+        name: query.name,
+        query,
+        usage: { uses: [], usedBy: [], triggeredBy: [] },
+        ownEvents: { onSuccess: [], onFailure: [] },
+        loadTriggers: { appLoad: false, pageLoad: false },
+      });
     if (!item) return null;
     const loadRows: DependencyEntry[] = [
       ...(item.loadTriggers.appLoad ? [{ kind: 'appLoad' as const, id: null, name: 'App load', details: [] }] : []),
@@ -253,7 +286,15 @@ function buildDetail(
   }
 
   if (selected.kind === 'component') {
-    const item = sections.components.find((c) => c.id === selected.id);
+    const component = componentsById[selected.id]?.component;
+    const item =
+      sections.components.find((c) => c.id === selected.id) ??
+      (component && {
+        id: selected.id,
+        name: component.name,
+        componentType: component.component,
+        usage: { uses: [], usedBy: [], triggers: [] },
+      });
     if (!item) return null;
     const subjectComponentType = item.componentType;
     return {
@@ -294,7 +335,9 @@ function buildDetail(
     const [rawScope, ...rest] = String(selected.id).split(':');
     const scope = rawScope as 'app' | 'page';
     const name = rest.join(':');
-    const item = sections.variables[scope]?.find((v) => v.name === name);
+    const item =
+      sections.variables[scope]?.find((v) => v.name === name) ??
+      (variablesByScope[scope]?.has(name) ? { name, uses: [], setBy: [], readBy: [] } : null);
     if (!item) return null;
     const entryKind = scope === 'app' ? 'variable' : 'pageVariable';
     return {
@@ -306,6 +349,7 @@ function buildDetail(
         variableScope: scope,
       },
       groups: [
+        group('Uses', subSectionIcons.uses, 'uses', item.uses),
         group('Set by', subSectionIcons.usedBy, 'is set by', item.setBy),
         group('Read by', subSectionIcons.uses, 'is read by', item.readBy),
       ],

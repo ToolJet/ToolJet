@@ -559,7 +559,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         if (!globalSettings?.theme) {
           globalSettings.theme = baseTheme;
         }
-        get().setGlobalSettings(globalSettings);
+        get().setGlobalSettings(globalSettings, moduleId);
         get().setPageSettings(
           get().computePageSettings(
             deepCamelCase(data.editing_version?.pageSettings ?? data.editing_version?.page_settings)
@@ -642,7 +642,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           );
           get().setQueryMapping(moduleId);
           if (dataQueries?.length > 0) {
-            get().queryPanel.setSelectedQuery(dataQueries[0]?.id, moduleId);
+            get().queryPanel.setSelectedQuery(dataQueries[0]?.id, moduleId, { reveal: false });
           }
         }
 

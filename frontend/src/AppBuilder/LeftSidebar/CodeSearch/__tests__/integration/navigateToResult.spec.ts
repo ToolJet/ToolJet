@@ -310,19 +310,21 @@ describe('navigateToResult', () => {
     await done;
   });
 
-  test('a page property opens the Pages panel and does not open the page details popover', async () => {
+  test("a page property opens that page's configuration, not the app's page settings", async () => {
     const spy = revealSpy(['page']);
-    const page: RevealStep = { kind: 'page', ownerId: null, itemId: 'page-a' };
+    const page: RevealStep = { kind: 'page', ownerId: null, itemId: 'page-b' };
 
-    await go({ entityType: 'page', entityId: 'page-a', pageId: 'page-a', fieldPath: ['hidden'], reveal: [page] });
+    await go({ entityType: 'page', entityId: 'page-b', pageId: 'page-b', fieldPath: ['hidden'], reveal: [page] });
     spy.unsubscribe();
 
-    expect(state().activeRightSideBarTab).toBe(RIGHT_SIDE_BAR_TAB.PAGES);
+    expect(state().activeRightSideBarTab).toBe(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
     expect(state().isRightSidebarOpen).toBe(true);
+    expect(state().editingPage?.id).toBe('page-b');
+    expect(state().newPagePopupConfig).toMatchObject({ show: true, mode: 'edit' });
     expect(spy.steps()).toEqual([]);
   });
 
-  test('an app setting opens Global settings with a way back to search', async () => {
+  test('an app setting opens App settings with a way back to search', async () => {
     await go({ entityType: 'app', entityId: 'app', pageId: null, fieldPath: ['canvasBackgroundColor'] });
 
     expect(state().selectedSidebarItem).toBe('settings');
@@ -351,7 +353,7 @@ describe('navigateToResult', () => {
     expect(spy.steps()).toEqual([]);
   });
 
-  test('without the libraries license they fall back to Global settings, never a hidden panel', async () => {
+  test('without the libraries license they fall back to App settings, never a hidden panel', async () => {
     licenseLibraries(false);
 
     await go(preloadedScript, { hops: 120 });

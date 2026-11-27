@@ -167,7 +167,7 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }: CascaderInsp
     },
     {
       id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-      title: 'Additional Actions',
+      title: 'Additional actions',
       type: 'properties',
       properties: additionalActions,
       extraProps: (property) => ({

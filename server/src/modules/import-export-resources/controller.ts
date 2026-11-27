@@ -1,3 +1,4 @@
+import { ImportVariablesGuard } from '@modules/import-export-resources/guards/import-variables.guard';
 import { Controller, Post, UseGuards, Body, BadRequestException } from '@nestjs/common';
 import { User } from '@modules/app/decorators/user.decorator';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
@@ -38,7 +39,13 @@ export class ImportExportResourcesController {
   }
 
   @InitFeature(FEATURE_KEY.APP_RESOURCE_IMPORT)
-  @UseGuards(JwtAuthGuard, ResourceCountGuard, AppFeatureAbilityGuard, DataSourceFeatureAbilityGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    ResourceCountGuard,
+    AppFeatureAbilityGuard,
+    DataSourceFeatureAbilityGuard,
+    ImportVariablesGuard
+  )
   @Post('/import')
   async import(@User() user, @Body() importResourcesDto: ImportResourcesDto) {
     const isNotCompatibleVersion = isVersionGreaterThan(importResourcesDto.tooljet_version, globalThis.TOOLJET_VERSION);

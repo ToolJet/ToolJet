@@ -2,6 +2,7 @@ import React from 'react';
 import { decodeEntities } from '@/_helpers/utils';
 import { activateOnEnterOrSpace } from '@/AppBuilder/Shared/EntityUsage/keyboard';
 import BindingTooltip from './BindingTooltip';
+import TruncatedText from './TruncatedText';
 import type { RowTooltip } from './types';
 
 // Wraps every case-insensitive occurrence of `term` in a <mark> so the reason a row
@@ -44,6 +45,10 @@ export type DependencyEntityRowProps = {
   dataCy?: string;
   /** Forwarded to the portalled tooltip, which cannot inherit the panel's theme class. */
   darkMode?: boolean;
+  /** Right-aligned content, e.g. a status badge. */
+  trailing?: React.ReactNode;
+  /** Inline content after the name, e.g. a type label. */
+  nameSuffix?: React.ReactNode;
 };
 
 export const DependencyEntityRow = ({
@@ -57,6 +62,8 @@ export const DependencyEntityRow = ({
   onClick,
   dataCy,
   darkMode = false,
+  trailing,
+  nameSuffix,
 }: DependencyEntityRowProps) => {
   const stacked = Boolean(subtitle) || tags.length > 0;
   const label = decodeEntities(name);
@@ -74,15 +81,25 @@ export const DependencyEntityRow = ({
     >
       <span className="dependency-row-icon">{icon}</span>
       <span className="dependency-row-content">
-        <span className="dependency-row-name text-truncate">{withHighlight(label, highlight)}</span>
+        {nameSuffix ? (
+          <span className="dependency-row-title">
+            <TruncatedText className="dependency-row-name text-truncate" text={label}>
+              {withHighlight(label, highlight)}
+            </TruncatedText>
+            {nameSuffix}
+          </span>
+        ) : (
+          <TruncatedText className="dependency-row-name text-truncate" text={label}>
+            {withHighlight(label, highlight)}
+          </TruncatedText>
+        )}
         {subtitle && <span className="dependency-row-subtitle text-truncate">{subtitle}</span>}
         {tags.map((tag, index) => (
           // eslint-disable-next-line react/no-array-index-key
-          <span className="dependency-row-tag" key={`${tag}-${index}`}>
-            {tag}
-          </span>
+          <TruncatedText className="dependency-row-tag" key={`${tag}-${index}`} text={tag} />
         ))}
       </span>
+      {trailing && <span className="dependency-row-trailing">{trailing}</span>}
     </div>
   );
 

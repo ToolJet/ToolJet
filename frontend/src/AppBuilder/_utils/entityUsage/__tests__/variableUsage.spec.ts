@@ -149,6 +149,6 @@ describe('getVariableUsage — precomputed component usage', () => {
     const { variables } = getVariableUsage(state, MODULE);
 
     const orphan = variables.find((v) => v.name === 'orphan');
-    expect(orphan).toEqual({ name: 'orphan', scope: 'app', setBy: [], readBy: [] });
+    expect(orphan).toEqual({ name: 'orphan', scope: 'app', uses: [], setBy: [], readBy: [] });
   });
 });
