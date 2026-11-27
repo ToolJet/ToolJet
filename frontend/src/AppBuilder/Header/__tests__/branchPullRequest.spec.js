@@ -13,7 +13,8 @@ describe('the branch menu pull request button', () => {
     });
   });
 
-  it('waits for approval, naming the apps still waiting', () => {
+  // The pull request comes first: reviews are requested on it, and ToolJet's check on it holds the merge.
+  it('creates a pull request before the apps are approved', () => {
     const action = pullRequestAction(
       status({
         ready: false,
@@ -25,7 +26,7 @@ describe('the branch menu pull request button', () => {
         ],
       })
     );
-    expect(action).toMatchObject({ disabled: true, reason: 'Needs an approved review first: Invoices, Reports' });
+    expect(action).toEqual({ label: 'Create pull request', url: null, disabled: false, reason: null });
   });
 
   it('opens the pull request that is already open', () => {
