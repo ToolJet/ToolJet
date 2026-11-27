@@ -58,9 +58,15 @@ describe("Cloud Licensing — Upgrade Paywall", { retries: 0 }, () => {
 
   it("should send the admin to the subscription page from the Paid feature pill", () => {
     cy.apiSetCloudPlan("basic", { workspaceId: signup.workspaceId });
+    // Each blocked audit-log request can reopen the dialog, so let them all settle before dismissing it.
+    cy.intercept("GET", "**/api/audit-logs?*").as("auditLogs");
+    cy.intercept("GET", "**/api/audit-logs/resources").as("auditResources");
+    cy.intercept("GET", "**/api/license/audit-logs/max-duration").as("auditMaxDuration");
     cy.visit(`/${signup.workspaceSlug}/audit-logs`);
+    cy.wait(["@auditLogs", "@auditResources", "@auditMaxDuration"]);
 
     cy.get('[role="dialog"]').contains("button", "Cancel").click();
+    cy.get('[role="dialog"]').should("not.exist");
     cy.get(licenseSelectors.paidFeatureButton).first().should("be.visible").click();
     cy.location().should((location) => {
       expect(location.pathname).to.contain("/settings/subscription");

@@ -46,6 +46,8 @@ const RatingIcon = ({
   const [outlineIcon, setOutlineIcon] = React.useState(emptyIcon);
   const [currentPrecision, setPrecision] = React.useState(0);
 
+  const canEdit = allowEditing && !isDisabled;
+
   React.useEffect(() => {
     setIcon(isHalfIcon ? halfIcon : star);
     setOutlineIcon(isHalfIcon ? halfIcon : emptyIcon);
@@ -69,6 +71,8 @@ const RatingIcon = ({
   }
 
   const handleMouseMove = (e) => {
+    if (!canEdit) return;
+
     const { left } = ref.current.getBoundingClientRect();
     const { width } = ref.current.firstChild.getBoundingClientRect();
     const percent = (e.clientX - left) / (width * maxRating);
@@ -87,6 +91,7 @@ const RatingIcon = ({
   };
 
   const handleMouseLeave = () => {
+    if (!canEdit) return;
     // setHoverIndex(null);
     setPrecision(0);
     setIcon(star);
@@ -94,15 +99,13 @@ const RatingIcon = ({
   };
 
   const handleClick = (e) => {
-    if (isDisabled || !allowEditing) return;
-
+    if (!canEdit) return;
     if (currentPrecision === 0.5) onClick(e, index - 0.5);
     else onClick(e, index);
   };
 
   const handleKeyDown = (e) => {
-    if (isDisabled || !allowEditing) return;
-
+    if (!canEdit) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleClick(e);
@@ -118,6 +121,7 @@ const RatingIcon = ({
   }
 
   const handleMouseEnter = () => {
+    if (!canEdit) return;
     setHoverIndex(index);
   };
 
@@ -133,7 +137,8 @@ const RatingIcon = ({
         className={classNames(
           'rating-icon-widget focus-visible:tw-outline-none focus-visible:tw-rounded-sm focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1',
           {
-            'pointer-events-none': !allowEditing || isDisabled,
+            'pointer-events-none': isDisabled, // Disabled only. A read-only star must stay hit-testable or its tooltip can never trigger
+            readonly: !allowEditing && !isDisabled,
           }
         )}
         onClick={handleClick}

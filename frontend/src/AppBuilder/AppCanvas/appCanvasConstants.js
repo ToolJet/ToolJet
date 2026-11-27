@@ -70,6 +70,8 @@ export const SUBCONTAINER_WIDGETS = [
   'ShadListView',
 ];
 
+export const SLOT_SUPPORTED_WIDGETS = ['Container', 'Form', 'ModalV2', 'Accordion'];
+
 // Subcontainer widget types that use per-row resolution (customResolvables)
 // A LibraryComponent or PackComponent is row-scoped where it draws rows of components (ToolJet.RowSlot): its rows'
 // children are parented to it directly, while its named slots are `<id>-<slot>` canvases.

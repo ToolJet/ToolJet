@@ -142,6 +142,10 @@ export class VersionService implements IVersionService {
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
+
+  /** Enterprise editions also check review and security policy before the first release write. */
+  async checkReleasePolicies(_app: App, _version: AppVersion, _promotionCount: number): Promise<void> {}
+
   async getAllVersions(
     app: App,
     branchId?: string,
