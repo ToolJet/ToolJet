@@ -471,7 +471,7 @@ export const createDataQuerySlice = (set, get) => ({
         componentNameIdMapping,
         queryNameIdMapping
       );
-      const findStoredQuery = () => get().dataQuery.queries.modules[moduleId]?.find((q) => q.id === selectedQuery.id);
+      const findStoredQuery = () => get().dataQuery.queries.modules[moduleId]?.find((q) => q.id === queryId);
       const couldRefreshCache = canRefreshQueryCache(get(), findStoredQuery());
 
       set((state) => {
@@ -490,7 +490,7 @@ export const createDataQuerySlice = (set, get) => ({
       // Reconcile an already-running periodic timer with the edited options
       // (interval change or toggled back on → restart, toggle off → idle). allowStart:false so editing
       // options never starts a timer for a query that hasn't been run yet.
-      reconcileQueryPeriodicRun(selectedQuery.id, moduleId, get, { allowStart: false });
+      reconcileQueryPeriodicRun(queryId, moduleId, get, { allowStart: false });
 
       // Turning response caching on or off adds or removes queries.<name>.refresh(). Rebuild the query hints in full
       // (the result-shape shortcut can't see this) only when that eligibility flips, not on every options edit.
