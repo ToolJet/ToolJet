@@ -3,7 +3,7 @@ import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
-import { generateUIComponents, getBodyHeight } from './FormUtils';
+import { collectFormFieldExposedValues, generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -72,9 +72,9 @@ const FormComponent = (props) => {
     showFooter = false,
     headerHeight = 80,
     footerHeight = 80,
-    canvasHeight,
     validateOnSubmit = true,
     resetOnSubmit = true,
+    registerNestedFields = false,
     newJsonSchema,
   } = properties;
 
@@ -94,7 +94,6 @@ const FormComponent = (props) => {
 
   const activeColor = getModifiedColor(backgroundColor, 'active');
   const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
-  const [canHeight, setCanHeight] = useState('100%');
   const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
 
   const computedStyles = {
@@ -114,7 +113,8 @@ const FormComponent = (props) => {
 
   const formContent = {
     display: 'flex',
-    height: canHeight || '100%',
+    // Fill the space between header and footer, so the body grows with the Form under dynamic height.
+    height: '100%',
     paddingTop: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingBottom: showFooter ? '3px' : '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
@@ -172,23 +172,11 @@ const FormComponent = (props) => {
 
   // Lightweight selector: returns raw exposed value references (no spreading).
   // shallow comparison works because immer only creates new references for mutated paths.
-  const childExposedMap = useStore((state) => {
-    const childIds = state.containerChildrenMapping?.[id] || [];
-    const exposedComponents = state.resolvedStore.modules[moduleId]?.exposedValues?.components;
-    const result = {};
-    childIds.forEach((childId) => {
-      let val = exposedComponents?.[childId];
-      // If per-row (Form is inside a ListView), navigate to correct row
-      if (Array.isArray(val) && indices.length > 0) {
-        for (const idx of indices) {
-          val = val?.[idx];
-          if (!val) break;
-        }
-      }
-      result[childId] = val || null;
-    });
-    return result;
-  }, shallow);
+  // See collectFormFieldExposedValues for which containers the walk descends into.
+  const childExposedMap = useStore(
+    (state) => collectFormFieldExposedValues(state, id, { moduleId, indices, includeNested: registerNestedFields }),
+    shallow
+  );
 
   useExposedValueBatch(componentCount);
 
@@ -434,18 +422,6 @@ const FormComponent = (props) => {
     const _height = parseInt(newHeight, 10);
     setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
   };
-
-  useEffect(() => {
-    // const newHeight = parseInt(height, 10) - 14;
-
-    // const autoCanvasHeight = document.querySelector(`#canvas-${id}`)?.scrollHeight;
-    const wrapHeight = parseInt(computedFormBodyHeight, 10);
-    // Set height to the larger value between computed body height and canvas scroll height
-    const maxHeight = Math.max(wrapHeight, canvasHeight || 10);
-
-    const roundedHeight = Math.round(maxHeight / 10) * 10;
-    setCanHeight(`${roundedHeight}px`);
-  }, [computedFormBodyHeight, canvasHeight]);
 
   const formSignalContextValue = useMemo(
     () => ({ submitAttemptCount: effectiveSubmitAttemptCount, clearCount }),
