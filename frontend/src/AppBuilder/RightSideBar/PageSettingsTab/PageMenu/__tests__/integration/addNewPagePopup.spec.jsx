@@ -194,33 +194,20 @@ describe('AddEditPagePopup embedded in the right panel', () => {
     expect(cloneRequests).toBe(1);
   });
 
-  // The page configuration panel embeds the popup and shares newPagePopupConfig with the Pages panel's
-  // floating popups. Only the floating "New page" popup may create the page.
-  test('New page with a page configuration open creates ONE page, not one per mounted popup', async () => {
-    seedFreshApp();
-    state().setEditingPage(state().modules.canvas.pages[0]);
-    state().setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+  // The right panel is the only mounted copy: New page creates the page there, exactly once per click.
+  const nameInput = (view) => view.container.querySelector('input.form-control[type="text"]');
+  const clickNewPage = async () => {
     await act(async () => {
-      render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
-    });
-
-    await act(async () => {
+      state().setEditingPage(null);
       state().setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });
-      render(<AddEditPagePopup darkMode={false} />);
     });
     await act(async () => {
       await settle();
     });
+  };
 
-    expect(state().modules.canvas.pages.map((p) => p.name)).toEqual(['Home', 'Page 1']);
-  });
-});
-
-describe('AddEditPagePopup New page draft (embedded)', () => {
-  const nameInput = (view) => view.container.querySelector('input.form-control[type="text"]');
-
-  // Break this catches: New page while a page is being edited keeps the old name and handle in the form.
-  test('New page while editing a page empties the fields and shows only the create form', async () => {
+  // Break this catches: New page in the right panel opens a blank form and creates nothing.
+  test('New page while editing a page creates ONE page and shows its fields', async () => {
     seedFreshApp();
     state().setEditingPage(state().modules.canvas.pages[0]);
     state().setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
@@ -230,56 +217,29 @@ describe('AddEditPagePopup New page draft (embedded)', () => {
     });
     expect(nameInput(view)).toHaveValue('Home');
 
-    await act(async () => {
-      state().setEditingPage(null);
-      state().setNewPagePopupConfig({ type: 'default', show: true, mode: 'add' });
-    });
-
-    expect(nameInput(view)).toHaveValue('');
-    expect(nameInput(view)).toHaveAttribute('placeholder', 'Page 1');
-    expect(screen.getByRole('button', { name: 'Create page' })).toBeVisible();
-    expect(screen.queryByRole('button', { name: 'Page options' })).not.toBeInTheDocument();
-    expect(screen.queryByText('Page header')).not.toBeInTheDocument();
-    expect(state().modules.canvas.pages).toHaveLength(1);
-  });
-
-  // Break this catches: Create with nothing typed does nothing, so a new page can never be made.
-  test('Create with the fields empty adds the suggested page and switches to editing it', async () => {
-    const user = userEvent.setup();
-    seedFreshApp();
-    state().setNewPagePopupConfig({ type: 'default', show: true, mode: 'add' });
-    await act(async () => {
-      render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
-    });
-
-    await user.click(screen.getByRole('button', { name: 'Create page' }));
-    await act(async () => {
-      await settle();
-    });
+    await clickNewPage();
 
     expect(state().modules.canvas.pages.map((p) => p.name)).toEqual(['Home', 'Page 1']);
-    expect(state().modules.canvas.pages[1]).toMatchObject({ handle: 'page-1', type: 'default' });
-    expect(state().newPagePopupConfig.mode).toBe('edit');
-    expect(screen.getByRole('button', { name: 'Page options' })).toBeVisible();
+    expect(nameInput(view)).toHaveValue('Page 1');
   });
 
-  // Break this catches: the typed name or handle is ignored on Create.
-  test('Create uses the typed name and handle', async () => {
-    const user = userEvent.setup();
+  // Break this catches: the create guard is never re-armed, so a second New page click does nothing.
+  test('clicking New page again with the panel still open creates the next page', async () => {
     seedFreshApp();
-    state().setNewPagePopupConfig({ type: 'default', show: true, mode: 'add' });
+    state().setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });
     let view;
     await act(async () => {
       view = render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
     });
-
-    await user.type(nameInput(view), 'Reports');
-    await user.click(screen.getByRole('button', { name: 'Create page' }));
     await act(async () => {
       await settle();
     });
+    expect(state().modules.canvas.pages.map((p) => p.name)).toEqual(['Home', 'Page 1']);
 
-    expect(state().modules.canvas.pages[1]).toMatchObject({ name: 'Reports', handle: 'reports' });
+    await clickNewPage();
+
+    expect(state().modules.canvas.pages.map((p) => p.name)).toEqual(['Home', 'Page 1', 'Page 2']);
+    expect(nameInput(view)).toHaveValue('Page 2');
   });
 });
 

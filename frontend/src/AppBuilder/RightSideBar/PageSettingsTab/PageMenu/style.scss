@@ -577,23 +577,6 @@
     }
 }
 
-// New page is a draft: the form is short, so Create sits at the bottom edge of the panel.
-#add-new-page-popup.add-new-page-popup--embedded.add-new-page-popup--draft {
-    display: flex;
-    flex-direction: column;
-
-    .popover-body {
-        display: flex;
-        flex: 1 1 auto;
-        flex-direction: column;
-    }
-
-    .page-create-footer {
-        margin-top: auto;
-        padding-top: 12px;
-    }
-}
-
 .section-header {
     color: var(--text-placeholder);
     display: flex;

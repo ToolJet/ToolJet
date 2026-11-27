@@ -103,7 +103,13 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2';
+type PartialRevampedComponent =
+  | 'CodeEditor'
+  | 'PDF'
+  | 'Calendar'
+  | 'CustomComponent'
+  | 'RadioButtonV2'
+  | 'RangeSliderV2';
 
 type NewRevampedComponent =
   | 'Text'
@@ -150,7 +156,10 @@ type NewRevampedComponent =
   | 'ModalV2'
   | 'PopoverMenu'
   | 'Pagination'
-  | 'Timeline';
+  | 'Timeline'
+  | 'RichTextEditor'
+  | 'Calendar'
+  | 'SvgImage';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -205,6 +214,9 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PopoverMenu',
   'Pagination',
   'Timeline',
+  'RichTextEditor',
+  'Calendar',
+  'SvgImage',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -213,6 +225,7 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'Calendar',
   'CustomComponent',
   'RadioButtonV2',
+  'RangeSliderV2',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -323,11 +336,20 @@ const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'N
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
+/**
+ * The first release that ships BackfillStripPercentRangeSliderV21792950330429 and the conditional `%` strip in
+ * RangeSliderV2. Every earlier release, on any line, stripped the `%` from every slider and never wrote
+ * `stripPercent`, so an export from before it marks old sliders by the key's absence. If the fix is backported to an
+ * LTS line, that line's first release with it needs its own check here: 3.21.x always compares below 4.x.
+ */
+const STRIP_PERCENT_FIRST_VERSION = '4.0.5-beta';
+
 const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Accordion',
   'AudioRecorder',
   'Button',
   'ButtonGroupV2',
+  'Calendar',
   'Camera',
   'Cascader',
   'Checkbox',
@@ -365,8 +387,10 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',
+  'RichTextEditor',
   'StarRating',
   'Statistics',
+  'SvgImage',
   'Tabs',
   'Tags',
   'TagsInput',
@@ -4770,6 +4794,19 @@ export function migrateProperties(
         properties.layout = { value: 'wrap' };
       }
     }
+
+    // RangeSliderV2 used to strip the first `%` from every mark label. The strip is now conditional on `stripPercent`,
+    // an unregistered property the BackfillStripPercent migration writes onto components that already existed.
+    // Before STRIP_PERCENT_FIRST_VERSION the migration had not run anywhere, so a missing key means "slider built
+    // before the fix" and the strip has to be preserved. From that version on every pre-existing slider carries the
+    // key, so a missing one means "slider created after the fix" and must be left alone.
+    if (
+      componentType === 'RangeSliderV2' &&
+      properties.stripPercent === undefined &&
+      !isVersionGreaterThanOrEqual(tooljetVersion, STRIP_PERCENT_FIRST_VERSION)
+    ) {
+      properties.stripPercent = { value: '{{true}}' };
+    }
   }
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
@@ -4901,6 +4938,10 @@ export function migrateProperties(
     if (componentType === 'Form') {
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
+
+      if (!properties.registerNestedFields) {
+        properties.registerNestedFields = { value: '{{false}}' };
+      }
     }
 
     // Tabs

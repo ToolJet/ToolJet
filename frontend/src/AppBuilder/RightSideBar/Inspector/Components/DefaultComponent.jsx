@@ -59,6 +59,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FileButton',
   'FlexContainer',
   'Timeline',
+  'SvgImage',
+  'Calendar',
   'PDF',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
@@ -71,6 +73,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   TextArea: 'Data',
   Button: 'Data',
   Image: 'Data',
+  SvgImage: 'Data',
   Container: 'Data',
   Divider: 'Data',
   VerticalDivider: 'Data',
@@ -193,6 +196,7 @@ export const baseComponentProperties = (
       'DropdownV2',
       'MultiselectV2',
       'Image',
+      'SvgImage',
       'RangeSliderV2',
       'Divider',
       'VerticalDivider',
@@ -208,6 +212,8 @@ export const baseComponentProperties = (
       'ProgressBar',
       'AudioRecorder',
       'Camera',
+      'RichTextEditor',
+      'Calendar',
       'JSONExplorer',
       'JSONEditor',
       'IFrame',
