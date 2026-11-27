@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const libraryAppService = {
   deploy,
@@ -15,11 +16,11 @@ function deploy(identifier, appName, dependentPlugins = [], shouldAutoImportPlug
     appName,
     dependentPlugins,
     shouldAutoImportPlugin,
-    ...(branchId && { branchId }),
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/library_apps`, requestOptions).then(handleResponse);
+  // The server reads the target branch from the branch_id query param (like every other create route), not the body.
+  return fetch(appendBranchParam(`${config.apiUrl}/library_apps`, branchId), requestOptions).then(handleResponse);
 }
 
 function templateManifests() {
