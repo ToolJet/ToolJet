@@ -14,6 +14,8 @@ export interface DataQueryExecutionOptions {
   workflow?: WorkflowExecutionOptions;
   /** Stops the query when it fires (a workflow step's deadline); also handed to the plugin. */
   signal?: AbortSignal;
+  /** The largest response the plugin should read (workflow queries, R11); HTTP plugins honour it. */
+  maxResponseBytes?: number;
 }
 
 export interface IDataQueriesUtilService {

@@ -19,6 +19,10 @@ export interface WorkflowLimits {
     maxLogBytes: number;
     maxNodeResultBytes: number;
     maxStateBytes: number;
+    /** A data-source response a workflow query may receive (HTTP plugins stop reading past it). */
+    maxResponseBytes: number;
+    /** What a Python step may print/return. */
+    maxPythonOutputBytes: number;
     /**
      * An optional cap on each step (query, agent call, Python run) below the run's remaining time.
      * 0 = none: a step may use whatever time its run has left (decision D40).
@@ -35,6 +39,14 @@ export interface WorkflowLimits {
     appPerUserPerWorkflow: number;
     webhookPerWorkflow: number;
     editorPerUser: number;
+    /** Anonymous run starts per minute across the whole instance (R3). */
+    anonymousPerInstance: number;
+    /** Public approval-link requests per IP (R17). */
+    approvalLinkPerIp: number;
+    /** Bundle rebuilds per user (R17). */
+    rebuildsPerUser: number;
+    /** Data-source requests a workspace's workflows may make (R13). */
+    outboundPerWorkspace: number;
   };
   concurrency: {
     activeRunsPerWorkspace: number;
@@ -44,8 +56,20 @@ export interface WorkflowLimits {
     pythonProcessesPerPod: number;
     /** Bundle builds (npm/pip installs) one pod runs at once (D43). */
     bundleBuildsPerPod: number;
+    /** Runs executing at once across the instance (R3). */
+    activeRunsPerInstance: number;
+    /** Runs queued or running across the instance (R3). */
+    queuedRunsPerInstance: number;
+    /** How long a run may wait in the queue for a free slot before it fails (R8). */
+    maxQueueWaitSeconds: number;
+    /** Open run streams (SSE) per IP on one pod (R17). */
+    streamsPerIp: number;
+    /** ToolJet DB queries a workspace's workflows run at once (R15). */
+    tooljetDbQueriesPerWorkspace: number;
   };
   waiting: { maxWaitingRunsPerWorkspace: number };
+  /** Approval notifications (email, webhook) per workspace per hour (R14). */
+  notifications: { perWorkspacePerHour: number };
   schedules: {
     maxPerWorkflow: number;
     maxPerWorkspace: number;
@@ -75,6 +99,8 @@ export const DEFAULT_WORKFLOW_LIMITS: WorkflowLimits = Object.freeze({
     maxLogBytes: 1 * MB,
     maxNodeResultBytes: 5 * MB,
     maxStateBytes: 20 * MB,
+    maxResponseBytes: 10 * MB,
+    maxPythonOutputBytes: 16 * MB,
     stepTimeoutMs: 0,
     syncQueueWaitSeconds: 30,
   },
@@ -86,6 +112,10 @@ export const DEFAULT_WORKFLOW_LIMITS: WorkflowLimits = Object.freeze({
     appPerUserPerWorkflow: 60,
     webhookPerWorkflow: 100,
     editorPerUser: 60,
+    anonymousPerInstance: 600,
+    approvalLinkPerIp: 20,
+    rebuildsPerUser: 10,
+    outboundPerWorkspace: 600,
   },
   concurrency: {
     activeRunsPerWorkspace: 10,
@@ -93,8 +123,14 @@ export const DEFAULT_WORKFLOW_LIMITS: WorkflowLimits = Object.freeze({
     waitingSyncRequestsPerPod: 100,
     pythonProcessesPerPod: 4,
     bundleBuildsPerPod: 2,
+    activeRunsPerInstance: 200,
+    queuedRunsPerInstance: 5000,
+    maxQueueWaitSeconds: 1800,
+    streamsPerIp: 10,
+    tooljetDbQueriesPerWorkspace: 5,
   },
   waiting: { maxWaitingRunsPerWorkspace: 500 },
+  notifications: { perWorkspacePerHour: 200 },
   schedules: { maxPerWorkflow: 20, maxPerWorkspace: 200, jitterMaxSeconds: 30 },
   // The Basic plan's values
   quotaDefaults: {
@@ -120,6 +156,8 @@ export const WORKFLOW_LIMIT_ENV_VARS: Record<LimitPath, string> = {
   'run.maxLogBytes': 'WORKFLOW_LIMIT_MAX_LOG_BYTES',
   'run.maxNodeResultBytes': 'WORKFLOW_LIMIT_MAX_NODE_RESULT_BYTES',
   'run.maxStateBytes': 'WORKFLOW_LIMIT_MAX_STATE_BYTES',
+  'run.maxResponseBytes': 'WORKFLOW_LIMIT_MAX_RESPONSE_BYTES',
+  'run.maxPythonOutputBytes': 'WORKFLOW_LIMIT_MAX_PYTHON_OUTPUT_BYTES',
   'run.stepTimeoutMs': 'WORKFLOW_LIMIT_STEP_TIMEOUT_MS',
   'run.syncQueueWaitSeconds': 'WORKFLOW_LIMIT_SYNC_QUEUE_WAIT_SECONDS',
   'trigger.maxPayloadBytes': 'WORKFLOW_LIMIT_MAX_PAYLOAD_BYTES',
@@ -129,12 +167,22 @@ export const WORKFLOW_LIMIT_ENV_VARS: Record<LimitPath, string> = {
   'ratesPerMinute.appPerUserPerWorkflow': 'WORKFLOW_LIMIT_APP_RUNS_PER_USER_PER_WORKFLOW_PER_MINUTE',
   'ratesPerMinute.webhookPerWorkflow': 'WORKFLOW_LIMIT_WEBHOOK_RUNS_PER_WORKFLOW_PER_MINUTE',
   'ratesPerMinute.editorPerUser': 'WORKFLOW_LIMIT_EDITOR_RUNS_PER_USER_PER_MINUTE',
+  'ratesPerMinute.anonymousPerInstance': 'WORKFLOW_LIMIT_ANONYMOUS_RUNS_PER_INSTANCE_PER_MINUTE',
+  'ratesPerMinute.approvalLinkPerIp': 'WORKFLOW_LIMIT_APPROVAL_LINK_REQUESTS_PER_IP_PER_MINUTE',
+  'ratesPerMinute.rebuildsPerUser': 'WORKFLOW_LIMIT_BUNDLE_REBUILDS_PER_USER_PER_MINUTE',
+  'ratesPerMinute.outboundPerWorkspace': 'WORKFLOW_LIMIT_OUTBOUND_REQUESTS_PER_WORKSPACE_PER_MINUTE',
   'concurrency.activeRunsPerWorkspace': 'WORKFLOW_LIMIT_ACTIVE_RUNS_PER_WORKSPACE',
   'concurrency.queuedRunsPerWorkspace': 'WORKFLOW_LIMIT_QUEUED_RUNS_PER_WORKSPACE',
   'concurrency.waitingSyncRequestsPerPod': 'WORKFLOW_LIMIT_WAITING_SYNC_REQUESTS_PER_POD',
   'concurrency.pythonProcessesPerPod': 'WORKFLOW_LIMIT_PYTHON_PROCESSES_PER_POD',
   'concurrency.bundleBuildsPerPod': 'WORKFLOW_LIMIT_BUNDLE_BUILDS_PER_POD',
+  'concurrency.activeRunsPerInstance': 'WORKFLOW_LIMIT_ACTIVE_RUNS_PER_INSTANCE',
+  'concurrency.queuedRunsPerInstance': 'WORKFLOW_LIMIT_QUEUED_RUNS_PER_INSTANCE',
+  'concurrency.maxQueueWaitSeconds': 'WORKFLOW_LIMIT_MAX_QUEUE_WAIT_SECONDS',
+  'concurrency.streamsPerIp': 'WORKFLOW_LIMIT_STREAMS_PER_IP',
+  'concurrency.tooljetDbQueriesPerWorkspace': 'WORKFLOW_LIMIT_TOOLJET_DB_QUERIES_PER_WORKSPACE',
   'waiting.maxWaitingRunsPerWorkspace': 'WORKFLOW_LIMIT_MAX_WAITING_RUNS_PER_WORKSPACE',
+  'notifications.perWorkspacePerHour': 'WORKFLOW_LIMIT_NOTIFICATIONS_PER_WORKSPACE_PER_HOUR',
   'schedules.maxPerWorkflow': 'WORKFLOW_LIMIT_MAX_SCHEDULES_PER_WORKFLOW',
   'schedules.maxPerWorkspace': 'WORKFLOW_LIMIT_MAX_SCHEDULES_PER_WORKSPACE',
   'schedules.jitterMaxSeconds': 'WORKFLOW_LIMIT_SCHEDULE_JITTER_SECONDS',

@@ -21,6 +21,7 @@ import {
   getSSRFProtectionOptions,
   queryErrorMessage,
   cancelOnAbort,
+  limitResponseSize,
 } from '@tooljet-plugins/common';
 import { QueryOptions, SourceOptions } from './types';
 
@@ -32,7 +33,7 @@ export default class GraphqlQueryService implements QueryService {
     queryOptions: QueryOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string,
-    context?: { user?: User; app?: App; signal?: AbortSignal }
+    context?: { user?: User; app?: App; signal?: AbortSignal; maxResponseBytes?: number }
   ): Promise<QueryResult> {
     const url = sourceOptions.url;
 
@@ -96,7 +97,10 @@ export default class GraphqlQueryService implements QueryService {
     let responseObject = {};
 
     try {
-      const response = await cancelOnAbort(this.sendRequest(url, finalOptions), context?.signal);
+      const response = await limitResponseSize(
+        cancelOnAbort(this.sendRequest(url, finalOptions), context?.signal),
+        context?.maxResponseBytes
+      );
       result = JSON.parse(response.body);
 
       requestObject = {

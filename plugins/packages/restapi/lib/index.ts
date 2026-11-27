@@ -22,6 +22,7 @@ import {
   getSSRFProtectionOptions,
   queryErrorMessage,
   cancelOnAbort,
+  limitResponseSize,
 } from '@tooljet-plugins/common';
 const FormData = require('form-data');
 const JSON5 = require('json5');
@@ -52,7 +53,7 @@ export default class RestapiQueryService implements QueryService {
     queryOptions: any,
     dataSourceId: string,
     dataSourceUpdatedAt: string,
-    context?: { user?: User; app?: App; signal?: AbortSignal }
+    context?: { user?: User; app?: App; signal?: AbortSignal; maxResponseBytes?: number }
   ): Promise<RestAPIResult> {
     const hasDataSource = dataSourceId !== undefined;
     const url = this.constructUrl(sourceOptions, queryOptions, hasDataSource);
@@ -76,7 +77,10 @@ export default class RestapiQueryService implements QueryService {
     const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
 
     try {
-      const response = await cancelOnAbort(got(url, finalOptions), context?.signal);
+      const response = await limitResponseSize(
+        cancelOnAbort(got(url, finalOptions), context?.signal),
+        context?.maxResponseBytes
+      );
       const { result, requestObject, responseObject } = this.handleResponse(response);
 
       return {

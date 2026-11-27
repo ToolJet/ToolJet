@@ -40,10 +40,15 @@ import {
   queryErrorMessage,
 } from './ssrf-protection';
 import { QueryBuilder, QueryBuilderError, createQueryBuilder } from './queryBuilder';
-import { cancelOnAbort } from './cancel-on-abort';
+import { cancelOnAbort, limitResponseSize, ResponseTooLargeError } from './cancel-on-abort';
+import { cancelKnexQueryOnAbort, cancelOnSignal } from './cancel-knex-query';
 
 export {
+  cancelKnexQueryOnAbort,
+  cancelOnSignal,
   cancelOnAbort,
+  limitResponseSize,
+  ResponseTooLargeError,
   QueryError,
   OAuthUnauthorizedClientError,
   QueryResult,

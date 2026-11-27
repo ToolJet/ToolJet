@@ -15,7 +15,12 @@ import { RedisService } from '@modules/redis/service';
 // An entry outlives the longest plausible queue wait plus run; it only matters if its pod died
 const ENTRY_TTL_MS = 2 * 60 * 60 * 1000;
 
-const key = (organizationId: string) => `tj:wfdepth:{${organizationId}}`;
+const workspaceKey = (organizationId: string) => `tj:wfdepth:{${organizationId}}`;
+// Every queued or running run, whatever its workspace (R3: many workspaces can't fill the queue)
+const INSTANCE_KEY = 'tj:wfdepth:{instance}';
+
+/** Which backlog is full, if any. */
+export type FullBacklog = 'workspace' | 'instance' | null;
 
 @Injectable()
 export class QueueDepthTracker {
@@ -23,40 +28,49 @@ export class QueueDepthTracker {
 
   constructor(private readonly redisService: RedisService) {}
 
-  /** Whether the workspace already has `limit` runs queued or running. */
-  async isFull(organizationId: string | null | undefined, limit: number): Promise<boolean> {
-    if (!organizationId) return false;
+  /** Whether the workspace, or the whole instance, already has its limit of runs queued or running. */
+  async fullBacklog(
+    organizationId: string | null | undefined,
+    limits: { workspace: number; instance: number }
+  ): Promise<FullBacklog> {
     try {
-      const redis = this.redisService.getClient();
-      await redis.zremrangebyscore(key(organizationId), '-inf', Date.now());
-      return (await redis.zcard(key(organizationId))) >= limit;
+      if (organizationId && (await this.size(workspaceKey(organizationId))) >= limits.workspace) return 'workspace';
+      if ((await this.size(INSTANCE_KEY)) >= limits.instance) return 'instance';
+      return null;
     } catch (error) {
       this.logger.warn(`Queue depth check skipped: Redis is unavailable (${(error as Error)?.message})`);
-      return false;
+      return null;
     }
   }
 
   async track(organizationId: string | null | undefined, runId: string): Promise<void> {
-    if (!organizationId) return;
-    try {
-      const expiresAt = Date.now() + ENTRY_TTL_MS;
-      await this.redisService
-        .getClient()
-        .multi()
-        .zadd(key(organizationId), expiresAt, runId)
-        .pexpireat(key(organizationId), expiresAt)
-        .exec();
-    } catch (error) {
-      this.logger.warn(`Queued run not tracked: Redis is unavailable (${(error as Error)?.message})`);
+    const expiresAt = Date.now() + ENTRY_TTL_MS;
+    for (const key of this.keysOf(organizationId)) {
+      try {
+        await this.redisService.getClient().multi().zadd(key, expiresAt, runId).pexpireat(key, expiresAt).exec();
+      } catch (error) {
+        this.logger.warn(`Queued run not tracked: Redis is unavailable (${(error as Error)?.message})`);
+      }
     }
   }
 
   async untrack(organizationId: string | null | undefined, runId: string): Promise<void> {
-    if (!organizationId) return;
-    try {
-      await this.redisService.getClient().zrem(key(organizationId), runId);
-    } catch (error) {
-      this.logger.warn(`Finished run not untracked: Redis is unavailable (${(error as Error)?.message})`);
+    for (const key of this.keysOf(organizationId)) {
+      try {
+        await this.redisService.getClient().zrem(key, runId);
+      } catch (error) {
+        this.logger.warn(`Finished run not untracked: Redis is unavailable (${(error as Error)?.message})`);
+      }
     }
+  }
+
+  private keysOf(organizationId: string | null | undefined): string[] {
+    return organizationId ? [workspaceKey(organizationId), INSTANCE_KEY] : [INSTANCE_KEY];
+  }
+
+  private async size(key: string): Promise<number> {
+    const redis = this.redisService.getClient();
+    await redis.zremrangebyscore(key, '-inf', Date.now());
+    return redis.zcard(key);
   }
 }

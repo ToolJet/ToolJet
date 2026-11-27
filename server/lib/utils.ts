@@ -23,6 +23,7 @@ export function resolveCode(codeContext: any): any {
     bundleContent = null,
     isolate: providedIsolate = null as ivm.Isolate | null,
     context: providedContext = null as ivm.Context | null,
+    maxResultBytes = 0,
   } = codeContext;
   let result = undefined;
   let error;
@@ -36,11 +37,14 @@ export function resolveCode(codeContext: any): any {
       ...customObjects,
       ...Object.fromEntries(reservedKeyword.map((keyWord) => [keyWord, null])),
     };
-    const codeToExecute = getFunctionWrappedCode(
+    const wrappedCode = getFunctionWrappedCode(
       "var console = { log: (...args) => __reserved_keyword_log(args.join(', '), 'normal') };\n" + code,
       globalState,
       wrapInIIFE
     );
+    // A result too large to keep is refused inside the sandbox, before it is copied out (R11)
+    const codeToExecute =
+      wrapInIIFE && maxResultBytes > 0 ? withResultSizeCheck(wrappedCode, maxResultBytes) : wrappedCode;
     const isolate =
       providedIsolate || new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20 });
     // An isolate made here for one evaluation is freed with it; a caller's isolate is the caller's
@@ -155,6 +159,18 @@ export function resolveCode(codeContext: any): any {
 
   if (withError) return [result, error];
   return result;
+}
+
+function withResultSizeCheck(expression: string, maxBytes: number): string {
+  return `(function(){
+  const __tjResult = ${expression};
+  let __tjSize = 0;
+  try { __tjSize = (JSON.stringify(__tjResult) || '').length; } catch (e) {}
+  if (__tjSize > ${Math.floor(maxBytes)}) {
+    throw new Error('The result is larger than the ${Math.floor(maxBytes)} bytes allowed (WORKFLOW_LIMIT_MAX_NODE_RESULT_BYTES)');
+  }
+  return __tjResult;
+})()`;
 }
 
 export function getDynamicVariables(text: string): string[] | null {
