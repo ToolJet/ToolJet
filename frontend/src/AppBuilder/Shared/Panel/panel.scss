@@ -1,0 +1,286 @@
+// Shared chrome for the editor's panels. One place for the numbers every panel header must agree on.
+@import './mixins';
+
+// Bootstrap controls inside the three panel roots (left panel, right panel, bottom drawer), which carry
+// `.tj-panel`. Widgets never render inside these roots, and ee pages outside the editor never have it.
+.tj-panel {
+  .form-switch .form-check-input {
+    @include panel-switch;
+  }
+
+  // Input groups keep their joined corners, and borderless inputs sit inside a field that draws the box.
+  input.form-control:not([type='checkbox'], [type='radio'], .border-0, .input-group > *) {
+    @include panel-control;
+  }
+
+  // react-select draws its box with emotion classes; only the corner follows the control spec.
+  .react-select__control {
+    border-radius: 8px;
+  }
+
+  // The "px" after a style value (_ui/CustomInput): placeholder text, which passes AA (was --slate9).
+  .static-value {
+    color: var(--text-placeholder);
+  }
+}
+
+// Editor overlays share one surface (UB-19, UB-21); their bodies don't paint over it. Widget overlays
+// (`tj-widget-overlay`) and widget modals never match these ids, so they keep the Viewer's look.
+body.app-builder-chrome {
+  :is(#version-manager-popover, #query-list-menu, #query-sort-filter-popover, #edit-page-popover, .ds-select-card) {
+    @include panel-overlay-surface;
+
+    > .popover-body,
+    > .list-item-popover-body {
+      background-color: transparent !important;
+    }
+  }
+
+  :is(#query-list-menu, #edit-page-popover) button.list-item-popover-option {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--text-default);
+    font: inherit;
+    text-align: left;
+
+    &:hover {
+      background-color: var(--interactive-hover);
+    }
+
+    &[aria-disabled='true'] {
+      cursor: not-allowed;
+      opacity: 0.5;
+      background-color: transparent;
+    }
+  }
+
+  // The data source picker's popover is only a positioner; its card is the overlay. The dark theme's
+  // popover rule outranks queryManager.theme.scss's transparent background and painted it navy.
+  .ds-select-popover {
+    background: transparent !important;
+  }
+}
+
+// Every keyboard stop in the editor chrome shows focus clearly. Widgets render a customer's app, so the
+// canvas and the modals and overlays widgets open keep their own focus styles, as in the Viewer.
+// Non-input controls (buttons, links, tabs, checkboxes, radios) keep the outer focus ring; text inputs,
+// textareas, selects, CodeHinter, react-select, and wrapped search/width fields use a single 1px blue
+// border with no outward shadow so focused fields never enlarge or draw double borders.
+$widget-scopes: '.main-editor-canvas *, .tj-modal-widget-content *, .tj-widget-overlay *';
+$non-text-input-types: "[type='checkbox'], [type='radio'], [type='range'], [type='button'], [type='submit'], [type='reset']";
+$inner-focus-inputs: ".cm-content, input[id^='react-select-'], .runtime-inspector__search input, .runtime-inspector__entry-label, .search-input-wrapper .search-input, .tj-code-width-exact input";
+
+body.app-builder-chrome {
+  :focus-visible:not(
+    input:not(#{$non-text-input-types}),
+    textarea,
+    select,
+    #{$inner-focus-inputs},
+    #{$widget-scopes}
+  ) {
+    @include focus-ring;
+  }
+
+  input:not(#{$non-text-input-types}, #{$inner-focus-inputs}, #{$widget-scopes}, .query-details--right *):focus-visible,
+  textarea:not(#{$widget-scopes}, .query-details--right *):focus-visible,
+  select:not(#{$widget-scopes}, .query-details--right *):focus-visible,
+  .runtime-inspector__search:has(input:focus-visible),
+  .search-input-wrapper:has(.search-input:focus-visible),
+  .tj-code-width-exact:focus-within,
+  [class*='-control']:has(input[id^='react-select-']:focus-visible):not(#{$widget-scopes}, .query-details--right *) {
+    border-color: var(--border-accent-strong) !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .cm-editor.cm-focused:not(#{$widget-scopes}, .query-details--right *) {
+    border: 1px solid var(--border-accent-strong) !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+// The header sticks to the top of the panel's scroller, so anything scrolled into view (keyboard focus,
+// scrollIntoView) has to stop below it rather than slide under it.
+.tj-panel {
+  scroll-padding-top: 48px;
+}
+
+.tj-panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex: 0 0 48px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  background-color: var(--background-surface-layer-01);
+
+  &--divider {
+    border-bottom: 1px solid var(--border-weak);
+  }
+}
+
+.tj-panel-header__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-default);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tj-panel-header__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.tj-panel-header__doc-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--icon-strong);
+  text-decoration: none;
+  transition: background-color 120ms ease, color 120ms ease;
+
+  &:hover {
+    background: var(--interactive-hover);
+    color: var(--icon-strong);
+  }
+}
+
+.tj-panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 40px 16px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  text-align: center;
+}
+
+.tj-panel-empty__spot {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: 8px;
+  background: var(--surfaces-surface-02);
+  color: var(--icon-default);
+}
+
+.tj-panel-empty__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.tj-panel-empty__title {
+  overflow-wrap: anywhere;
+  color: var(--text-default);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.tj-panel-empty__description {
+  color: var(--text-placeholder);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.tj-panel-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.tj-panel-empty__action {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--primary-brand);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+
+  &:hover {
+    background: var(--interactive-hover);
+  }
+}
+
+// Panel copy is sentence case (UC-26). Accordion titles that ask for title case capitalise only
+// their first letter in the editor ("Trigger button", "Additional actions"); elsewhere they keep
+// Bootstrap's text-capitalize.
+body.app-builder-chrome .accordion-title-text.text-capitalize {
+  text-transform: none !important;
+
+  .accordion-title-label {
+    display: inline-block;
+
+    &::first-letter {
+      text-transform: uppercase;
+    }
+  }
+}
+
+.tj-panel-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-default);
+  font-family: 'IBM Plex Sans', sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tj-panel-section-header__title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tj-panel-section-header__count {
+  flex-shrink: 0;
+  color: var(--text-placeholder);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.tj-panel-section-header__caret {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--icon-default);
+  transition: transform 120ms ease;
+
+  &.is-open {
+    transform: rotate(180deg);
+  }
+}

@@ -1,3 +1,4 @@
+import { assertImportedVariableDefinitions } from '@helpers/import-variable-validation.helper';
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
@@ -74,6 +75,7 @@ import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { readVariableDefinitionMap } from '@helpers/variable-definition-map.helper';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -101,7 +103,13 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
-type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent' | 'RadioButtonV2';
+type PartialRevampedComponent =
+  | 'CodeEditor'
+  | 'PDF'
+  | 'Calendar'
+  | 'CustomComponent'
+  | 'RadioButtonV2'
+  | 'RangeSliderV2';
 
 type NewRevampedComponent =
   | 'Text'
@@ -148,7 +156,10 @@ type NewRevampedComponent =
   | 'ModalV2'
   | 'PopoverMenu'
   | 'Pagination'
-  | 'Timeline';
+  | 'Timeline'
+  | 'RichTextEditor'
+  | 'Calendar'
+  | 'SvgImage';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -203,6 +214,9 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PopoverMenu',
   'Pagination',
   'Timeline',
+  'RichTextEditor',
+  'Calendar',
+  'SvgImage',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -211,6 +225,7 @@ const PartialRevampedComponents: PartialRevampedComponent[] = [
   'Calendar',
   'CustomComponent',
   'RadioButtonV2',
+  'RangeSliderV2',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -321,11 +336,20 @@ const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'N
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
+/**
+ * The first release that ships BackfillStripPercentRangeSliderV21792950330429 and the conditional `%` strip in
+ * RangeSliderV2. Every earlier release, on any line, stripped the `%` from every slider and never wrote
+ * `stripPercent`, so an export from before it marks old sliders by the key's absence. If the fix is backported to an
+ * LTS line, that line's first release with it needs its own check here: 3.21.x always compares below 4.x.
+ */
+const STRIP_PERCENT_FIRST_VERSION = '4.0.5-beta';
+
 const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Accordion',
   'AudioRecorder',
   'Button',
   'ButtonGroupV2',
+  'Calendar',
   'Camera',
   'Cascader',
   'Checkbox',
@@ -363,8 +387,10 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',
+  'RichTextEditor',
   'StarRating',
   'Statistics',
+  'SvgImage',
   'Tabs',
   'Tags',
   'TagsInput',
@@ -1351,6 +1377,7 @@ export class AppImportExportService {
       if (typeof appParamsObj !== 'object') {
         throw new BadRequestException('Invalid params for app import');
       }
+      assertImportedVariableDefinitions(appParamsObj);
       let appParams = appParamsObj;
 
       if (appParams?.appV2) {
@@ -1658,6 +1685,24 @@ export class AppImportExportService {
       await this.updateCoRelationIdsForEntities(manager, resourceMapping);
     }
 
+    const importedPageIds = Object.values(resourceMapping.pagesMapping);
+    if (importedPageIds.length > 0) {
+      const pages = await manager.find(Page, {
+        where: { id: In(importedPageIds) },
+        select: ['id', 'variables'],
+      });
+      for (const page of pages) {
+        if (page.variables !== undefined) {
+          // Imported definitions must already use variable names as keys.
+          const variables = readVariableDefinitionMap(
+            updateEntityReferences(page.variables, mappings),
+            `pages.${page.id}.variables`
+          );
+          await manager.update(Page, { id: page.id }, { variables });
+        }
+      }
+    }
+
     // update Global settings of created versions
     const newAppVersions = await manager.find(AppVersion, {
       where: {
@@ -1668,6 +1713,12 @@ export class AppImportExportService {
     for (const appVersion of newAppVersions) {
       if (appVersion.globalSettings) {
         const updatedGlobalSettings = updateEntityReferences(appVersion.globalSettings, mappings);
+        if (Object.prototype.hasOwnProperty.call(updatedGlobalSettings, 'variables')) {
+          updatedGlobalSettings.variables = readVariableDefinitionMap(
+            updatedGlobalSettings.variables,
+            'globalSettings.variables'
+          );
+        }
         await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
       }
     }
@@ -1895,6 +1946,8 @@ export class AppImportExportService {
     isTemplateApp = false,
     source?: WriteSource
   ): Promise<AppResourceMappings> {
+    assertImportedVariableDefinitions(appParams, importedApp.type === 'module');
+
     // Old version without app version
     // Handle exports prior to 0.12.0
     // TODO: have version based conditional based on app versions
@@ -2116,6 +2169,7 @@ export class AppImportExportService {
                 border: 'var(--cc-weak-border)',
                 height: 60,
               },
+              variables: page.variables ?? null,
               autoComputeLayout: page.autoComputeLayout || false,
               isPageGroup: page.isPageGroup,
               pageGroupIndex: page.pageGroupIndex || null,
@@ -2605,6 +2659,7 @@ export class AppImportExportService {
           hidden: page.hidden || false,
           pageHeader: page.pageHeader || null,
           pageFooter: page.pageFooter || null,
+          variables: page.variables ?? null,
           autoComputeLayout: page.autoComputeLayout || false,
           icon: page.icon || null,
           isPageGroup: !!page.isPageGroup,
@@ -4748,6 +4803,19 @@ export function migrateProperties(
         properties.layout = { value: 'wrap' };
       }
     }
+
+    // RangeSliderV2 used to strip the first `%` from every mark label. The strip is now conditional on `stripPercent`,
+    // an unregistered property the BackfillStripPercent migration writes onto components that already existed.
+    // Before STRIP_PERCENT_FIRST_VERSION the migration had not run anywhere, so a missing key means "slider built
+    // before the fix" and the strip has to be preserved. From that version on every pre-existing slider carries the
+    // key, so a missing one means "slider created after the fix" and must be left alone.
+    if (
+      componentType === 'RangeSliderV2' &&
+      properties.stripPercent === undefined &&
+      !isVersionGreaterThanOrEqual(tooljetVersion, STRIP_PERCENT_FIRST_VERSION)
+    ) {
+      properties.stripPercent = { value: '{{true}}' };
+    }
   }
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
@@ -4879,6 +4947,10 @@ export function migrateProperties(
     if (componentType === 'Form') {
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
+
+      if (!properties.registerNestedFields) {
+        properties.registerNestedFields = { value: '{{false}}' };
+      }
     }
 
     // Tabs

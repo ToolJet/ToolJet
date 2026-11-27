@@ -43,6 +43,7 @@ export interface Terms {
     observability?: boolean;
     queryFolders?: boolean;
     queryResponseCache?: boolean;
+    automaticSsoLogin?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -56,6 +57,7 @@ export interface Terms {
     pages: {
       enabled: boolean;
       count: number | string;
+      groupCount?: number | string;
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;

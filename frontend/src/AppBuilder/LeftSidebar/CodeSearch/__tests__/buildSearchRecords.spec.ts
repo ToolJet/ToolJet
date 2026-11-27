@@ -264,6 +264,30 @@ describe('buildSearchRecords', () => {
     expect(find(records, (r) => r.fieldLabel === 'JavaScript libraries').text).toBe('https://cdn/lodash.js');
   });
 
+  // Saved variable maps are keyed by name, so a name may be any identifier, even one the generic walk
+  // skips as bookkeeping (`id`, `fxActive`) or that looks like metadata (`name`).
+  test('indexes each declared variable by its name and value, whatever the name', () => {
+    const records = build({
+      pages: [{ ...pages[0], variables: { fxActive: { value: '{{variables.a}}', fxActive: false } } }],
+      globalSettings: {
+        variables: {
+          id: { value: '{{variables.a + 1}}', fxActive: false },
+          name: { value: '5', fxActive: false },
+          legacy1: { id: 'legacy1', name: 'oldName', value: 'x', fxActive: false },
+        },
+      },
+    });
+    const at = (entityType: string, path: string) =>
+      find(records, (r) => r.entityType === entityType && r.fieldPath.join('.') === path);
+
+    expect(at('app', 'variables.id')).toMatchObject({ text: '{{variables.a + 1}}', fieldLabel: 'Variables › id' });
+    expect(at('app', 'variables.id.name').text).toBe('id');
+    expect(at('app', 'variables.name').text).toBe('5');
+    expect(at('app', 'variables.legacy1.name').text).toBe('oldName');
+    expect(at('page', 'variables.fxActive')).toMatchObject({ text: '{{variables.a}}', pageId: PAGE_ID });
+    expect(records.some((r) => r.fieldPath.at(-1) === 'fxActive' && r.fieldPath.length > 2)).toBe(false);
+  });
+
   test('indexes page conditions like hidden, but not internal page keys', () => {
     const records = build({
       pages: [

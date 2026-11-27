@@ -67,8 +67,7 @@ describe("Date Picker widget (V2)", { testIsolation: false }, () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-datepicker-App`);
     cy.openApp();
-    cy.dragAndDropWidget("Date Picker", 250, 250);
-    cy.get('[data-cy="query-manager-toggle-button"]').click();
+    cy.dragAndDropWidget("Date Picker", 500, 250);
   });
 
   afterEach(() => {

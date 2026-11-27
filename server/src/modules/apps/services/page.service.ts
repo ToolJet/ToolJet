@@ -30,9 +30,11 @@ import {
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
 import { TransactionLogger } from '@modules/logging/service';
+import { LicensePageService } from '@modules/licensing/interfaces/IService';
 import { AppValidationService } from '@modules/app-validation/service';
 import { lockForValidation } from '@modules/app-validation/lock';
 import { PageWrite } from '@modules/app-validation/types';
+import { assertVariableDefinitionMap } from '@helpers/variable-definition-map.helper';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -41,7 +43,8 @@ export class PageService implements IPageService {
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
     protected readonly transactionLogger: TransactionLogger,
-    protected readonly appValidationService: AppValidationService
+    protected readonly appValidationService: AppValidationService,
+    protected readonly licensePageService: LicensePageService
   ) {}
 
   protected toPageWrite(op: 'create' | 'update', page: Page): PageWrite {
@@ -190,6 +193,7 @@ export class PageService implements IPageService {
   }
 
   async createPage(page: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
+    assertVariableDefinitionMap(page?.variables, 'variables');
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageCreate(page, appVersionId, organizationId);
 
@@ -201,7 +205,9 @@ export class PageService implements IPageService {
         organizationId,
         manager,
       });
-      return await manager.save(Page, newPage);
+      const savedPage = await manager.save(Page, newPage);
+      await this.licensePageService.validatePages(manager, appVersionId, organizationId, !!savedPage.isPageGroup);
+      return savedPage;
     });
 
     const operationTimestamp = Date.now();
@@ -257,6 +263,7 @@ export class PageService implements IPageService {
       newPage.hidden = pageToClone.hidden;
       newPage.pageHeader = pageToClone.pageHeader;
       newPage.pageFooter = pageToClone.pageFooter;
+      newPage.variables = pageToClone.variables;
 
       await lockForValidation(manager, 'page_handle', appVersionId);
       await this.appValidationService.check('pages', [this.toPageWrite('create', newPage)], {
@@ -266,6 +273,7 @@ export class PageService implements IPageService {
       });
 
       clonedPage = await manager.save(newPage);
+      await this.licensePageService.validatePages(manager, appVersionId, organizationId, false);
 
       await this.clonePageEventsAndComponents(pageId, clonedPage.id, manager);
 
@@ -513,6 +521,20 @@ export class PageService implements IPageService {
 
       await manager.save(clonedComponents);
       await manager.save(newComponentLayouts);
+
+      const [clonedPage] = await manager.find(Page, {
+        where: { id: clonePageId },
+        select: ['id', 'variables'],
+      });
+      if (clonedPage?.variables && Object.keys(clonedPage.variables).length > 0) {
+        await manager.update(
+          Page,
+          { id: clonePageId },
+          {
+            variables: updateEntityReferences(clonedPage.variables, componentsIdMap),
+          }
+        );
+      }
     }, manager);
   }
 
@@ -542,6 +564,7 @@ export class PageService implements IPageService {
     if (Object.keys(pageUpdates.diff).length > 1) {
       throw new Error('Can not update multiple pages');
     }
+    assertVariableDefinitionMap(pageUpdates.diff?.variables, 'diff.variables');
 
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageUpdate(pageUpdates.pageId, pageUpdates.diff, appVersionId);

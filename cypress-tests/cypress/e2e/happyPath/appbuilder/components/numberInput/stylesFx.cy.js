@@ -30,7 +30,6 @@ describe('Number Input — stylesFx facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-NIStylesFx-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Number Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // ── label accordion group ──────────────────────────────────────────────────

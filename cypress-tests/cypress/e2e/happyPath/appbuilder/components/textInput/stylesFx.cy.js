@@ -30,7 +30,6 @@ describe('Text Input — stylesFx facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TIStylesFx-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Text Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // ── label accordion group ──────────────────────────────────────────────────

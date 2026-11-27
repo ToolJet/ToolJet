@@ -24,13 +24,13 @@ export const appEditorSelector = {
         components: {
             widgetSearchInput: '[data-cy="widget-search-box-search-bar"]',
             draggableBox: '.draggable-box',
-            componentsPlusButton: '[data-cy="right-sidebar-components-button"]',
+            componentsPlusButton: '[data-cy="left-sidebar-components-button"]',
             addEventHandlerButton: '[data-cy="add-event-handler"]',
             popupButton: '.popup-btn',
         },
 
         pages: {
-            pagesTabButton: '[data-cy="right-sidebar-page-settings-button"]',
+            pagesTabButton: '[data-cy="left-sidebar-pages-button"]',
             addNewPageButton: '#add-new-page',
             pageToggleInput: 'input.form-check-input',
             pageTextInput: 'input.form-control',

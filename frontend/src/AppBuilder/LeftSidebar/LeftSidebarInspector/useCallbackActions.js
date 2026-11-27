@@ -3,6 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { copyToClipboard } from './utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const useCallbackActions = () => {
@@ -17,7 +18,9 @@ const useCallbackActions = () => {
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery, shallow);
   const getComponentIdFromName = useStore((state) => state.getComponentIdFromName, shallow);
   const getQueryIdFromName = useStore((state) => state.getQueryIdFromName, shallow);
-  const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded, shallow);
+  const revealQueryEditor = useStore((state) => state.queryPanel.revealQueryEditor, shallow);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
 
   // Goes through the confirmation dialog rather than deleting outright, so the
   // reference check that guards every other delete path applies here too.
@@ -45,9 +48,7 @@ const useCallbackActions = () => {
     const { nodeName } = data;
     const id = getQueryIdFromName(nodeName);
     setSelectedQuery(id);
-
-    // Expand query pane if it's not already expanded
-    expandQueryPaneIfNeeded();
+    revealQueryEditor();
   };
 
   const handleAutoScrollToComponent = (data) => {
@@ -65,8 +66,17 @@ const useCallbackActions = () => {
       return;
     }
     setSelectedComponents([computedComponentId]);
-    const target = document.getElementById(computedComponentId);
-    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Open its configuration too, like Code search's jump does.
+    setRightSidebarOpen(true);
+    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+    if (computedComponentId !== componentId) {
+      const containerName = currentPageComponents?.[computedComponentId]?.component?.name;
+      toast(`${data.nodeName} is inside ${containerName}, which is closed. Selected ${containerName} instead.`);
+    }
+    // A tab that was just switched to mounts its children on the next render.
+    requestAnimationFrame(() =>
+      document.getElementById(computedComponentId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    );
   };
 
   const callbackActions = [

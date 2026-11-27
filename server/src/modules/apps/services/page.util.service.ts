@@ -99,6 +99,7 @@ export class PageHelperService implements IPageHelperService {
     page.openIn = dto.openIn;
     page.disabled = false;
     page.hidden = false;
+    page.variables = dto.variables ?? null;
     page.pageHeader = {
       showOnDesktop: false,
       showOnMobile: false,

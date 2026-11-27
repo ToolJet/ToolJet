@@ -122,7 +122,7 @@ export const schemaUnavailableOptions = {
 const allDefaultSources = {
   restapi: { kind: 'restapi', id: 'null', name: 'REST API' },
   runjs: { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
-  tooljetdb: { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
+  tooljetdb: { kind: 'tooljetdb', id: 'null', name: 'ToolJet Database' },
   runpy: { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
   workflows: { kind: 'workflows', id: 'null', name: 'Run Workflow' },
 };

@@ -23,7 +23,6 @@ describe('Text Input — propertiesFx facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TIPropsFx-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Text Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // ── FX-capable CODE fields ────────────────────────────────────────────────

@@ -157,6 +157,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave })
             <Button
               iconOnly
               leadingIcon="morevertical"
+              aria-label="Field options"
               variant="ghost"
               size="default"
               className="tw-opacity-0 group-hover:tw-opacity-100 more-btn"

@@ -48,7 +48,6 @@ describe('Toggle Switch — basics facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-ToggleSwitch-App-${Date.now().toString().slice(-6)}`);
         cy.openApp();
         cy.dragAndDropWidget('Toggle Switch', 500, 100); // source: toggleswitchv2.js:3 (displayName)
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values and functions on inspector', () => {

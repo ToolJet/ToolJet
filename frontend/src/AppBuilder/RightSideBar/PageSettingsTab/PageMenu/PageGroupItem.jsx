@@ -5,7 +5,7 @@ import { RenameInput } from './RenameInput';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import PageOptions from './PageOptions';
 import { Overlay, Popover } from 'react-bootstrap';
-import { AddEditPagePopup } from './AddNewPagePopup';
+import { AddEditPagePopup, getPagePopupPopperConfig } from './AddNewPagePopup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
@@ -22,12 +22,7 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
   const optionsBtnRef = useRef(null);
 
   const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
-  const openPageEditPopover = useStore((state) => state.openPageEditPopover);
-  const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
   const cloneGroup = useStore((state) => state.cloneGroup);
-  const setEditingPage = useStore((state) => state.setEditingPage);
-  const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
-  const editingPage = useStore((state) => state.editingPage);
   const pageVisibility = useStore((state) => state.getPagesVisibility('canvas', page?.id));
   const computeStyles = useCallback(() => {
     const baseStyles = {
@@ -67,16 +62,12 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
   const computedStyles = computeStyles();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleOpenPopup = (type, page) => {
-    // openPageEditPopover(page);
-    setEditingPage(page);
+  const handleOpenPopup = () => {
     toggleShowPageOptions(false);
     setShowEditPopover(true);
-    setNewPagePopupConfig({ type, mode: 'edit' });
   };
 
   const memoizedContent = useMemo(() => {
-    const isEditing = editingPage?.id === page?.id;
     return (
       <div
         ref={optionsBtnRef}
@@ -85,13 +76,9 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
         style={{ position: 'relative', width: '100%' }}
       >
         <div
-          className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${
-            darkMode ? 'dark-theme theme-dark' : ''
-          } ${(showPageOptions || showEditPopover) && isEditing ? 'is-selected' : ''}`}
+          className={cx('page-menu-item page-group-item', { highlight, 'dark-theme theme-dark': darkMode })}
           data-page-id={page?.id}
-          onClick={() => {
-            handleOpenPopup('group', page);
-          }}
+          onClick={handleOpenPopup}
           // style={{ ...computedStyles?.pill }}
         >
           <div className="left">
@@ -117,9 +104,7 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  setEditingPage(page);
                   toggleShowPageOptions(true);
-                  setNewPagePopupConfig({ show: false, mode: null, type: null });
                   setShowEditPopover(false);
                 }}
                 role="button"
@@ -130,21 +115,18 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
 
               <Overlay
                 target={moreBtnRef.current}
-                show={showPageOptions && isEditing}
+                show={showPageOptions}
                 placement="bottom-end"
                 rootClose
-                onHide={() => {
-                  setEditingPage(null);
-                  toggleShowPageOptions(false);
-                }}
+                onHide={() => toggleShowPageOptions(false)}
               >
                 <Popover id="edit-page-popover" className={`${darkMode && 'dark-theme theme-dark'}`}>
-                  <div className="menu-options mb-0">
+                  <div className="list-item-popover-body">
                     <PageOptions
                       text="Edit group details"
                       icon="editable"
                       darkMode={darkMode}
-                      onClick={() => handleOpenPopup('group', page)}
+                      onClick={handleOpenPopup}
                     />
                     <PageOptions
                       text="Duplicate group"
@@ -160,15 +142,13 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
                     <PageOptions
                       text="Delete group"
                       icon="trash"
+                      danger
                       darkMode={darkMode}
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        setEditingPage(page);
                         toggleShowPageOptions(false);
-                        openPageEditPopover(page);
-                        setNewPagePopupConfig({ show: false, mode: null, type: null });
-                        toggleDeleteConfirmationModal(true);
+                        toggleDeleteConfirmationModal(true, page);
                       }}
                     />
                   </div>
@@ -176,17 +156,16 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
               </Overlay>
               <Overlay
                 target={optionsBtnRef.current}
-                show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditing}
-                placement="left-start"
+                show={showEditPopover}
+                placement="right-start"
+                popperConfig={getPagePopupPopperConfig(optionsBtnRef.current)}
                 rootClose
                 onHide={() => {
-                  setNewPagePopupConfig({ show: false, mode: null, type: null });
                   setShowEditPopover(false);
-                  setEditingPage(null);
                   toggleShowPageOptions(false);
                 }}
               >
-                <AddEditPagePopup darkMode={darkMode} />
+                <AddEditPagePopup darkMode={darkMode} pageGroup={page} />
               </Overlay>
             </div>
           </div>
@@ -194,7 +173,6 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
       </div>
     );
   }, [
-    editingPage,
     page,
     highlight,
     darkMode,
@@ -202,12 +180,8 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
     showEditPopover,
     computedStyles?.text,
     pageVisibility,
-    newPagePopupConfig?.mode,
     handleOpenPopup,
-    setEditingPage,
-    setNewPagePopupConfig,
     cloneGroup,
-    openPageEditPopover,
     toggleDeleteConfirmationModal,
   ]);
 

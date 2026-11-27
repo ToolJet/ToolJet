@@ -591,7 +591,7 @@
             "validation": "Validation",
             "structure": "Structure",
             "data": "Data",
-            "additionalActions": "Additional Actions",
+            "additionalActions": "Additional actions",
             "documentation": "Read documentation for {{componentMeta}}",
             "widgetNameEmptyError": "Widget name cannot be empty",
             "componentNameExistsError": "Component name already exists",
@@ -992,7 +992,7 @@
             "description": "Create React components"
         },
         "ButtonGroup": {
-            "displayName": "Button Group",
+            "displayName": "Button group",
             "description": "Group of buttons"
         },
         "PDF": {

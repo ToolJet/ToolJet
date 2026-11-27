@@ -1,12 +1,11 @@
 // ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
 // queryPanel.js
-//   resizeQueryPanel                 -                    → querymanager
 //   closeQueryPanel                  -                    → querymanager
 // └──────────────────────────────────────────────────────────────────┘
 /**
- * MODULE — appBuilder/querymanager/queryPanel: the app-builder bottom QUERY PANEL.
- * FOR AI: resize the query panel (drag/collapse) while building an app.
- * `resizeQueryPanel(0)` collapses it; a percentage sets its height.
+ * MODULE — appBuilder/querymanager/queryPanel: the app-builder bottom runtime panel
+ * (Inspector / Debugger tabs).
+ * FOR AI: collapse the bottom panel while building an app.
  * NOT here: query CRUD/config → querymanager/queries.js · datasource connection
  * forms → marketplace/datasources.
  */

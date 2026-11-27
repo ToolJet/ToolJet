@@ -20,7 +20,11 @@ export default function RichTextEditor({
   componentType,
 }) {
   const isInitialRender = useRef(true);
-  const { visibility, disabledState, boxShadow } = styles;
+  const { boxShadow } = styles;
+  // visibility/disabledState live in properties (Additional Actions). The old styles place is dropped on load
+  // (MOVED_COMPONENT_KEYS), so it is never read here.
+  const visibility = properties.visibility ?? true;
+  const disabledState = properties.disabledState ?? false;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
@@ -46,7 +50,7 @@ export default function RichTextEditor({
     if (isDisabled !== disabledState) setIsDisabled(disabledState);
     if (isVisible !== visibility) setIsVisible(visibility);
     if (isLoading !== properties.loadingState) setIsLoading(properties.loadingState);
-  }, [properties.loadingState, styles.visibility, styles.disabledState]);
+  }, [properties.loadingState, visibility, disabledState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -104,6 +108,7 @@ export default function RichTextEditor({
         setIsVisible={setIsVisible}
         setIsLoading={setIsLoading}
         isDynamicHeightEnabled={isDynamicHeightEnabled}
+        isCanvasEditMode={currentMode === 'edit'}
       ></DraftEditor>
     </div>
   );

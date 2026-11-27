@@ -1,84 +1,16 @@
 import React from 'react';
 
+const Bone = ({ style }) => <div className="version-item-skeleton__bone" style={style} />;
+
+// Mirrors VersionDropdownItem's layout: selection tick, name, metadata line.
 const VersionItemSkeleton = () => {
   return (
-    <div
-      className="version-item-skeleton"
-      style={{
-        padding: '6px 4px',
-        animation: 'pulse 1.5s ease-in-out infinite',
-      }}
-    >
-      <div className="d-flex align-items-start" style={{ gap: '8px' }}>
-        {/* Check icon placeholder */}
-        <div
-          style={{
-            width: '16px',
-            height: '16px',
-            flexShrink: 0,
-            backgroundColor: 'var(--slate3)',
-            borderRadius: '50%',
-          }}
-        />
-
-        {/* Content */}
-        <div className="flex-grow-1" style={{ minWidth: 0 }}>
-          {/* Version name and tag */}
-          <div className="d-flex align-items-center" style={{ gap: '8px', marginBottom: '4px' }}>
-            {/* Name skeleton */}
-            <div
-              style={{
-                width: '80px',
-                height: '16px',
-                backgroundColor: 'var(--slate3)',
-                borderRadius: '4px',
-              }}
-            />
-            {/* Tag skeleton */}
-            <div
-              style={{
-                width: '40px',
-                height: '18px',
-                backgroundColor: 'var(--slate3)',
-                borderRadius: '4px',
-              }}
-            />
-          </div>
-
-          {/* Description skeleton */}
-          <div
-            style={{
-              width: '120px',
-              height: '12px',
-              backgroundColor: 'var(--slate3)',
-              borderRadius: '4px',
-              marginBottom: '4px',
-            }}
-          />
-
-          {/* Metadata skeleton */}
-          <div
-            style={{
-              width: '90px',
-              height: '12px',
-              backgroundColor: 'var(--slate3)',
-              borderRadius: '4px',
-            }}
-          />
-        </div>
+    <div className="version-item-skeleton" data-cy="version-item-skeleton">
+      <Bone style={{ width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0, marginTop: '1px' }} />
+      <div className="flex-grow-1" style={{ minWidth: 0 }}>
+        <Bone style={{ width: '72px', height: '12px', margin: '3px 0 7px' }} />
+        <Bone style={{ width: '148px', height: '10px' }} />
       </div>
-
-      <style jsx>{`
-        @keyframes pulse {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-        }
-      `}</style>
     </div>
   );
 };

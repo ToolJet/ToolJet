@@ -6,7 +6,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { PAGE_CANVAS_FOOTER_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { NumberInput } from '@/AppBuilder/CodeBuilder/Elements/NumberInput';
-import { Button } from '@/components/ui/Button/Button';
+import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
 
 const AppFooterStylesPanel = () => {
   const { moduleId } = useModuleContext();
@@ -60,15 +60,7 @@ const AppFooterStylesPanel = () => {
         >
           App footer
         </div>
-        <Button
-          iconOnly
-          leadingIcon="x"
-          onClick={handleClose}
-          variant="ghost"
-          size="medium"
-          isLucid={true}
-          data-cy="pages-close-button"
-        />
+        <PanelCloseButton label="Close app footer styles" onClose={handleClose} dataCy="pages-close-button" />
       </div>
       <div className="tw-p-[16px] tj-text-xsm color-slate12">
         <div className="d-flex align-items-center justify-content-between mb-3">

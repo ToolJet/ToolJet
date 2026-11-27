@@ -11,6 +11,11 @@ export const COMPARE_DISMISS_MESSAGE = 'tooljet-compare:dismiss';
 export const COMPARE_PAGE_MESSAGE = 'tooljet-compare:page';
 export const COMPARE_PAGE_RESULT = 'tooljet-compare:page-result';
 
+// Two compare frames boot on the editor's main thread. The compare view lets one build its app at a time (?turns=1):
+// a frame asks for a turn once its data is fetched, and the view grants it when the other version has rendered.
+export const COMPARE_TURN_REQUEST = 'tooljet-compare:turn-request';
+export const COMPARE_TURN_GRANT = 'tooljet-compare:turn-grant';
+
 const muted = new Set();
 
 export const muteCompareEvents = (componentId) => {
@@ -47,3 +52,24 @@ export const withoutCompareNavigation = (pageSettings) =>
         },
       }
     : pageSettings;
+
+// Resolves when this frame may build its app: at once unless the compare view asked it to take turns, and after
+// `timeoutMs` without an answer, so a frame never hangs. A module embedded in the app (`embedded`) builds within its
+// frame's turn: a request of its own would read as the frame starting over.
+export const waitForCompareTurn = ({ timeoutMs = 20000, embedded = false } = {}) => {
+  if (embedded || !isCompareFrame() || new URLSearchParams(window.location.search).get('turns') !== '1')
+    return Promise.resolve();
+  return new Promise((resolve) => {
+    const done = () => {
+      window.removeEventListener('message', onMessage);
+      clearTimeout(timer);
+      resolve();
+    };
+    const onMessage = (event) => {
+      if (event.source === window.parent && event.data?.type === COMPARE_TURN_GRANT) done();
+    };
+    const timer = setTimeout(done, timeoutMs);
+    window.addEventListener('message', onMessage);
+    window.parent.postMessage({ type: COMPARE_TURN_REQUEST }, window.location.origin);
+  });
+};

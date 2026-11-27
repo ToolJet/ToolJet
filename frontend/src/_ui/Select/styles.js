@@ -149,3 +149,88 @@ export function queryManagerSelectComponentStyle(darkMode, width = 224, height =
     }),
   };
 }
+
+// The App Builder query editor's select. Workflow nodes and data-source forms reuse the same editors
+// without a surface and keep the shared select above.
+export function appBuilderQuerySelectStyle(darkMode, width = 224, height = 36) {
+  return {
+    menuPortal: (provided) => ({ ...provided, zIndex: 2000, pointerEvents: 'auto' }),
+    menuList: (base) => ({
+      ...base,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      fontSize: '12px',
+      cursor: 'pointer',
+      backgroundColor: darkMode
+        ? '#2b3547'
+        : state.isSelected
+          ? 'var(--indigo3)'
+          : state.isFocused
+            ? 'var(--slate3)'
+            : '#fff',
+      color: darkMode ? '#fff' : '#11181C',
+      ':hover': {
+        backgroundColor: darkMode ? '#323C4B' : 'var(--slate3)',
+      },
+      minHeight: '40px', // or your desired height
+      padding: '10px 12px',
+      display: 'flex',
+      alignItems: 'center',
+    }),
+    control: (provided, state) => ({
+      ...provided,
+      boxShadow: state.isFocused ? '0 0 0 2px var(--indigo4)' : 'none',
+      backgroundColor: darkMode ? '#2b3547' : '#ffffff',
+      borderRadius: '6px',
+      height,
+      minHeight: height,
+      borderColor: darkMode ? 'inherit' : state.isFocused ? 'var(--indigo9)' : 'var(--slate7)',
+      '&:hover': {
+        backgroundColor: darkMode ? '' : '#F8F9FA',
+      },
+      '&:active': {
+        backgroundColor: darkMode ? '' : '#F8FAFF',
+        borderColor: '#3E63DD',
+        boxShadow: '0px 0px 0px 2px #C6D4F9 ',
+      },
+      cursor: 'pointer',
+    }),
+    container: (provided) => ({
+      ...provided,
+      width: width,
+      height: height,
+      borderRadius: '6px 0 0 6px',
+    }),
+    valueContainer: (provided, _state) => ({
+      ...provided,
+      marginBottom: '0',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: darkMode ? '#fff' : '#11181C',
+    }),
+    indicatorsContainer: (provided, _state) => ({
+      ...provided,
+      height: height,
+    }),
+    indicatorSeparator: (_state) => ({
+      display: 'none',
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: darkMode ? '#fff' : '#232e3c',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: darkMode ? '#fff' : '#11181C',
+    }),
+  };
+}
+
+export const querySelectStyle = (surface, ...args) =>
+  surface ? appBuilderQuerySelectStyle(...args) : queryManagerSelectComponentStyle(...args);

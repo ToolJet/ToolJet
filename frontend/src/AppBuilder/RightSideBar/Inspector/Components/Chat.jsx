@@ -134,10 +134,10 @@ export const Chat = ({
     ),
   });
 
-  // Additional Actions accordion
+  // Additional actions accordion
   items.push({
     id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-    title: 'Additional Actions',
+    title: 'Additional actions',
     children: (
       <>
         {renderElement(

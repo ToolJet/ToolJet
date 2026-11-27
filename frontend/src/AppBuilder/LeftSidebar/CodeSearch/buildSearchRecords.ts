@@ -80,6 +80,8 @@ const SKIP_KEYS = new Set(['layouts', 'id', 'createdAt', 'updatedAt', 'parent', 
 // Page keys indexed elsewhere (name, handle, components) or that are internal bookkeeping.
 const PAGE_SKIP_KEYS = new Set([
   'components',
+  // Declared page variables are indexed by pushVariableDefinitions below.
+  'variables',
   'name',
   'handle',
   'appId',
@@ -90,7 +92,7 @@ const PAGE_SKIP_KEYS = new Set([
 ]);
 // Global settings indexed with their own labels below (preloaded JS, libraries) or not app code at
 // all (theme: the workspace design-system palette, dozens of colors that would drown real matches).
-const GLOBAL_SETTINGS_SKIP_KEYS = new Set(['preloadedScript', 'libraries', 'theme']);
+const GLOBAL_SETTINGS_SKIP_KEYS = new Set(['preloadedScript', 'libraries', 'theme', 'variables']);
 const BARE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // `onRowClicked` → `On row clicked`, `url_params` → `Url params` (sentence case, like the Inspector).
@@ -428,6 +430,26 @@ export const buildSearchRecords = ({
     });
   };
 
+  // Declared variables (`globalSettings.variables`, `page.variables`) are keyed by variable name, so
+  // a name can be any identifier, including keys the generic walk skips (`id`, `fxActive`) or reads
+  // as metadata (`name`). Each definition is indexed explicitly: its name at
+  // `['variables', key, 'name']` and its value at `['variables', key]`. Development maps keyed by
+  // id keep the name inside the entry.
+  const pushVariableDefinitions = (base: RecordBase, variables: Saved) => {
+    if (!variables || typeof variables !== 'object' || Array.isArray(variables)) return;
+    for (const [key, entry] of Object.entries<Saved>(variables)) {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
+      const name = typeof entry.id === 'string' && typeof entry.name === 'string' ? entry.name : key;
+      push(base, ['variables', key, 'name'], `Variables › ${name} › Name`, name, 'Variables · Name');
+      const value = entry.value;
+      if (
+        (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') &&
+        String(value) !== ''
+      )
+        push(base, ['variables', key], `Variables › ${name}`, String(value), `Variables · ${name}`);
+    }
+  };
+
   for (const page of pages) {
     const pageBase: RecordBase = {
       entityType: 'page',
@@ -447,6 +469,7 @@ export const buildSearchRecords = ({
       if (fieldPath.length === 0) return;
       push(pageBase, fieldPath, fieldPath.map(humanize).join(' › '), text, pathShortLabel(fieldPath));
     });
+    pushVariableDefinitions(pageBase, page.variables);
 
     for (const [componentId, { component } = {}] of Object.entries<Saved>(page.components || {})) {
       if (!component) continue;
@@ -575,7 +598,7 @@ export const buildSearchRecords = ({
     entityType: 'app',
     entityId: 'app',
     entityName: 'App',
-    entitySubtype: 'Global settings',
+    entitySubtype: 'App settings',
     pageId: null,
   };
   const preloaded = globalSettings?.preloadedScript?.javascript;
@@ -589,6 +612,7 @@ export const buildSearchRecords = ({
     if (fieldPath.length === 0) return;
     push(appBase, fieldPath, fieldPath.map(humanize).join(' › '), text, pathShortLabel(fieldPath));
   });
+  pushVariableDefinitions(appBase, globalSettings?.variables);
   (globalSettings?.libraries?.javascript || []).forEach((library: Saved, index: number) => {
     const value = typeof library === 'string' ? library : library?.url || library?.name;
     if (value) push(appBase, ['libraries', 'javascript', String(index)], 'JavaScript libraries', value);

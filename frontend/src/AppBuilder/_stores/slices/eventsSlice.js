@@ -109,7 +109,8 @@ export const createEventsSlice = (set, get) => ({
       const componentEvents = events.filter((event) => event.sourceId === id);
       const mode = getCurrentMode(moduleId);
       if (getEditorLoading(moduleId)) return;
-      handleEvent(
+      // callers that need to wait for the handlers (see RenderWidget's AWAITED_EVENTS) use the returned promise
+      return handleEvent(
         eventName,
         componentEvents,
         { ...options, customVariables: { ...customResolvables }, sourceSubContainerIndex },
@@ -165,7 +166,10 @@ export const createEventsSlice = (set, get) => ({
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
       try {
-        const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
+        const response = await get().trackAppSave(
+          () => appVersionService.createAppVersionEventHandler(appId, versionId, event),
+          moduleId
+        );
         get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
         get().eventsSlice.addEvent(response, moduleId);
         return response;
@@ -183,7 +187,10 @@ export const createEventsSlice = (set, get) => ({
       const versionId = get().currentVersionId;
 
       try {
-        const response = await appVersionService.bulkCreateAppVersionEventHandlers(appId, versionId, events);
+        const response = await get().trackAppSave(
+          () => appVersionService.bulkCreateAppVersionEventHandlers(appId, versionId, events),
+          moduleId
+        );
         get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
 
         // Add all created events to the store
@@ -202,7 +209,10 @@ export const createEventsSlice = (set, get) => ({
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
       get().eventsSlice.updateEventsField('eventToDeleteLoaderIndex', index, moduleId);
-      const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
+      const response = await get().trackAppSave(
+        () => appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId),
+        moduleId
+      );
       get().eventsSlice.updateEventsField('eventToDeleteLoaderIndex', null, moduleId);
       if (response?.affected === 1) {
         get().eventsSlice.removeEvent(eventId, moduleId);
@@ -222,7 +232,10 @@ export const createEventsSlice = (set, get) => ({
       const versionId = get().currentVersionId;
       const newEvents = replaceQueryOptionsEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
       try {
-        const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
+        const response = await get().trackAppSave(
+          () => appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType),
+          moduleId
+        );
         set((state) => {
           const eventsInState = state.eventsSlice.getModuleEvents(moduleId);
           const newEvents = eventsInState.map((event) => {
@@ -449,7 +462,7 @@ export const createEventsSlice = (set, get) => ({
           'onRowHovered',
           'onSubmit',
           'onInvalid',
-          'onNewRowsAdded',
+          'onAddNewRowCancelled',
           'onTableDataDownload',
           'onMessageSent',
           'onClearHistory',
@@ -470,6 +483,10 @@ export const createEventsSlice = (set, get) => ({
       }
       if (eventName === 'onBulkUpdate') {
         await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+      }
+      // The add-new-row form waits for this one, to show "Adding row…" until the app's handlers are done.
+      if (eventName === 'onNewRowsAdded') {
+        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);
       }
 
       if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {

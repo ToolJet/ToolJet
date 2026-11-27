@@ -692,7 +692,7 @@ button {
 
   .editor-sidebar {
     position: fixed;
-    right: 48px;
+    right: 0;
     overflow: hidden;
     width: 300px;
     flex: 1 1 auto;
@@ -705,37 +705,6 @@ button {
 
     >div {
       background-color: var(--surfaces-surface-01);
-    }
-
-    .empty-configuration-header {
-      display: flex;
-      padding: 4px 12px;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border-weak);
-
-      .header {
-        color: var(--text-default);
-        font-weight: 500;
-        font-size: 12px;
-        padding: 7px 6px;
-      }
-    }
-
-    .no-component-selected {
-      flex-direction: column;
-      height: 100%;
-      padding: 0px 32px;
-
-      .heading {
-        color: var(--text-default);
-        margin-top: 16px;
-      }
-
-      .sub-heading {
-        color: var(--text-default);
-        text-align: center;
-      }
     }
 
     .inspector {
@@ -892,7 +861,7 @@ button {
       top: 48px;
       position: fixed;
       // right: 300px;
-      left: 48px;
+      left: 54px;
       overflow-y: hidden;
       overflow-x: hidden;
       -webkit-box-pack: center;
@@ -1595,7 +1564,6 @@ button {
 .inspector {
   .tab-content {
     overflow-y: auto;
-    // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
     height: calc(100vh - 8rem);
     // Hide scrollbar
     -ms-overflow-style: none;
@@ -2501,13 +2469,18 @@ body {
 .RichEditor-styleButton {
   color: #999;
   cursor: pointer;
-  margin-right: 16px;
-  padding: 2px 0;
+  margin-right: 12px;
+  padding: 2px 4px;
   display: inline-block;
+  border-radius: 4px;
 }
 
 .RichEditor-activeButton {
-  color: #5890ff;
+  // The Bold/Italic/list buttons are <img> icons, so a text-color-only rule
+  // renders no visible state — the background pill is the active indicator
+  // for every control, icon or text.
+  color: var(--cc-primary-brand, #5890ff);
+  background-color: var(--cc-surface3-surface, #e6e8eb);
 }
 
 .chart-data-input {
@@ -3013,13 +2986,34 @@ input:focus-visible {
     margin-left: 10px;
     font-weight: 500;
     color: var(--slate12);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   &:hover {
     background: var(--indigo4);
   }
 
+  // Keep the footer one line: a long component name used to push the arrow onto a
+  // second line, and the taller fixed footer then covered the panel's last row.
   a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+
+    > span:first-child {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    > span:last-child {
+      flex-shrink: 0;
+    }
+
     &:hover {
       text-decoration: none;
     }
@@ -5207,7 +5201,6 @@ div#driver-page-overlay {
   &:focus, &:active {
     border: 1px solid var(--indigo9) !important;
     background-color: var(--indigo2) !important;
-    box-shadow: 0px 0px 0px 1px #c6d4f9 !important;
   }
 }
 
@@ -9471,7 +9464,22 @@ tbody {
 }
 
 .react-tooltip {
-  font-size: 0.765625rem !important;
+  font-size: var(--app-builder-small-font-size, 0.765625rem) !important;
+}
+
+// A widget renders a customer's app, so ToolJet's chrome variables stop at it: unset, every shared rule
+// falls back to its own value and the canvas, widget modals and widget overlays match the Viewer.
+// Widget overlays (react-bootstrap Tooltip/Popover, react-tooltip) must carry .tj-widget-overlay.
+.main-editor-canvas,
+.tj-modal-widget-content,
+.tj-widget-overlay {
+  --app-builder-font-family: initial;
+  --app-builder-small-font-size: initial;
+  --editor-text-accent: initial;
+  --editor-text-success: initial;
+  --editor-text-danger: initial;
+  --editor-danger-fill: initial;
+  --editor-danger-fill-hover: initial;
 }
 
 .tooltip {
@@ -13791,6 +13799,10 @@ tbody {
 }
 
 .shareable-link-container {
+  .label-info {
+    color: var(--text-placeholder);
+  }
+
   .copy-container {
     width: 0px;
     margin-right: -12px;
@@ -15457,6 +15469,12 @@ textarea.tj-text-input-widget {
 }
 
 .wrapper-div-code-editor:hover .fx-button-container {
+  opacity: 1;
+}
+
+// keeps the field actions (e.g. a cog) visible while their popover or keyboard focus is inside
+.fx-button-container.show-on-focus-within:focus-within,
+.fx-button-container.show-on-focus-within:has([data-state='open']) {
   opacity: 1;
 }
 
@@ -17846,19 +17864,7 @@ section.ai-message-prompt-input-wrapper {
   color: #6a727c;
 }
 
-.app-export-btn {
-  background-color: #ffffff;
-  border: 1px solid var(--Border-default, #ccd1d5);
-  box-shadow: 0px 1px 0px 0px var(--Dropshadow000);
-}
-
 .dark-theme {
-  .app-export-btn {
-    background-color: #313b46;
-    color: #ffffff;
-    border: 1px solid transparent;
-  }
-
   .canvas-styles-header {
     background-color: #212325;
     color: #ffffff;

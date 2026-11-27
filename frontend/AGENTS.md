@@ -24,6 +24,8 @@ React + Webpack. Edition composition (webpack aliases, registries, `fetchEdition
 
 ### App Builder (`src/AppBuilder/**`)
 
+- Dependencies root lists show entities with relationships; an explicit entity selection must retain its detail even without relationships, with an empty state and a return-to-all action. Resolve isolated selections from the full entity data, not the filtered root lists. Declared-variable expressions contribute Uses and reverse Read by relationships; keep app/page scope and module identity when resolving and navigating those variables.
+
 On top of the above:
 - Read `src/test/app-builder/README.md` for the test seams and the no-mock rule.
 - Run `npm run test:app-builder`, plus `:contracts` and `:parity -- --edition ce|ee` when a widget changes.
@@ -41,6 +43,11 @@ On top of the above:
 - New widgets MUST be lazy-loaded
 - `useBatchedUpdateEffectArray` for batched state updates
 - Widget components must be registered in `AppBuilder/WidgetManager/componentTypes.js`
+- Editor panel chrome (left panel, right panel) comes from `AppBuilder/Shared/Panel`: `PanelHeader` (48px pinned title row), `PanelIconButton` (a tooltipped icon-only button: its required `label` is both the `aria-label` and the `ToolTip`), `PanelCloseButton` (the named X, one line over it), `PanelEmptyState` / `NoMatchesEmptyState`, `PanelSectionHeader` (collapsible section: 12/500 title, muted count, trailing caret). Do not hand-roll a panel header, close button, section header or no-match state. Every icon-only button needs an `aria-label` (`panelSourceAudit` `[UB-04]`) — the numbers live in `Shared/Panel/panel.scss`
+  - Panel names come from one registry in `AppBuilder/panelLayout.js`: `SIDEBAR_ITEMS` (rail item, panel title, close label), `RIGHT_PANEL_ITEMS` (right panel close labels), `RUNTIME_PANEL_ITEMS` (drawer tabs). Use `getPanelCloseLabel` / `getRuntimeToggleLabel`, never a literal
+  - Shared control specs are SCSS mixins in `Shared/Panel/_mixins.scss` (`focus-ring`, `panel-search-input`, `panel-control`, `panel-row`, `panel-switch`, `panel-overlay-surface`); they emit nothing until an editor selector includes them. Bootstrap controls are sized under the `.tj-panel` class on the three panel roots (left panel, right panel, bottom drawer); editor overlays take the surface under `body.app-builder-chrome`
+  - Page row menus keep their action targets separate from the page being edited. `pageMenuSlice` owns the dialog targets. `AppBuilder` hosts the page delete and permission dialogs and the query delete and permission dialogs, so the right panel's header menus work with the Pages or Queries panel closed. Never mount these dialogs inside a panel. The Runtime Drawer uses the measured Code panel edge when Code is docked, including any space already reserved for the right sidebar.
+  - Guards: `src/AppBuilder/__tests__/panelSourceAudit.spec.js` (source rules) and the panels Cypress harness (`cypress-tests/cypress/e2e/happyPath/appbuilder/panels/*`, run with `cypress-panels.config.js`), which measures every panel in both themes at 1440x960 and 683x600
 
 ## Conventions
 
@@ -51,6 +58,11 @@ On top of the above:
 - Prefer Tailwind over Bootstrap for new code; do not extend legacy `react-bootstrap` usage
 - Use typography utilities (`tw-font-title-default`, `tw-font-body-default`) instead of ad-hoc font-size/weight
 - Design tokens: `frontend/src/_styles/designtheme.scss` + `frontend/tailwind.config.js`
+- **Editor chrome never styles a customer's app.** The canvas (and the overlays and modals its widgets open) must render exactly as in the Viewer.
+  - Chrome type and colour variables (`--app-builder-*`, `--editor-text-*`) live on `<body>` only while editing, via `useAppBuilderChrome`. Writing to `<body>` is the exception to "no direct DOM manipulation", because chrome portals render there.
+  - Chrome text that needs AA on dark panels reads `var(--editor-text-accent|danger|success, <shared token>)` or `tw-text-editor-text-danger|success`, never the shared token alone.
+  - Widgets reset those variables (`theme.scss`). An overlay a widget renders (react-bootstrap `Tooltip`/`Popover`, `react-tooltip`) must carry `tj-widget-overlay`.
+  - The guard is `cypress/e2e/happyPath/appbuilder/panels/canvasParity.cy.js` (editor vs Viewer).
 
 ### Imports
 
@@ -148,6 +160,16 @@ In a branching-enabled Git Sync workspace, the configured default branch disable
 
 ### App Builder store
 
+- Embedded module instances retain their own global settings under `appStore.modules[moduleId].globalSettings`; use `getGlobalSettings(moduleId)` / `setGlobalSettings(settings, moduleId)` for declared app variables. The canvas keeps its existing root settings and owns the parent's theme. Module loads must capture their declarations without falling back to the parent's names; resolved values and dependency graphs remain instance-scoped.
+
+- Modules support declared app variables only. Hide the entire Scope field in module variable create/details forms, always create them in app scope, and reject page-scoped declaration saves in the store.
+
+- Declared variables are identified by scope + name within their module (and page, for page variables): saved maps are `{ [name]: { value, fxActive } }` with no definition id, and a declaration is just an initial value for the same runtime variable `setVariable` writes. Read and write maps only through `_utils/variableDefinitions.js` (`readVariableDefinitionMap`, `definitionsOf`, `variableKey`) and the `variablesSlice` actions; all of create, edit, rename, delete, undo and redo go through `applyVariableDefinitionChange` with an explicit `{ versionId, moduleId, scope, pageId }` context; a change, late save or undo step for a version that is no longer open is refused, never applied to the open one. Saves for one context go one at a time and send the map as it is when the request goes out, so an older map never lands after a newer one. A save belongs to the version open when it was queued; if another version is open by the time it would be sent, it is dropped with an error, never sent to that version. A failed save returns the names it touched to the map the server last accepted, and only while it is still unsaved (no later successful save carried it), still in the store (no newer edit, rename, delete or same-name variable replaced it), and, for a rename, while the old name is still free; this bookkeeping is transient, never saved. Development maps saved under ids are read by name; duplicate names are logged to the Debugger, not dropped silently.
+
+- Variables mutations use the canonical `getShouldFreeze()` lock in both controls and store actions. App and page persistence must return a failure result when HTTP saving fails: do not show success, navigate to a created/renamed variable, or record an undo command for a rejected save. Restore the previous local definition without overwriting a newer edit. Keep the shared `savePageChanges` swallowing contract separate from Variables persistence.
+
+- The Variables panel's basic CodeHinter uses `onInputChange` to keep the initial-value draft current for previews, fx toggles and saving. The basic editor's `onChange` runs on blur; do not save the same variable through both callbacks, which duplicates saves and undo entries. Blank initial input deliberately means an empty string; preserve explicit `0`, `false`, `null` and expressions through the variable-definition parser.
+
 - AppBuilder store: `AppBuilder/_stores/store.js` (30+ slices), all namespaced by `moduleId` (default `'canvas'`)
 - Global stores (`appDataStore`, `currentStateStore`, `dataQueriesStore`, `resolverStore`) should not be used from AppBuilder code unless truly unavoidable — prefer the AppBuilder store
 
@@ -163,7 +185,7 @@ Widget configs live in the shared `packages/widget-definitions` package (`src/wi
 
 ### Key changes require migrations
 
-Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps. Write a data migration in `server/migrations/data/` (rules: the Migrations section of `server/AGENTS.md`).
+Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps, and the previous release must keep rendering them after an upgrade. In one PR: every reader switches to the new place, the move goes in `MOVED_COMPONENT_KEYS` (`packages/widget-definitions`, so the App Builder drops the old place on load and a missed reader fails at once), a data migration in `server/migrations/data/` copies the key and keeps both places in sync, a cleanup migration in `server/migrations/cleanup/` removes the old key one upgrade later, and the import path converts old exports. Recipe and templates: `server/docs/APP_DEFINITION_MIGRATIONS.md`.
 
 ## Glossary
 
@@ -199,7 +221,8 @@ Update the closest guide in the same PR when a feature gains a new invariant, co
 - Unused imports
 - Missing `key` props in `.map()`
 - Missing `shallow` in `useStore` selectors
-- Direct DOM manipulation (canvas drop calculations excepted)
+- Direct DOM manipulation (canvas drop calculations and `useAppBuilderChrome`'s `<body>` scope excepted)
+- A widget overlay (tooltip, popover) without `tj-widget-overlay`, or chrome reading `--text-accent/-danger/-success` without the `--editor-text-*` wrapper
 
 ## Decisions log
 
@@ -217,3 +240,7 @@ Widget-level CSS class (shipped 2026-06):
 - Legacy non-revamped widgets (~24, mostly deprecated V1 duplicates) render the field as a top-level control rather than grouped — accepted, no wiring on the sunsetting path
 - v1 is static + `{{}}`-bound class only; imperative runtime control (CSA `setCustomClass`) deferred to v2
 - Gated behind the `customStyling` license flag (same flag as app/workspace Custom CSS, which it depends on), read via `useStore((s) => s.license.featureAccess?.customStyling)`. Two gates: the Inspector hides the control, and `RenderWidget.jsx` skips appending the class. **The saved value is never erased** — re-enabling the license restores the classes, no migration or cleanup
+
+- Variables use a searchable left resource list (`VariablesPanel`) and an independent contextual right editor (`VariableConfigurationPanel`). Open it through `openVariablePanel`; create/rename completions must use `showSavedVariablePanel` so late responses cannot reopen a closed panel or replace another selection. Close page/create contexts on page changes and all contexts on version/module changes. Keep navigation and copy actions usable when the version is frozen; only mutation controls are locked. React builder (Code mode) apps have no Variables rail item or panel: their state lives in React, not in `{{ }}` bindings or RunJS.
+
+- Dependency-viewer initial-value relationships use `entityUsage/variableDefinitionRefs.ts` and the runtime AST parser with module-local component/query mappings. Include query/component sources in a variable's Uses and the scoped variable in the source's Used by, even before the query runs. Static text without expression braces must not create either link. Share the parsed definitions across section selectors rather than reparsing them per entity.

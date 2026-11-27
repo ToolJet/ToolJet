@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, ButtonGroup, OverlayTrigger, Popover } from 'react-bootstrap';
+import { Button, ButtonGroup, Fade, OverlayTrigger, Popover } from 'react-bootstrap';
 import cx from 'classnames';
 
 import { Button as RadixButton } from '@/components/ui/Button/Button';
@@ -7,9 +7,12 @@ import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import ParameterForm from './ParameterForm';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
+import { getQueryPopoverMotion } from '@/AppBuilder/panelLayout';
+import { ToolTip } from '@/_components/ToolTip';
 
 const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, otherParams }) => {
   const [showModal, setShowModal] = useState(false);
+  const parameterMotion = getQueryPopoverMotion('parameter');
   const closeMenu = () => setShowModal(false);
 
   useEffect(() => {
@@ -67,10 +70,13 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       placement="bottom-end"
       rootClose={true}
       show={showModal}
+      transition={parameterMotion.transition ? Fade : false}
       overlay={
         <Popover
           id="parameter-form-popover"
-          className={`query-manager-sort-filter-popup p-0 ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
+          className={`query-manager-sort-filter-popup p-0 ${parameterMotion.className} ${
+            darkMode && 'popover-dark-themed dark-theme theme-dark'
+          }`}
           style={{ width: '268px' }}
         >
           <ParameterForm
@@ -136,21 +142,24 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
       </span>
     </Button>
     {onRemove && (
-      <Button
-        data-cy={`query-param-${String(name).toLowerCase()}-remove-button`}
-        onClick={onRemove}
-        size="sm"
-        className={cx('bg-transparent color-slate12', { 'p-0': size === 'sm' })}
-        style={{
-          borderTopRightRadius: '6px',
-          borderBottomRightRadius: '6px',
-          paddingRight: '6px',
-          paddingLeft: '0px',
-          height: '28px',
-        }}
-      >
-        <Remove fill="#6A727CCC" height={20} width={20} />
-      </Button>
+      <ToolTip message={`Remove ${name}`}>
+        <Button
+          data-cy={`query-param-${String(name).toLowerCase()}-remove-button`}
+          aria-label={`Remove ${name}`}
+          onClick={onRemove}
+          size="sm"
+          className={cx('bg-transparent color-slate12', { 'p-0': size === 'sm' })}
+          style={{
+            borderTopRightRadius: '6px',
+            borderBottomRightRadius: '6px',
+            paddingRight: '6px',
+            paddingLeft: '0px',
+            height: '28px',
+          }}
+        >
+          <Remove fill="#6A727CCC" height={20} width={20} />
+        </Button>
+      </ToolTip>
     )}
   </ButtonGroup>
 );

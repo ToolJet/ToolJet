@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { SortableTree } from '@/_ui/SortableTree';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
-import { Button } from '@/components/ui/Button/Button';
+import { Mouse } from 'lucide-react';
 
 const PROPERTY_NAMES = {
   isGroup: 'isGroup',
@@ -84,7 +84,7 @@ export const ButtonListManager = ({ buttons = [], onAddButton, onReorderButtons,
               gap: '6px',
             }}
           >
-            <Button variant="ghost" size="default" iconOnly={true} isLucid={true} trailingIcon="mouse" />
+            <Mouse size={16} color="var(--icon-strong)" aria-hidden="true" />
           </div>
           <span className="flex tj-header-h8" style={{ color: 'var(--cc-text-default)' }}>
             No action button added

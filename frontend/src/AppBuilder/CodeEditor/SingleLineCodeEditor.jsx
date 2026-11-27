@@ -19,8 +19,7 @@ import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 import { isInsideParent, resolveReferences } from './utils';
-import { okaidia } from '@uiw/codemirror-theme-okaidia';
-import { githubLight } from '@uiw/codemirror-theme-github';
+import { getCodeTheme } from './codeTheme';
 import { getAutocompletion, getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
@@ -235,7 +234,9 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
         paramName={paramName}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
-        previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
+        previewPlacement={
+          restProps?.previewPlacement ?? (restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start')
+        }
         isPortalOpen={restProps?.portalProps?.isOpen}
         validationFn={validationFn}
         onAiSuggestionAccept={(newValue) => {
@@ -469,7 +470,7 @@ const EditorInput = ({
   };
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const theme = darkMode ? okaidia : githubLight;
+  const theme = getCodeTheme(darkMode);
 
   // when full screen editor is closed, show the preview box
   useEffect(() => {
@@ -668,6 +669,7 @@ const DynamicEditorBridge = (props) => {
     iconVisibility,
     componentId,
   } = props;
+  const { fieldActions, ...propsForEditor } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   // A choice field whose stored value is an expression (not a literal such as {{true}} or {{'text'}}) shows it in code,
@@ -811,6 +813,7 @@ const DynamicEditorBridge = (props) => {
         {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>
           <div style={{ marginBottom: codeShow ? '0.5rem' : '0px' }} className={`d-flex align-items-center ${fxClass}`}>
+            {fieldActions && <div className="fx-button-container show-on-focus-within">{fieldActions}</div>}
             {renderFx()}
           </div>
         </div>
@@ -821,7 +824,7 @@ const DynamicEditorBridge = (props) => {
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
-              <SingleLineCodeEditor {...props} initialValue={modifiedValue} />
+              <SingleLineCodeEditor {...propsForEditor} initialValue={modifiedValue} />
             </div>
           </div>
         </div>

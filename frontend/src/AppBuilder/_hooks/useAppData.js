@@ -6,7 +6,6 @@ import {
   markAppLoaded,
 } from '@/_services/frontend-metrics.service';
 import {
-  appEnvironmentService,
   appService,
   appsService,
   appVersionService,
@@ -45,6 +44,8 @@ import { whenBranchResolved } from '@/_helpers/active-branch';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import { appliedThemeDefinition } from '../_utils/themeAccess';
+import { waitForCompareTurn } from '../_utils/compareFrame';
+import { createViewerReads } from './viewerReads';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
@@ -106,7 +107,6 @@ const useAppData = (
   const setIsEditorReadOnly = useStore((state) => state.setIsEditorReadOnly);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
-  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
   const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
@@ -177,8 +177,7 @@ const useAppData = (
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
   const sendMessage = useStore((state) => state.ai?.sendMessage);
   const getCreditBalance = useStore((state) => state.ai?.getCreditBalance);
-  const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
-  const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
+  const setAiChatOpen = useStore((state) => state.setAiChatOpen);
   const pathParams = useParams();
   // A module instance has its own app slug, distinct from the parent app's route slug.
   let slug = appSlug ?? pathParams?.slug;
@@ -455,6 +454,23 @@ const useAppData = (
       }
     }
 
+    // A signed-in viewer of a version knows its environment and version already, so their reads start with the app
+    // definition instead of one after another after it (viewerReads).
+    const reads = createViewerReads({
+      early:
+        !moduleMode &&
+        mode !== 'edit' &&
+        !isPublicAccess &&
+        !!queryParams.version &&
+        !queryParams.snapshot &&
+        !!environmentId &&
+        !!versionId,
+      environmentId,
+      versionId,
+      slug,
+      mode,
+    });
+
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
@@ -517,7 +533,7 @@ const useAppData = (
             try {
               const queryParams = { slug: slug };
 
-              const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+              const viewerEnvironment = await reads.environment(environmentId, queryParams);
 
               editorEnvironment = {
                 id: viewerEnvironment?.environment?.id,
@@ -529,7 +545,7 @@ const useAppData = (
                       slug,
                       viewerEnvironment?.environment?.id
                     )
-                  : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
+                  : await reads.constants(viewerEnvironment?.environment?.id);
             } catch (error) {
               console.error('Error fetching viewer environment:', error);
             }
@@ -551,6 +567,10 @@ const useAppData = (
         !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
         fetchAndInjectCustomStyles(isPublicAccess && mode !== 'edit' && appData.is_public);
+
+        // In the compare view, the other version may be building its app: wait for this frame's turn.
+        await waitForCompareTurn({ embedded: moduleMode });
+        if (cancelled) return;
 
         const pages = appData.pages.map((page) => {
           return page;
@@ -624,8 +644,7 @@ const useAppData = (
           (liveMessages || []).length === 0
         ) {
           promptSentRef.current = true;
-          setSelectedSidebarItem('tooljetai');
-          toggleLeftSidebar(true);
+          setAiChatOpen(true);
           // Structured datasources/tables the user tagged via "@mentions" in the create prompt. Sent
           // alongside the kickoff message so the backend can auto-complete the data-clarification /
           // datasource-selection / table-mapping steps for what was already referenced.
@@ -671,7 +690,6 @@ const useAppData = (
               moduleId
             );
           }
-          setIsQueryPaneExpanded(false);
         }
 
         if (initialLoadRef.current && !isPublicAccess && mode === 'edit') {
@@ -680,25 +698,24 @@ const useAppData = (
         }
 
         if (appData.app_builder_mode === 'ai' || (appData.build_mode ?? appData.buildMode) === 'code') {
-          setSelectedSidebarItem('tooljetai');
-          toggleLeftSidebar(true);
-          setIsQueryPaneExpanded(false);
+          setAiChatOpen(true);
         }
 
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
         }
-        // Skip overriding global settings so an embedded module's own settings never overwrite the app's.
-        if (!isEmbeddedModuleInstance(mode, moduleMode)) {
-          const global_settings = mapKeys(
-            appData.editing_version?.global_settings || appData.global_settings,
-            (value, key) => camelCase(key)
-          );
-          if (!global_settings?.theme) {
-            global_settings.theme = baseTheme;
-          }
-          setGlobalSettings(global_settings);
+        // Retain each instance's declarations without replacing the parent app's theme/settings.
+        const global_settings = mapKeys(
+          appData.editing_version?.global_settings ||
+            appData.editing_version?.globalSettings ||
+            appData.global_settings ||
+            appData.globalSettings,
+          (value, key) => camelCase(key)
+        );
+        if (!global_settings?.theme) {
+          global_settings.theme = baseTheme;
         }
+        setGlobalSettings(global_settings, isEmbeddedModuleInstance(mode, moduleMode) ? moduleId : 'canvas');
 
         setPages(pages, moduleId);
         if (!moduleMode || moduleId === 'canvas') {
@@ -806,13 +823,13 @@ const useAppData = (
         const queryData =
           isPublicAccess || (mode !== 'edit' && appData.is_public) || (mode !== 'edit' && queryParams.snapshot)
             ? appData
-            : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
+            : await reads.queries(appData.editing_version?.id || appData.current_version_id, mode);
 
         const dataQueries = (queryData.data_queries || []).map((query) => normalizeQueryTransformationOptions(query));
         setQueries(dataQueries, moduleId);
 
         if (dataQueries?.length > 0) {
-          !moduleMode && setSelectedQuery(dataQueries[0]?.id);
+          !moduleMode && setSelectedQuery(dataQueries[0]?.id, 'canvas', { reveal: false });
           initialiseResolvedQuery(
             dataQueries.map((query) => query.id),
             moduleId
@@ -1165,7 +1182,8 @@ const useAppData = (
         });
 
         setGlobalSettings(
-          mapKeys(appData.editing_version?.globalSettings || appData.globalSettings, (value, key) => camelCase(key))
+          mapKeys(appData.editing_version?.globalSettings || appData.globalSettings, (value, key) => camelCase(key)),
+          moduleId
         );
 
         setPages(pages, moduleId);
@@ -1236,7 +1254,7 @@ const useAppData = (
         setQueries(dataQueries, moduleId);
 
         if (dataQueries?.length > 0) {
-          setSelectedQuery(dataQueries[0]?.id);
+          setSelectedQuery(dataQueries[0]?.id, 'canvas', { reveal: false });
           initialiseResolvedQuery(dataQueries.map((query) => query.id));
         }
 
