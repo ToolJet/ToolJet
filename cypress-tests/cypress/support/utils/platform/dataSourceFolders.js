@@ -5,6 +5,11 @@ import {
 } from "Selectors/platform/dataSourceFolders";
 import { groupsSelector } from "Selectors/platform/manageGroups";
 
+/**
+ * @tjType   dataSourcesList.open
+ * @tjBlock  access
+ * @tjUsage  openDataSourcesList()
+ */
 export const openDataSourcesList = () => {
   cy.intercept("GET", "/api/folder-data-sources*").as("dataSourceFolders");
   cy.visit(`/${Cypress.env("workspaceSlug")}`);
@@ -13,6 +18,11 @@ export const openDataSourcesList = () => {
   cy.get(dsFolder.sidebarContainer, { timeout: 50000 }).should("be.visible");
 };
 
+/**
+ * @tjType   dataSourceFolder.create
+ * @tjBlock  access
+ * @tjUsage  uiCreateDataSourceFolder(folderName)
+ */
 export const uiCreateDataSourceFolder = (folderName) => {
   cy.get(dsFolder.createFolderIcon).click();
   cy.clearAndType(dsFolder.folderNameInput, folderName);
@@ -23,9 +33,19 @@ export const uiCreateDataSourceFolder = (folderName) => {
   );
 };
 
+/**
+ * @tjType   folderMenu.open
+ * @tjBlock  access
+ * @tjUsage  uiOpenFolderMenu(folderId)
+ */
 export const uiOpenFolderMenu = (folderId) =>
   cy.get(dsFolder.folderMenuButton(folderId)).click({ force: true });
 
+/**
+ * @tjType   dataSourceFolder.rename
+ * @tjBlock  access
+ * @tjUsage  uiRenameDataSourceFolder(folderId, renamed)
+ */
 export const uiRenameDataSourceFolder = (folderId, newName) => {
   uiOpenFolderMenu(folderId);
   cy.get(dsFolder.folderRenameOption(folderId)).click();
@@ -37,6 +57,11 @@ export const uiRenameDataSourceFolder = (folderId, newName) => {
   );
 };
 
+/**
+ * @tjType   dataSourceFolder.delete
+ * @tjBlock  access
+ * @tjUsage  uiDeleteDataSourceFolder(folderId)
+ */
 export const uiDeleteDataSourceFolder = (folderId) => {
   uiOpenFolderMenu(folderId);
   cy.get(dsFolder.folderDeleteOption(folderId)).click();
@@ -56,15 +81,30 @@ export const uiDeleteDataSourceFolder = (folderId) => {
   );
 };
 
+/**
+ * @tjType   dataSourceFolderExists.verify
+ * @tjBlock  access
+ * @tjUsage  uiVerifyDataSourceFolderExists(folderName)
+ */
 export const uiVerifyDataSourceFolderExists = (folderName, shouldExist = true) =>
   cy
     .get(dsFolder.folderRow(folderName))
     .should(shouldExist ? "exist" : "not.exist");
 
 // Asserts the folder's ⋮ menu is absent — it only renders when the viewer can rename or delete.
+/**
+ * @tjType   folderMenuAbsent.verify
+ * @tjBlock  access
+ * @tjUsage  uiVerifyFolderMenuAbsent(adminFolderId)
+ */
 export const uiVerifyFolderMenuAbsent = (folderId) =>
   cy.get(dsFolder.folderMenuButton(folderId)).should("not.exist");
 
+/**
+ * @tjType   dataSourceToFolder.drag
+ * @tjBlock  access
+ * @tjUsage  dragDataSourceToFolder(one, beta)
+ */
 export const dragDataSourceToFolder = (dataSourceName, folderName, { expectDragLabel } = {}) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({
     position: "center",
@@ -94,6 +134,11 @@ export const dragDataSourceToFolder = (dataSourceName, folderName, { expectDragL
   return cy.wait("@dropIntoFolder");
 };
 
+/**
+ * @tjType   dataSourceToStrayList.drag
+ * @tjBlock  access
+ * @tjUsage  dragDataSourceToStrayList(dataSourceName)
+ */
 export const dragDataSourceToStrayList = (dataSourceName) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseDown({ position: "center" });
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realMouseMove(0, 20);
@@ -108,6 +153,10 @@ export const dragDataSourceToStrayList = (dataSourceName) => {
   return cy.wait("@dropOutOfFolder");
 };
 
+/**
+ * @tjBlock  access
+ * @tjUsage  multiSelectDataSources([two, three])
+ */
 export const multiSelectDataSources = (dataSourceNames = []) => {
   dataSourceNames.forEach((name) => {
     cy.get(dsFolder.dataSourceRow(name)).click({ shiftKey: true });
@@ -117,6 +166,11 @@ export const multiSelectDataSources = (dataSourceNames = []) => {
   });
 };
 
+/**
+ * @tjType   moveDataSourceModal.open
+ * @tjBlock  access
+ * @tjUsage  uiOpenMoveDataSourceModal(two)
+ */
 export const uiOpenMoveDataSourceModal = (dataSourceName) => {
   cy.get(dsFolder.dataSourceRow(dataSourceName)).realHover();
   cy.get(dsFolder.dataSourceMenuButton(dataSourceName)).click({ force: true });
@@ -125,6 +179,11 @@ export const uiOpenMoveDataSourceModal = (dataSourceName) => {
   });
 };
 
+/**
+ * @tjType   folderExpanded.ensure
+ * @tjBlock  access
+ * @tjUsage  uiEnsureFolderExpanded(folderName, dataSourceName)
+ */
 export const uiEnsureFolderExpanded = (folderName, dataSourceName) => {
   cy.get(dsFolder.folderRow(folderName)).should("exist");
   return cy.get("body").then(($body) => {
@@ -176,6 +235,11 @@ const restApiQueryOptions = (runOnPageLoad = false) => ({
   runOnPageLoad,
 });
 
+/**
+ * @tjType   appWithQuery.create
+ * @tjBlock  access
+ * @tjUsage  apiCreateAppWithQuery(`denybias-app-${testId}`, dataSourceId, queryName)
+ */
 export const apiCreateAppWithQuery = (appName, dataSourceId, queryName, runOnPageLoad = false) => {
   let appId, versionId;
   return cy
@@ -193,6 +257,11 @@ export const apiCreateAppWithQuery = (appName, dataSourceId, queryName, runOnPag
     .then(() => ({ appId, versionId }));
 };
 
+/**
+ * @tjType   releasedAppWithQuery.create
+ * @tjBlock  access
+ * @tjUsage  apiCreateReleasedAppWithQuery(appName, appName, dataSourceId, queryName)
+ */
 export const apiCreateReleasedAppWithQuery = (appName, slug, dataSourceId, queryName) =>
   apiCreateAppWithQuery(appName, dataSourceId, queryName, true).then(({ appId, versionId }) => {
     cy.apiSaveAppVersion(appId, versionId, "v1");
@@ -203,6 +272,11 @@ export const apiCreateReleasedAppWithQuery = (appName, slug, dataSourceId, query
     return cy.wrap({ appId, versionId });
   });
 
+/**
+ * @tjType   query.run
+ * @tjBlock  access
+ * @tjUsage  uiRunQueryInBuilder(queryName)
+ */
 export const uiRunQueryInBuilder = (queryName) => {
   cy.intercept("POST", "/api/data-queries/*/versions/*/run/*").as("builderQueryRun");
   cy.get(dsFolder.listQuery(queryName)).click();
@@ -212,6 +286,11 @@ export const uiRunQueryInBuilder = (queryName) => {
 
 let releasedAppVisits = 0;
 
+/**
+ * @tjType   releasedAppAndCaptureQueryRun.visit
+ * @tjBlock  access
+ * @tjUsage  visitReleasedAppAndCaptureQueryRun(appName)
+ */
 export const visitReleasedAppAndCaptureQueryRun = (slug) => {
   const alias = `releasedQueryRun${(releasedAppVisits += 1)}`;
   cy.intercept("POST", "/api/data-queries/*/run").as(alias);
@@ -219,6 +298,11 @@ export const visitReleasedAppAndCaptureQueryRun = (slug) => {
   return cy.wait(`@${alias}`).its("response.body");
 };
 
+/**
+ * @tjType   groupGranularAccess.open
+ * @tjBlock  shared
+ * @tjUsage  openGroupGranularAccess(groupName)
+ */
 export const openGroupGranularAccess = (groupName) => {
   const groupTitle = (name) => `[data-cy="${cyParamName(name)}-title"]`;
   uiWatchGranularPermissions();
@@ -231,6 +315,10 @@ export const openGroupGranularAccess = (groupName) => {
   uiOpenGranularAccessTab({ waitForUsers: !ROLE_GROUPS.includes(groupName) });
 };
 
+/**
+ * @tjBlock  access
+ * @tjUsage  uiWatchGranularPermissions()
+ */
 export const uiWatchGranularPermissions = () => {
   cy.intercept("GET", "**/v2/group-permissions/*/granular-permissions").as("granularPermissions");
   cy.intercept("GET", "**/users/addable-users*").as("addableUsers");
@@ -238,22 +326,42 @@ export const uiWatchGranularPermissions = () => {
 
 const ROLE_GROUPS = ["Admin", "Builder", "End-user"];
 
+/**
+ * @tjType   granularAccessTab.open
+ * @tjBlock  access
+ * @tjUsage  uiOpenGranularAccessTab()
+ */
 export const uiOpenGranularAccessTab = ({ waitForUsers = true } = {}) => {
   cy.get(groupsSelector.granularLink).click();
   cy.wait("@granularPermissions");
   if (waitForUsers) cy.wait("@addableUsers");
 };
 
+/**
+ * @tjType   addDataSourceFolderGrant.open
+ * @tjBlock  access
+ * @tjUsage  uiOpenAddDataSourceFolderGrant()
+ */
 export const uiOpenAddDataSourceFolderGrant = () => {
   cy.get(groupsSelector.addPermissionButton).click();
   cy.get(dsFolderPerm.addDataSourceFolderButton).click();
 };
 
+/**
+ * @tjType   editDataSourceFolderGrant.open
+ * @tjBlock  access
+ * @tjUsage  uiOpenEditDataSourceFolderGrant()
+ */
 export const uiOpenEditDataSourceFolderGrant = () => {
   cy.get(dsFolderPerm.granularAccessRow).trigger("mouseover").realHover();
   cy.get(dsFolderPerm.editGranularAccess).click({ force: true });
 };
 
+/**
+ * @tjType   grantFolders.select
+ * @tjBlock  shared
+ * @tjUsage  uiSelectGrantFolders([folderName])
+ */
 export const uiSelectGrantFolders = (folderNames = []) => {
   cy.get(dsFolderPerm.sharedModalCustomRadio).check();
   cy.get(dsFolderPerm.sharedModalResourcesContainer).find('[class*="-control"]').click();
@@ -261,6 +369,11 @@ export const uiSelectGrantFolders = (folderNames = []) => {
   cy.get(dsFolderPerm.sharedModalPermissionNameInput).click();
 };
 
+/**
+ * @tjType   userToGroup.add
+ * @tjBlock  shared
+ * @tjUsage  uiAddUserToGroup(outsider)
+ */
 export const uiAddUserToGroup = (email) => {
   cy.get(groupsSelector.usersLink).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);

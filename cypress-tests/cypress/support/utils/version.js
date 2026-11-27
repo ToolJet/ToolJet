@@ -158,6 +158,11 @@ export const verifyVersionAfterPreview = (currentVersion) => {
   cy.wait(8000);
 };
 
+/**
+ * @tjType   versionAndVerify.switch
+ * @tjBlock  shared
+ * @tjUsage  switchVersionAndVerify("v3", "v1")
+ */
 export const switchVersionAndVerify = (currentVersion, newVersion) => {
   cy.waitForElement(versionSwitcherSelectors.versionName);
   cy.get(versionSwitcherSelectors.versionName).should("be.visible").click();
@@ -173,6 +178,11 @@ export const openPreviewSettings = () => {
   // Note: add alias wait for version and env load
 };
 
+/**
+ * @tjType   draftVersion.create
+ * @tjBlock  shared
+ * @tjUsage  createDraftVersion("v2", "v1")
+ */
 export const createDraftVersion = (versionName, fromVersion) => {
   openCreateDraftVersionModal();
   cy.wait(500);
@@ -189,6 +199,11 @@ export const createDraftVersion = (versionName, fromVersion) => {
   cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
 };
 
+/**
+ * @tjType   versionSwitcher.open
+ * @tjBlock  shared
+ * @tjUsage  openVersionSwitcher()
+ */
 export const openVersionSwitcher = () => {
   cy.get(versionSwitcherSelectors.versionName)
     .eq(0)
@@ -196,6 +211,11 @@ export const openVersionSwitcher = () => {
     .click();
   cy.wait(300);
 };
+/**
+ * @tjType   createDraftVersionModal.open
+ * @tjBlock  shared
+ * @tjUsage  openCreateDraftVersionModal()
+ */
 export const openCreateDraftVersionModal = () => {
   cy.get('[data-cy="create-draft-version-button"]').should("be.visible").click();
   cy.wait(300);

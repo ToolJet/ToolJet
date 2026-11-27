@@ -14,6 +14,10 @@ export const stripePlanPrices = {
 };
 
 // These endpoints call Stripe, which local and CI deployments don't have.
+/**
+ * @tjBlock  cloud
+ * @tjUsage  stubCurrentSubscription()
+ */
 export const stubCurrentSubscription = (subscription = null) => {
   const body = subscription
     ? {
@@ -31,9 +35,18 @@ export const stubCurrentSubscription = (subscription = null) => {
   return cy.intercept("GET", "**/api/organization/payment/*/plan", { statusCode: 200, body }).as("currentPlan");
 };
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  stubPlanPrices()
+ */
 export const stubPlanPrices = (prices = stripePlanPrices) =>
   cy.intercept("GET", "**/api/organization/payment/plan-prices", { statusCode: 200, body: prices }).as("planPrices");
 
+/**
+ * @tjType   subscriptionPage.open
+ * @tjBlock  cloud
+ * @tjUsage  openSubscriptionPage(workspaceId)
+ */
 export const openSubscriptionPage = (workspaceId = Cypress.env("workspaceId")) => {
   cy.visit(cloudSubscriptionText.subscriptionPath(workspaceId));
   cy.get(cloudSubscriptionSelectors.subscriptionOverview, { timeout: 60000 }).should(
@@ -42,15 +55,30 @@ export const openSubscriptionPage = (workspaceId = Cypress.env("workspaceId")) =
   );
 };
 
+/**
+ * @tjType   planTag.verify
+ * @tjBlock  cloud
+ * @tjUsage  verifyPlanTag(cloudSubscriptionText.planTags.pro)
+ */
 export const verifyPlanTag = (tagText) => {
   cy.get(cloudSubscriptionSelectors.planTag, { timeout: 30000 }).should("have.text", tagText);
 };
 
+/**
+ * @tjType   limit.verify
+ * @tjBlock  cloud
+ * @tjUsage  verifyLimit(limitLabels.endUsers, "0/50")
+ */
 export const verifyLimit = (label, value) => {
   cy.get(licenseSelectors.numberOfTextLabel(label)).should("have.text", label);
   cy.get(licenseSelectors.inputField(label)).should("have.value", value);
 };
 
+/**
+ * @tjType   featureAccess.verify
+ * @tjBlock  cloud
+ * @tjUsage  verifyFeatureAccess(access)
+ */
 export const verifyFeatureAccess = (access) => {
   const expected = Object.entries(cloudSubscriptionText.featureLabels).map(([key, label]) => [
     label,
@@ -72,6 +100,11 @@ export const verifyFeatureAccess = (access) => {
   });
 };
 
+/**
+ * @tjType   upgradeFooter.verify
+ * @tjBlock  cloud
+ * @tjUsage  verifyUpgradeFooter()
+ */
 export const verifyUpgradeFooter = () => {
   cy.get(cloudSubscriptionSelectors.comparePlansButton).scrollIntoView().should("be.visible").and("contain.text", cloudSubscriptionText.comparePlans);
   cy.get(cloudSubscriptionSelectors.upgradeButton).scrollIntoView().should("be.visible").and("contain.text", cloudSubscriptionText.upgrade);
@@ -79,6 +112,11 @@ export const verifyUpgradeFooter = () => {
   cy.get(cloudSubscriptionSelectors.viewInvoicesButton).should("not.exist");
 };
 
+/**
+ * @tjType   paidFooter.verify
+ * @tjBlock  cloud
+ * @tjUsage  verifyPaidFooter(cloudSubscriptionText.pricesUnavailableTotal)
+ */
 export const verifyPaidFooter = (totalText) => {
   cy.get(cloudSubscriptionSelectors.footerTotalAmount).scrollIntoView().should("have.text", totalText);
   cy.get(cloudSubscriptionSelectors.viewInvoicesButton).scrollIntoView().should("be.visible").and("contain.text", cloudSubscriptionText.viewInvoices);

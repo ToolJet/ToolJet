@@ -19,16 +19,31 @@ const defaultWorkspaceName = "My workspace";
 const defaultWsArchiveTooltip = "Default workspace cannot be archived. Set another workspace as default to proceed with archiving.";
 const toastUnarchived = (name) => `${name} \n was successfully unarchived`;
 
+/**
+ * @tjType   allWorkspaces.open
+ * @tjBlock  superAdmin
+ * @tjUsage  openAllWorkspaces()
+ */
 export const openAllWorkspaces = () => {
     openInstanceSettings();
     cy.get(instanceWorkspaceSelectors.navAllWorkspaces).click();
 };
 
+/**
+ * @tjType   workspacePageHeader.verify
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyWorkspacePageHeader()
+ */
 export const verifyWorkspacePageHeader = () => {
     cy.get(commonEeSelectors.pageTitle).verifyVisibleElement("have.text", instanceSettingsText.pageTitle);
     cy.get(instanceWorkspaceSelectors.breadcrumbPageTitle).verifyVisibleElement("have.text", instanceWorkspaceText.breadcrumbTitle);
 };
 
+/**
+ * @tjType   workspaceTableControls.verify
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyWorkspaceTableControls()
+ */
 export const verifyWorkspaceTableControls = () => {
     cy.get(instanceWorkspaceSelectors.tabActive).should("be.visible");
     cy.get(instanceWorkspaceSelectors.tabArchived).should("be.visible");
@@ -36,6 +51,11 @@ export const verifyWorkspaceTableControls = () => {
     cy.get(instanceWorkspaceSelectors.nameHeader).verifyVisibleElement("have.text", instanceWorkspaceText.nameHeader);
 };
 
+/**
+ * @tjType   workspaceRow.verify
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyWorkspaceRow(testWorkspace, false)
+ */
 export const verifyWorkspaceRow = (workspaceName, isDefault = false) => {
     cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
         .contains(workspaceName)
@@ -48,6 +68,11 @@ export const verifyWorkspaceRow = (workspaceName, isDefault = false) => {
         });
 };
 
+/**
+ * @tjType   workspaceSelectDropdown.verify
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyWorkspaceSelectDropdown(testWorkspace)
+ */
 export const verifyWorkspaceSelectDropdown = (testWorkspace) => {
     cy.get(instanceWorkspaceSelectors.selectControl).should("be.visible");
     cy.get(instanceWorkspaceSelectors.selectControl).click();
@@ -58,11 +83,21 @@ export const verifyWorkspaceSelectDropdown = (testWorkspace) => {
     cy.get(instanceWorkspaceSelectors.selectControl).click();
 };
 
+/**
+ * @tjType   workspaceTabs.verify
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyWorkspaceTabs()
+ */
 export const verifyWorkspaceTabs = () => {
     cy.get(instanceWorkspaceSelectors.tabActive).should("be.visible").and("contain", instanceWorkspaceText.activeTab);
     cy.get(instanceWorkspaceSelectors.tabArchived).should("be.visible").and("contain", instanceWorkspaceText.archivedTab);
 };
 
+/**
+ * @tjType   workspaceRowTags.verify
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyWorkspaceRowTags(testWorkspace)
+ */
 export const verifyWorkspaceRowTags = (workspaceName) => {
     searchWorkspace(defaultWorkspaceName);
     cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
@@ -80,11 +115,21 @@ export const verifyWorkspaceRowTags = (workspaceName) => {
         });
 };
 
+/**
+ * @tjType   archiveWorkspaceModal.open
+ * @tjBlock  superAdmin
+ * @tjUsage  openArchiveWorkspaceModal(testWorkspace)
+ */
 export const openArchiveWorkspaceModal = (workspaceName) => {
     searchWorkspace(workspaceName);
     cy.get(instanceWorkspaceSelectors.statusChangeButton).click({ force: true });
 };
 
+/**
+ * @tjType   archiveWorkspaceModal.verify
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyArchiveWorkspaceModalUI(testWorkspace)
+ */
 export const verifyArchiveWorkspaceModalUI = (workspaceName) => {
     cy.get(commonEeSelectors.modalTitle).contains("Archive workspace");
     cy.contains(workspaceName).should("be.visible");
@@ -109,6 +154,11 @@ export const verifyUnarchiveWorkspaceModalUI = (workspaceName) => {
     );
 };
 
+/**
+ * @tjType   openWorkspaceTooltip.verify
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyOpenWorkspaceTooltip(testWorkspace)
+ */
 export const verifyOpenWorkspaceTooltip = (workspaceName) => {
     cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
         .contains(workspaceName)
@@ -123,6 +173,11 @@ export const searchWorkspace = (name) => {
     cy.get(instanceWorkspaceSelectors.searchBar).should("be.visible").clear().type(name);
 };
 
+/**
+ * @tjType   defaultWorkspaceTooltip.verify
+ * @tjBlock  superAdmin
+ * @tjUsage  verifyDefaultWorkspaceTooltip()
+ */
 export const verifyDefaultWorkspaceTooltip = () => {
     cy.get(instanceWorkspaceSelectors.workspaceTableRow).each(($row) => {
         cy.wrap($row)

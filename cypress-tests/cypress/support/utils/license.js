@@ -8,6 +8,11 @@ import { licenseText } from "Texts/platform/license";
 import { cloudLicenseSelectors } from "Selectors/platform/cloudLicense";
 import { cloudLicenseText } from "Texts/platform/cloudLicense";
 
+/**
+ * @tjType   licenseExpiryDate.get
+ * @tjBlock  licensing
+ * @tjUsage  getLicenseExpiryDate()
+ */
 export const getLicenseExpiryDate = () => {
   return cy
     .request("GET", `${Cypress.env("server_host")}/api/license/access`)
@@ -29,11 +34,21 @@ export const getLicenseExpiryDate = () => {
     });
 };
 
+/**
+ * @tjType   tabs.switch
+ * @tjBlock  licensing
+ * @tjUsage  switchTabs(licenseText.limitsTabTitle)
+ */
 export const switchTabs = (tabTitle) => {
   cy.get(licenseSelectors.listOfItems(tabTitle)).scrollIntoView().should("be.visible").click();
   cy.get(licenseSelectors.tabTitle(tabTitle)).should("have.text", tabTitle);
 };
 
+/**
+ * @tjType   licenseTab.verify
+ * @tjBlock  licensing
+ * @tjUsage  verifyLicenseTab()
+ */
 export const verifyLicenseTab = () => {
   cy.get(licenseSelectors.label(licenseText.licenseKeyTab.licenseLabel)).should(
     "be.visible"
@@ -53,6 +68,11 @@ const parseLimitValue = (value) => {
   return isNaN(num) ? value.trim() : num;
 };
 
+/**
+ * @tjType   subTabsAndStoreCurrentLimits.verify
+ * @tjBlock  licensing
+ * @tjUsage  verifySubTabsAndStoreCurrentLimits(licenseText.limitsTab[`${subTab}SubTab`], licenseText[`${subTab}SubTab`])
+ */
 export const verifySubTabsAndStoreCurrentLimits = (
   subTabName,
   subTabDataObj,
@@ -101,6 +121,11 @@ export const verifySubTabsAndStoreCurrentLimits = (
     });
 };
 
+/**
+ * @tjType   accessTab.verify
+ * @tjBlock  licensing
+ * @tjUsage  verifyAccessTab(true)
+ */
 export const verifyAccessTab = (isPlanEnabled = false) => {
   const accessTabLabels = Object.values(licenseText.accessTab);
 
@@ -123,6 +148,11 @@ export const verifyAccessTab = (isPlanEnabled = false) => {
   });
 };
 
+/**
+ * @tjType   domainTab.verify
+ * @tjBlock  licensing
+ * @tjUsage  verifyDomainTab()
+ */
 export const verifyDomainTab = () => {
   cy.get(licenseSelectors.warningIcon).should("be.visible");
   cy.get(licenseSelectors.noDomainLinkedLabel).verifyVisibleElement(
@@ -135,6 +165,11 @@ export const verifyDomainTab = () => {
   );
 };
 
+/**
+ * @tjType   tooltip.verify
+ * @tjBlock  licensing
+ * @tjUsage  verifyTooltip(commonEeSelectors.auditLogIcon, "Audit logs are available only in paid plans", true)
+ */
 export const verifyTooltip = (
   selector,
   expectedTooltip,
@@ -284,6 +319,11 @@ export const assertLimitState = (
   });
 };
 
+/**
+ * @tjType   resourceLimit.verify
+ * @tjBlock  licensing
+ * @tjUsage  verifyResourceLimit("workflow", planName)
+ */
 export const verifyResourceLimit = (
   resourceType,
   planName,
@@ -331,6 +371,11 @@ export const verifyResourceLimit = (
   // cy.get(commonSelectors.cancelButton).click();
 };
 
+/**
+ * @tjType   totalLimitsWithPlan.verify
+ * @tjBlock  licensing
+ * @tjUsage  verifyTotalLimitsWithPlan(["builders", "end-users", "user"], planName)
+ */
 export const verifyTotalLimitsWithPlan = (
   resources,
   planName,
@@ -408,6 +453,11 @@ export const getLicenseLimits = () => {
   });
 };
 
+/**
+ * @tjType   user.create
+ * @tjBlock  licensing
+ * @tjUsage  createUserViaAPI(endUserEmail, "end-user")
+ */
 export const createUserViaAPI = (
   email,
   role = "end-user",
@@ -474,6 +524,10 @@ export const unarchiveUser = (email) => {
   });
 };
 
+/**
+ * @tjBlock  licensing
+ * @tjUsage  changeUserRole(builderEmail, "end-user")
+ */
 export const changeUserRole = (email, role) => {
   return cy.getAuthHeaders().then((headers) => {
     return cy.getUserIdByEmail(email, "user").then((userId) => {
@@ -520,6 +574,11 @@ export const verifyButtonDisabledWithTooltip = (
   verifyTooltip(buttonSelector, tooltipText, true);
 };
 
+/**
+ * @tjType   currentCount.get
+ * @tjBlock  licensing
+ * @tjUsage  getCurrentCountFromBanner("apps")
+ */
 export const getCurrentCountFromBanner = (resourceType) => {
   const cyPrefix = resourceType.toLowerCase().trim();
   const headingSelector = licenseSelectors.limitHeading(cyPrefix);
@@ -544,6 +603,10 @@ export const waitForLicenseUpdate = (timeout = 2000) => {
   cy.wait(timeout);
 };
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  generateBulkUsersCSV(50, "end-user", "cloudeu")
+ */
 export const generateBulkUsersCSV = (
   count,
   role = "end-user",
@@ -570,6 +633,10 @@ export const generateBulkUsersCSV = (
   return csv;
 };
 
+/**
+ * @tjBlock  licensing
+ * @tjUsage  bulkUploadUsersViaCSV(49, "end-user", "viewer")
+ */
 export const bulkUploadUsersViaCSV = (
   count,
   role = "end-user",
@@ -588,11 +655,21 @@ export const bulkUploadUsersViaCSV = (
   });
 };
 
+/**
+ * @tjType   limitBanner.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyLimitBanner(expectedHeading, expectedInfoText)
+ */
 export const verifyLimitBanner = (heading, infoText, type = "usage") => {
   cy.verifyElement(licenseSelectors.limitHeading(type), heading);
   cy.verifyElement(licenseSelectors.limitInfo(type), infoText);
 };
 
+/**
+ * @tjType   upgradeModal.verify
+ * @tjBlock  licensing
+ * @tjUsage  verifyUpgradeModal("You have reached your limit for number of users.")
+ */
 export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
   cy.get('[data-cy="modal-header"] .modal-title').should(
     "have.text",
@@ -619,6 +696,11 @@ export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
   });
 };
 
+/**
+ * @tjType   userAndExpectStatus.create
+ * @tjBlock  shared
+ * @tjUsage  createUserAndExpectStatus(builderEmail, "builder", 201)
+ */
 export const createUserAndExpectStatus = (email, role, expectedStatus) => {
   return createUserViaAPI(email, role).then((response) => {
     expect(response.status).to.equal(expectedStatus);
@@ -629,6 +711,11 @@ export const createUserAndExpectStatus = (email, role, expectedStatus) => {
   });
 };
 
+/**
+ * @tjType   userAndVerify.archive
+ * @tjBlock  licensing
+ * @tjUsage  archiveUserAndVerify(builderEmail)
+ */
 export const archiveUserAndVerify = (email) => {
   return archiveUser(email).then((response) => {
     expect(response.status).to.be.oneOf([200, 201]);
@@ -636,6 +723,10 @@ export const archiveUserAndVerify = (email) => {
   });
 };
 
+/**
+ * @tjBlock  licensing
+ * @tjUsage  changeRoleAndExpectLimit(endUserEmail, "builder")
+ */
 export const changeRoleAndExpectLimit = (
   email,
   newRole,
@@ -648,6 +739,11 @@ export const changeRoleAndExpectLimit = (
   });
 };
 
+/**
+ * @tjType   inviteUserModal.open
+ * @tjBlock  licensing
+ * @tjUsage  openInviteUserModal(name, email, role)
+ */
 export const openInviteUserModal = (name, email, role) => {
   cy.get(commonSelectors.cancelButton).click();
   cy.get(commonSelectors.manageGroupsOption).click();
@@ -656,6 +752,10 @@ export const openInviteUserModal = (name, email, role) => {
   cy.get(".css-1mlj61j").type(`${role}{enter}`);
 };
 
+/**
+ * @tjBlock  licensing
+ * @tjUsage  multiEnvAppSetup(appName)
+ */
 export const multiEnvAppSetup = (appName) => {
   cy.get(importSelectors.dropDownMenu).should("be.visible").click();
   cy.get(importSelectors.importOptionInput)
@@ -701,6 +801,11 @@ export const multiEnvAppSetup = (appName) => {
   );
 };
 
+/**
+ * @tjType   upgradePlanModal.verify
+ * @tjBlock  cloud
+ * @tjUsage  verifyUpgradePlanModal({ currentPlan: null })
+ */
 export const verifyUpgradePlanModal = ({ currentPlan = null } = {}) => {
   const { plans, planNames, currentPlan: currentText } = cloudLicenseText.upgradeModal;
 
@@ -734,10 +839,19 @@ export const verifyUpgradePlanModal = ({ currentPlan = null } = {}) => {
   }
 };
 
+/**
+ * @tjType   upgradePlanModal.close
+ * @tjBlock  cloud
+ * @tjUsage  closeUpgradePlanModal()
+ */
 export const closeUpgradePlanModal = () => {
   cy.get(cloudLicenseSelectors.upgradePlanModalClose).click();
   cy.get(cloudLicenseSelectors.upgradePlanModal).should("not.exist");
 };
 
+/**
+ * @tjBlock  cloud
+ * @tjUsage  navBarLicenseButton(cloudLicenseText.navBar.daysLeft(14))
+ */
 export const navBarLicenseButton = (text) =>
   cy.get(cloudLicenseSelectors.navBarActions).contains("button", text);

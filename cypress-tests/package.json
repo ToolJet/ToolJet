@@ -6,9 +6,14 @@
     "cy:run": "cypress run --browser=chrome 103, --headless",
     "cy:open": "cypress open --browser=chrome 103, --e2e",
     "cy:cloud": "cypress run --config-file cypress-cloud-platform.config.js",
-    "cy:cloud:open": "cypress open --config-file cypress-cloud-platform.config.js --e2e"
+    "cy:cloud:open": "cypress open --config-file cypress-cloud-platform.config.js --e2e",
+    "suite:index": "node tools/suite-index/generate.js",
+    "suite:find": "node tools/suite-index/find.js",
+    "suite:check": "node tools/suite-index/spec-check.js",
+    "suite:test": "node tools/suite-index/run-tests.js"
   },
   "devDependencies": {
+    "@babel/parser": "7.26.2",
     "@cypress/webpack-preprocessor": "^5.12.0",
     "@faker-js/faker": "^10.5.0",
     "chrome-remote-interface": "^0.34.0",

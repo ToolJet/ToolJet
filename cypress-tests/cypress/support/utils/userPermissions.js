@@ -45,6 +45,11 @@ export const verifyPermissions = {
   },
 };
 
+/**
+ * @tjType   groupPermissionInput.get
+ * @tjBlock  shared
+ * @tjUsage  getGroupPermissionInput(true, false)
+ */
 export const getGroupPermissionInput = (isEnterprise, flag) => {
   return isEnterprise
     ? {
@@ -78,6 +83,11 @@ export const getGroupPermissionInput = (isEnterprise, flag) => {
     };
 };
 
+/**
+ * @tjType   builderPermissions.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyBuilderPermissions(data.appName, data.folderName, data.firstName, data.appName, true)
+ */
 export const verifyBuilderPermissions = (
   appName,
   folderName,
@@ -119,6 +129,11 @@ export const verifyBuilderPermissions = (
   cy.get(commonSelectors.manageSSOOption).should("not.exist");
 };
 
+/**
+ * @tjType   basicPermissions.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyBasicPermissions(false)
+ */
 export const verifyBasicPermissions = (canCreate = true) => {
   cy.get(commonSelectors.appCreateButton).should(
     canCreate ? "be.enabled" : "not.exist"
@@ -138,6 +153,11 @@ export const verifyBasicPermissions = (canCreate = true) => {
   });
 };
 
+/**
+ * @tjType   settingsAccess.verify
+ * @tjBlock  shared
+ * @tjUsage  verifySettingsAccess(false)
+ */
 export const verifySettingsAccess = (shouldExist = true) => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).should(
@@ -145,6 +165,11 @@ export const verifySettingsAccess = (shouldExist = true) => {
   );
 };
 
+/**
+ * @tjType   environmentTags.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyEnvironmentTagsInGranularUI("Admin", envTags)
+ */
 export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) => {
   navigateToManageGroups();
   cy.get(groupsSelector.groupLink(groupName)).click();
@@ -161,6 +186,11 @@ export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) =>
 };
 
 
+/**
+ * @tjType   environmentAccess.verify
+ * @tjBlock  shared
+ * @tjUsage  verifyEnvironmentAccess(environments, { appName: data.appName, canEdit: true, appId: appId1 })
+ */
 export const verifyEnvironmentAccess = (environments, options = {}) => {
   const defaults = {
     // Specs that run in their own workspace set workspaceSlug (createSpecWorkspace)
@@ -303,6 +333,10 @@ export const verifyPreviewURLAccess = (envNames, { appId, componentName, version
 
 };
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  signup(user1, email1)
+ */
 export const signup = (name, email) => {
   cy.get(commonSelectors.createAnAccountLink, { timout: 10000 }).click();
   cy.wait(2000);

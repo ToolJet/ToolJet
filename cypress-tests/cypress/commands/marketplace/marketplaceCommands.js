@@ -5,6 +5,10 @@ const API_ENDPOINT =
         ? "/api/library_apps"
         : "/api/library_apps";
 
+/**
+ * @tjBlock  shared
+ * @tjUsage  cy.installMarketplacePlugin("HarperDB")
+ */
 Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     const MARKETPLACE_URL = `${Cypress.config("baseUrl")}/integrations/marketplace`;
 
