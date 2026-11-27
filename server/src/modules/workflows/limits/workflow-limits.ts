@@ -38,6 +38,13 @@ export interface WorkflowLimits {
   };
   waiting: { maxWaitingRunsPerWorkspace: number };
   schedules: { maxPerWorkflow: number; maxPerWorkspace: number };
+  /** Daily/monthly execution caps used when the plan's value is '', null or missing (decision D17). */
+  quotaDefaults: {
+    workspaceDailyExecutions: number;
+    workspaceMonthlyExecutions: number;
+    instanceDailyExecutions: number;
+    instanceMonthlyExecutions: number;
+  };
 }
 
 const MB = 1024 * 1024;
@@ -68,6 +75,13 @@ export const DEFAULT_WORKFLOW_LIMITS: WorkflowLimits = Object.freeze({
   concurrency: { activeRunsPerWorkspace: 10, queuedRunsPerWorkspace: 200, waitingSyncRequestsPerPod: 100 },
   waiting: { maxWaitingRunsPerWorkspace: 500 },
   schedules: { maxPerWorkflow: 20, maxPerWorkspace: 200 },
+  // The Basic plan's values
+  quotaDefaults: {
+    workspaceDailyExecutions: 500,
+    workspaceMonthlyExecutions: 10000,
+    instanceDailyExecutions: 25000,
+    instanceMonthlyExecutions: 50000,
+  },
 }) as WorkflowLimits;
 
 type Section = keyof WorkflowLimits;
@@ -99,6 +113,10 @@ export const WORKFLOW_LIMIT_ENV_VARS: Record<LimitPath, string> = {
   'waiting.maxWaitingRunsPerWorkspace': 'WORKFLOW_LIMIT_MAX_WAITING_RUNS_PER_WORKSPACE',
   'schedules.maxPerWorkflow': 'WORKFLOW_LIMIT_MAX_SCHEDULES_PER_WORKFLOW',
   'schedules.maxPerWorkspace': 'WORKFLOW_LIMIT_MAX_SCHEDULES_PER_WORKSPACE',
+  'quotaDefaults.workspaceDailyExecutions': 'WORKFLOW_LIMIT_DEFAULT_WORKSPACE_DAILY_EXECUTIONS',
+  'quotaDefaults.workspaceMonthlyExecutions': 'WORKFLOW_LIMIT_DEFAULT_WORKSPACE_MONTHLY_EXECUTIONS',
+  'quotaDefaults.instanceDailyExecutions': 'WORKFLOW_LIMIT_DEFAULT_INSTANCE_DAILY_EXECUTIONS',
+  'quotaDefaults.instanceMonthlyExecutions': 'WORKFLOW_LIMIT_DEFAULT_INSTANCE_MONTHLY_EXECUTIONS',
 };
 
 /** `value` as a positive finite number, else `fallback`. */

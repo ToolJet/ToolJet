@@ -58,6 +58,10 @@ export class WorkflowExecution {
   @Column({ name: 'trigger_type', type: 'varchar', nullable: true })
   triggerType: string | null;
 
+  /** Why the run was refused before it started (e.g. 'execution_quota'); NULL for runs that started. */
+  @Column({ name: 'refused_reason', type: 'varchar', nullable: true })
+  refusedReason: string | null;
+
   @Column({ name: 'trigger_source_app_id', type: 'uuid', nullable: true })
   triggerSourceAppId: string | null;
 
