@@ -12,6 +12,7 @@ import { components as RSComponents } from 'react-select';
 import Spinner from '@/_ui/Spinner';
 import { PLUGIN_DYNAMIC_CONNECTION_PARAM_KEYS } from './constants';
 import { getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
+import { QUERY_FIELD_HELPER_CLASS_NAME } from '@/AppBuilder/panelLayout';
 
 const DynamicSelector = ({
   operation,
@@ -27,6 +28,7 @@ const DynamicSelector = ({
   computeSelectStyles,
   disableMenuPortal = false,
   queryName,
+  animateMenu = false,
   propertyKey,
   value,
   fxEnabled = false,
@@ -761,6 +763,7 @@ const DynamicSelector = ({
               }}
             >
               <Select
+                animateMenu={animateMenu}
                 options={fetchedData}
                 value={getCurrentValue()}
                 onChange={handleSelectionChange}
@@ -853,7 +856,7 @@ const DynamicSelector = ({
         </div>
       )}
 
-      {description && <div>{description}</div>}
+      {description && <div className={QUERY_FIELD_HELPER_CLASS_NAME}>{description}</div>}
     </div>
   );
 };

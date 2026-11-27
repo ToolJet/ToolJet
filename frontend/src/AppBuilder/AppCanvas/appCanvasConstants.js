@@ -7,7 +7,7 @@ export const HIDDEN_COMPONENT_HEIGHT = 0;
 
 export const CANVAS_WIDTHS = Object.freeze({
   deviceWindowWidth: 450,
-  leftSideBarWidth: 48,
+  leftSideBarWidth: 54,
   rightSideBarWidth: 300,
 });
 
@@ -27,7 +27,7 @@ export const DEFAULT_CANVAS_WIDTH = 1292;
 
 export const APP_HEADER_HEIGHT = 48;
 
-export const QUERY_PANE_HEIGHT = 40; // This represents pane that contains trigger to toggle query panel
+export const QUERY_PANE_HEIGHT = 38; // Collapsed runtime bar height
 
 // The AI chat panel: a fixed 400px, border included (popover.scss `.PopoverContent.tooljetai` matches it).
 export const AI_CHAT_WIDTH = 400;
@@ -36,8 +36,6 @@ export const LEFT_SIDEBAR_WIDTH = {
   tooljetai: AI_CHAT_WIDTH,
   // Wider than the default: see `.PopoverContent.security`. The canvas has to clear it or it covers the app.
   security: 520,
-  // `.PopoverContent.access` is 420 wide: at the default the panel covered the app's left edge and the locked banner.
-  access: 420,
   default: 350,
 };
 

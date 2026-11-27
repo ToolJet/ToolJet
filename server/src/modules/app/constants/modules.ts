@@ -11,6 +11,7 @@ export enum MODULES {
   PLUGINS = 'Plugins',
   GLOBAL_DATA_SOURCE = 'DATA_SOURCE',
   DATA_QUERY = 'DataQueries',
+  QUERY_LIBRARY = 'QueryLibrary',
   THREAD = 'Thread',
   COMMENT = 'Comment',
   FOLDER = 'Folder',

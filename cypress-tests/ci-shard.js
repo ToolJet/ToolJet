@@ -40,7 +40,8 @@ function expandPattern(pattern) {
 function listSpecs(configFile) {
   const config = require(path.resolve(configFile));
   const patterns = [].concat(config.e2e.specPattern);
-  return [...new Set(patterns.flatMap(expandPattern))];
+  const excluded = [].concat(config.e2e.excludeSpecPattern || []).map(globToRegex);
+  return [...new Set(patterns.flatMap(expandPattern))].filter((spec) => !excluded.some((regex) => regex.test(spec)));
 }
 
 function pickShardSpecs({ configFile, index, total, groups }) {
@@ -65,4 +66,4 @@ function pickShardSpecs({ configFile, index, total, groups }) {
   return specs.filter((spec) => mine.has(spec));
 }
 
-module.exports = { pickShardSpecs };
+module.exports = { pickShardSpecs, listSpecs };

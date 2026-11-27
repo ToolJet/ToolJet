@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button } from '@/components/ui/Button/Button';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
+import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
 import cx from 'classnames';
 import './debuggerHeader.scss';
 
@@ -25,24 +26,15 @@ export const SidebarDebuggerHeader = ({ darkMode, onClear, onClose, activeTab, o
       <div className="debugger-header-top">
         <span className="debugger-header-title">Debugger</span>
         <div className="debugger-header-actions">
-          <Button
-            iconOnly
+          <PanelIconButton
+            label="Clear logs"
             leadingIcon="trash"
             onClick={onClear}
-            variant="ghost"
             size="medium"
-            isLucid={true}
+            isLucid
             data-cy="debugger-clear-button"
           />
-          <Button
-            iconOnly
-            leadingIcon="x"
-            onClick={onClose}
-            variant="ghost"
-            size="medium"
-            isLucid={true}
-            data-cy="debugger-close-button"
-          />
+          <PanelCloseButton label="Close debugger" onClose={onClose} dataCy="debugger-close-button" />
         </div>
       </div>
       <div className="debugger-tabs-container" role="tablist">

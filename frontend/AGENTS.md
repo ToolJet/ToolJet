@@ -41,6 +41,11 @@ On top of the above:
 - New widgets MUST be lazy-loaded
 - `useBatchedUpdateEffectArray` for batched state updates
 - Widget components must be registered in `AppBuilder/WidgetManager/componentTypes.js`
+- Editor panel chrome (left panel, right panel) comes from `AppBuilder/Shared/Panel`: `PanelHeader` (48px pinned title row), `PanelIconButton` (a tooltipped icon-only button: its required `label` is both the `aria-label` and the `ToolTip`), `PanelCloseButton` (the named X, one line over it), `PanelEmptyState` / `NoMatchesEmptyState`, `PanelSectionHeader` (collapsible section: 12/500 title, muted count, trailing caret). Do not hand-roll a panel header, close button, section header or no-match state. Every icon-only button needs an `aria-label` (`panelSourceAudit` `[UB-04]`) — the numbers live in `Shared/Panel/panel.scss`
+  - Panel names come from one registry in `AppBuilder/panelLayout.js`: `SIDEBAR_ITEMS` (rail item, panel title, close label), `RIGHT_PANEL_ITEMS` (right panel close labels), `RUNTIME_PANEL_ITEMS` (drawer tabs). Use `getPanelCloseLabel` / `getRuntimeToggleLabel`, never a literal
+  - Shared control specs are SCSS mixins in `Shared/Panel/_mixins.scss` (`focus-ring`, `panel-search-input`, `panel-control`, `panel-row`, `panel-switch`, `panel-overlay-surface`); they emit nothing until an editor selector includes them. Bootstrap controls are sized under the `.tj-panel` class on the three panel roots (left panel, right panel, bottom drawer); editor overlays take the surface under `body.app-builder-chrome`
+  - Page row menus keep their action targets separate from the page being edited. `pageMenuSlice` owns the dialog targets. `AppBuilder` hosts the page delete and permission dialogs and the query delete and permission dialogs, so the right panel's header menus work with the Pages or Queries panel closed. Never mount these dialogs inside a panel. The Runtime Drawer uses the measured Code panel edge when Code is docked, including any space already reserved for the right sidebar.
+  - Guards: `src/AppBuilder/__tests__/panelSourceAudit.spec.js` (source rules) and the panels Cypress harness (`cypress-tests/cypress/e2e/happyPath/appbuilder/panels/*`, run with `cypress-panels.config.js`), which measures every panel in both themes at 1440x960 and 683x600
 
 ## Conventions
 
@@ -51,6 +56,11 @@ On top of the above:
 - Prefer Tailwind over Bootstrap for new code; do not extend legacy `react-bootstrap` usage
 - Use typography utilities (`tw-font-title-default`, `tw-font-body-default`) instead of ad-hoc font-size/weight
 - Design tokens: `frontend/src/_styles/designtheme.scss` + `frontend/tailwind.config.js`
+- **Editor chrome never styles a customer's app.** The canvas (and the overlays and modals its widgets open) must render exactly as in the Viewer.
+  - Chrome type and colour variables (`--app-builder-*`, `--editor-text-*`) live on `<body>` only while editing, via `useAppBuilderChrome`. Writing to `<body>` is the exception to "no direct DOM manipulation", because chrome portals render there.
+  - Chrome text that needs AA on dark panels reads `var(--editor-text-accent|danger|success, <shared token>)` or `tw-text-editor-text-danger|success`, never the shared token alone.
+  - Widgets reset those variables (`theme.scss`). An overlay a widget renders (react-bootstrap `Tooltip`/`Popover`, `react-tooltip`) must carry `tj-widget-overlay`.
+  - The guard is `cypress/e2e/happyPath/appbuilder/panels/canvasParity.cy.js` (editor vs Viewer).
 
 ### Imports
 
@@ -179,7 +189,8 @@ Update the closest guide in the same PR when a feature gains a new invariant, co
 - Unused imports
 - Missing `key` props in `.map()`
 - Missing `shallow` in `useStore` selectors
-- Direct DOM manipulation (canvas drop calculations excepted)
+- Direct DOM manipulation (canvas drop calculations and `useAppBuilderChrome`'s `<body>` scope excepted)
+- A widget overlay (tooltip, popover) without `tj-widget-overlay`, or chrome reading `--text-accent/-danger/-success` without the `--editor-text-*` wrapper
 
 ## Decisions log
 
@@ -197,3 +208,25 @@ Widget-level CSS class (shipped 2026-06):
 - Legacy non-revamped widgets (~24, mostly deprecated V1 duplicates) render the field as a top-level control rather than grouped — accepted, no wiring on the sunsetting path
 - v1 is static + `{{}}`-bound class only; imperative runtime control (CSA `setCustomClass`) deferred to v2
 - Gated behind the `customStyling` license flag (same flag as app/workspace Custom CSS, which it depends on), read via `useStore((s) => s.license.featureAccess?.customStyling)`. Two gates: the Inspector hides the control, and `RenderWidget.jsx` skips appending the class. **The saved value is never erased** — re-enabling the license restores the classes, no migration or cleanup
+
+## Shared version lifecycle
+
+Modules is the lifecycle reference. `Header/VersionManager/VersionLifecycleContext` supplies normalized `DRAFT`/`PUBLISHED` rows, selected version/environment, Released pointer, capabilities, notices and async actions. `useAppVersionLifecycle` preserves app/module permissions and Git behavior; `QueryLibrary/useLibraryVersionLifecycle` adapts workspace query APIs and disables Git. Adapters do not render dialogs or invent app identities.
+
+Query Library uses the same version picker and Save/Create draft/Edit details/Promote/Release/dependency dialogs as Modules. Multiple named drafts are independent and editable only in Development. Saving freezes content and metadata while preserving the draft UUID; saved metadata is never editable. Names use the existing shared form validation (required, at most 25 characters), descriptions at most 500 characters. Explicit IDs determine draft/saved status; labels never do. Dismissing the dependency warning preserves the current selection.
+
+Browser verification: `cypress-tests/cypress/e2e/happyPath/platform/eeTestcases/queryLibrary/versionLifecycle.cy.js`; shared renderer regressions: `VersionManager/__tests__/integration/lifecycleParity.spec.jsx` and `moduleLifecycle.spec.jsx`. Consumer credentials/authorization remain unchanged; Query Library has no Git integration.
+
+Query Library consumer creation keeps query/snapshot selection local in the existing Library editor until Create query sends both UUIDs. Draft autosave overlays cover only unsent, in-flight or failed revisions; successful revisions yield to fresh server data. Session exit clears retry/display state but retains transport tails by workspace/query/draft until settled, so a new session cannot overtake old writes. Creating a draft selects its UUID together with the configured Development environment only while the request still owns selection.
+
+- Library promotion follows the selected saved UUID into its returned environment atomically. Delayed promotion must not steal a different query, session, version or environment selection.
+
+Workflows are Query Library consumers too. The workflow editor's "Add new node" list stages a Query library pick in `FlowBuilder/BlockOptions` (the same Library editor plus Cancel/Create node), and `addNewNode` takes the picked options as `initialOptions`, so the node is created already pinned. The Library editor rendered with `queryName === 'workflowNode'` hides RunJS versions and drafts, and queries with nothing else. On save, a Query Library node's `inputs` are replaced, not deep-merged (`workflowQuerySlice.updateQueryWithAPI`). The node menu's "Add to query library" reuses `AddToLibraryModal` with an `onAdd` prop (no component names to map) and `workflowQuerySlice.addQueryToLibrary`. Query library is left out of the agent tool list, and `canBeAgentTool` refuses a drag onto an agent's tool handle. The node config's Source dropdown shows Query library only on a node that already is one.
+
+## Query Library license and edition composition
+
+Public QueryLibrary entry components are edition-selected facades, and the public state slice keeps an inert shape for ordinary panels. EE supplies editor components, lifecycle adapter, feature state, browser execution and draft transport through existing module/slice registries. Pure input, snapshot-selection and environment helpers remain shared. Cloud selects the EE implementation.
+
+Discovery and local execution require explicit server-computed queryLibraryEnabled === true; absence/loading/failure denies access. Routes register by edition, then the selected page loads the workspace license before any management request. Workspace access loads clear prior flags and ignore late responses from a different workspace/request. Released/public consumers request access for the consumer app workspace. Runtime uses selected nested queryPanel/dataQuery actions, preserving autosave queues, cancellation and session checks. The app builder's `dataQuerySlice` is untouched by the library: in EE, `queryLibraryDataQuerySlice` wraps its actions (wired in `_stores/store.js`) and runs the library versions only in the library editor; everywhere else the app's own actions run.
+
+The Query Library page has no app builder shell, so it mounts the app builder's query surfaces itself: `QueryDataPane surface="left"` (no `onClose`, so no close button), then `QueryManager surface="right"` inside the `right-sidebar-query-configuration` wrapper (the right-surface styles and the preview's sizing key off that class), then the "Used by" rail. It also calls `useQueryAutosave` and wraps the editor in `QueryKeyHooks`, which the app builder gets from its runtime panel and right sidebar. Restyle the shared surfaces in `_styles/queryManager.scss`; `query-library.scss` only holds the page grid and the rail.

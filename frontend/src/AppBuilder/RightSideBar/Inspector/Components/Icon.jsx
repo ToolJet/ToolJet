@@ -165,7 +165,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
 
   items.push({
     id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    title: `${i18next.t('widget.common.additionalActions', 'Additional actions')}`,
     isOpen: true,
     children: additionalActions?.map((property) => {
       const paramType = property === 'Tooltip' ? 'general' : 'properties';

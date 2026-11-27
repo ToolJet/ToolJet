@@ -3,20 +3,13 @@
   flex-direction: column;
   height: 100%;
 
-  // Header section
-  .global-settings-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    border-bottom: 1px solid var(--border-weak, #e4e7eb);
+  .global-settings-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 
-    .global-settings-header-title {
-      font-family: 'IBM Plex Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 20px;
-      color: var(--text-default);
+    > * {
+      flex-shrink: 0;
     }
   }
 
@@ -42,7 +35,7 @@
     // Helper text styling
     [data-cy="helper-text"] {
       font-family: 'IBM Plex Sans', sans-serif;
-      font-size: 11px;
+      font-size: var(--app-builder-small-font-size, 11px);
       font-style: normal;
       font-weight: 400;
       line-height: 16px;
@@ -189,7 +182,7 @@
       padding: 7px 12px;
       border: 1px solid var(--border-default, #ccd1d5);
       border-right: none;
-      border-radius: 6px 0 0 6px;
+      border-radius: 8px 0 0 8px;
       background: var(--background-surface-layer-01);
       font-family: 'IBM Plex Sans', sans-serif;
       font-size: 12px;
@@ -209,7 +202,7 @@
       height: 32px;
       padding: 7px;
       border: 1px solid var(--border-default, #ccd1d5);
-      border-radius: 0 6px 6px 0;
+      border-radius: 0 8px 8px 0;
       background: var(--background-surface-layer-01);
       font-family: 'IBM Plex Sans', sans-serif;
       font-size: 12px;

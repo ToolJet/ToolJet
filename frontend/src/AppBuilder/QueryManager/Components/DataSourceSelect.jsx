@@ -2,18 +2,21 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
-import { defaultSources, workflowDefaultSources } from '../constants';
+import { defaultSources, workflowDefaultSources, LIBRARY_UNSUPPORTED_KINDS } from '../constants';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { Virtuoso } from 'react-virtuoso';
 import { canCreateDataSource } from '@/_helpers';
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
+import { isQueryLibraryMode } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import { ToolTip } from '@/_components';
 import { buildDataSourceFolderGroups } from './dataSourceFolderGrouping';
+import { stageLibrarySource } from './DataSourcePicker';
 
 const ITEM_HEIGHTS = {
   'defaults-header': 40,
@@ -51,6 +54,7 @@ function DataSourceSelect({
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   const sampleDataSource = useStore((state) => state.sampleDataSource);
+  const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
   const storeDataSourceFolders = useStore((state) => state.dataSourceFolders);
   const dataSourceFolders = dataSourceFoldersProp ?? storeDataSourceFolders;
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
@@ -76,7 +80,20 @@ function DataSourceSelect({
     }
   }, [selectRef]);
 
+  const queryLibraryAccess = useStore((state) => state.license.featureAccess);
+  const hasCreateCallback = !!onQueryCreate;
   const handleChangeDataSource = (source) => {
+    if (source.kind === 'library') {
+      // A library consumer needs a query and version first: open the body card's staged picker instead of creating.
+      stageLibrarySource(source);
+      useStore.getState().queryPanel.setSelectedQuery(null);
+      // The staged picker lives in the query editor; nothing else opens it while no query is selected.
+      useStore.getState().setActiveRightSideBarTab('query');
+      useStore.getState().setRightSidebarOpen(true);
+      setPreviewData(null);
+      if (!skipClosePopup) closePopup();
+      return;
+    }
     const extraProps = { callbackFunction: onQueryCreate };
     if (folderId) extraProps.folderId = folderId;
     createDataQuery(source, false, {}, 'canvas', null, extraProps);
@@ -135,7 +152,14 @@ function DataSourceSelect({
 
     // Defaults section
     const staticSources = dataSources?.filter((gds) => gds.type === DATA_SOURCE_TYPE.STATIC) || [];
-    const defaultsList = workflowDataSources ? defaultDataSources || [] : staticSources;
+    // A query library can't hold library/runpy/workflows queries. Callback-driven menus (component Add query,
+    // folder Add query) can't wait for the staged library picker; the workflow node list stages it itself.
+    const defaultsList = (workflowDataSources ? defaultDataSources || [] : staticSources).filter(
+      (ds) =>
+        !(hasCreateCallback && ds.kind === 'library') &&
+        (ds.kind !== 'library' || isQueryLibraryEnabled(queryLibraryAccess)) &&
+        (!isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(ds.kind))
+    );
     const filteredDefaults = searchTerm
       ? defaultsList.filter((ds) => {
           const displayName = workflowDataSources
@@ -207,9 +231,11 @@ function DataSourceSelect({
     dataSources,
     defaultDataSources,
     workflowDataSources,
+    hasCreateCallback,
     defaultsCollapsed,
     allowNewFolder,
     createFolder,
+    isQueryLibrary,
     dataSourceFolders,
     expandedFolders,
   ]);
@@ -355,6 +381,9 @@ function DataSourceSelect({
 
   return (
     <div
+      // In the editor the overlay surface (Shared/Panel/panel.scss) overrides this card's look; ee
+      // Workflows renders the same picker and keeps it.
+      className="ds-select-card"
       style={{
         width: '268px',
         border: '1px solid var(--border-weak, #e4e7eb)',
@@ -368,8 +397,21 @@ function DataSourceSelect({
       onKeyDown={handleKeyDown}
     >
       {/* Search */}
-      <div style={{ padding: '4px 2px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', padding: '7px 12px' }}>
+      <div style={{ padding: '8px' }}>
+        {/* The panel search field (Shared/Panel/_mixins.scss panel-search-input): 32px, 8px radius. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxSizing: 'border-box',
+            height: '32px',
+            padding: '0 12px',
+            border: '1px solid var(--border-default)',
+            borderRadius: '8px',
+            background: 'var(--background-surface-layer-01)',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '18px' }}>
             <Search width="13.33" viewBox="0 0 20 20" fill="var(--icon-default)" />
           </div>

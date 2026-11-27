@@ -28,7 +28,14 @@ export enum DataSourceScopes {
   GLOBAL = 'global',
 }
 
-export const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+export const DefaultDataSourceKinds: DefaultDataSourceKind[] = [
+  'restapi',
+  'runjs',
+  'runpy',
+  'tooljetdb',
+  'workflows',
+  'library',
+];
 
 // Set on sample data source options when no restricted role could be provisioned.
 export const SAMPLE_SQL_DISABLED_KEY = 'sample_sql_disabled';

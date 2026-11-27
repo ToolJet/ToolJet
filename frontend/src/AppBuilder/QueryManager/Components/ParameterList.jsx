@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ParameterDetails, { PillButton } from './ParameterDetails';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { Fade, OverlayTrigger, Popover } from 'react-bootstrap';
 import ParameterForm from './ParameterForm';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
 import { generateCypressDataCy } from '../../../modules/common/helpers/cypressHelpers.js';
+import { getQueryPopoverMotion, QUERY_FIELD_LABEL_CLASS_NAME } from '@/AppBuilder/panelLayout';
 
 const ParameterList = ({
   parameters = [],
@@ -12,10 +13,14 @@ const ParameterList = ({
   handleParameterRemove,
   darkMode,
   containerRef,
+  label = 'Parameters',
+  idPrefix = '',
+  noun,
 }) => {
   const [showMore, setShowMore] = useState(false);
   const [selectedParameter, setSelectedParameter] = useState();
   const [formattedParameters, setFormattedParameters] = useState([]);
+  const parameterMotion = getQueryPopoverMotion('parameter');
   const containerWidth = containerRef.current?.offsetWidth || 0.8 * document.body.clientWidth - 635;
 
   useEffect(() => {
@@ -38,7 +43,7 @@ const ParameterList = ({
   }, [JSON.stringify(parameters), containerWidth]);
 
   const handleClickOutside = (event) => {
-    if (showMore && event.target.closest('#parameter-more-popover') === null) {
+    if (showMore && event.target.closest(`#${idPrefix}parameter-more-popover`) === null) {
       setShowMore(false);
     }
   };
@@ -55,13 +60,13 @@ const ParameterList = ({
   }, [showMore]);
 
   return (
-    <div className="d-flex">
+    <div className="d-flex query-parameter-list">
       <p
-        className="text-placeholder font-weight-medium"
+        className={`text-placeholder font-weight-medium ${QUERY_FIELD_LABEL_CLASS_NAME}`}
         style={{ marginRight: '16px', marginBottom: '0px', width: '100px' }}
         data-cy="query-parameter-label"
       >
-        Parameters
+        {label}
       </p>
       {formattedParameters
         .filter((param) => param.isVisible)
@@ -69,6 +74,8 @@ const ParameterList = ({
           return (
             <ParameterDetails
               isEdit
+              idPrefix={idPrefix}
+              noun={noun}
               key={parameter.name}
               onSubmit={(param) => handleParameterChange(parameter.index, param)}
               onRemove={() => handleParameterRemove(parameter.index)}
@@ -94,16 +101,20 @@ const ParameterList = ({
         placement={'bottom-end'}
         rootClose={true}
         show={showMore}
+        transition={parameterMotion.transition ? Fade : false}
         overlay={
           <Popover
-            id="parameter-more-popover"
-            className={`query-manager-sort-filter-popup  ${darkMode && 'popover-dark-themed theme-dark dark-theme'}`}
+            id={`${idPrefix}parameter-more-popover`}
+            className={`query-manager-sort-filter-popup ${parameterMotion.className} ${
+              darkMode && 'popover-dark-themed theme-dark dark-theme'
+            }`}
             style={{ minWidth: '270px', maxWidth: 'fit-content' }}
           >
             {selectedParameter ? (
               <ParameterForm
                 darkMode={darkMode}
                 isEdit={true}
+                noun={noun}
                 name={selectedParameter.name}
                 defaultValue={selectedParameter.defaultValue}
                 onSubmit={(param) => {
@@ -129,6 +140,7 @@ const ParameterList = ({
                       <span key={parameter.name} data-list-item-id={parameter.name}>
                         <PillButton
                           name={parameter.name}
+                          idPrefix={idPrefix}
                           onRemove={() => handleParameterRemove(parameter.index)}
                           marginBottom
                           onClick={() => setSelectedParameter(parameter)}
@@ -151,7 +163,13 @@ const ParameterList = ({
           )}
         </span>
       </OverlayTrigger>
-      <ParameterDetails onSubmit={handleAddParameter} darkMode={darkMode} otherParams={formattedParameters} />
+      <ParameterDetails
+        onSubmit={handleAddParameter}
+        darkMode={darkMode}
+        otherParams={formattedParameters}
+        idPrefix={idPrefix}
+        noun={noun}
+      />
     </div>
   );
 };

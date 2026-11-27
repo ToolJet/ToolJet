@@ -1,39 +1,36 @@
+import { useVersionLifecycle } from '@/AppBuilder/Header/VersionManager/VersionLifecycleContext';
+import { withAppVersionLifecycle } from '@/AppBuilder/Header/VersionManager/AppVersionLifecycleProvider';
 import React, { useState } from 'react';
 import cx from 'classnames';
-import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import ReleaseConfirmation from '@/AppBuilder/Header/ReleaseConfirmation';
-import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
 
 import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
-import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components/ToolTip';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
+import { appsService } from '@/_services';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useVersionActionRequest } from '@/AppBuilder/_utils/versionActions';
 import { NESTED_WORKFLOW_PINS_BLOCKED } from '@/AppBuilder/Header/NestedWorkflowPinsBlockedDialog';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
 const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default', darkMode = false }) {
-  const { moduleId } = useModuleContext();
+  const { versions, selectedVersionId, releasedVersionId, capabilities = {}, actions } = useVersionLifecycle();
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
-  const { isReleaseVersionEnabled } = getCanPromoteAndRelease();
-  const { isVersionReleased, updateReleasedVersionId, appId, versionToBeReleased, name, releasedVersionId } = useStore(
+  const { moduleId } = useModuleContext();
+  const isReleaseVersionEnabled = capabilities.canRelease;
+  const versionToBeReleased = version?.id || selectedVersionId;
+  const name = version?.name || versions.find((v) => v.id === versionToBeReleased)?.name;
+  const isVersionReleased = releasedVersionId === versionToBeReleased;
+  const { appId, updateReleasedVersionId } = useStore(
     (state) => ({
-      releasedVersionId: state.releasedVersionId,
-      isVersionReleased: version
-        ? state.releasedVersionId === version.id
-        : state.releasedVersionId === state.selectedVersion?.id,
-      name: version?.name || state?.selectedVersion?.name,
-      isEditorFreezed: state.isEditorFreezed,
       updateReleasedVersionId: state.updateReleasedVersionId,
       appId: state.appStore.modules[moduleId]?.app?.appId ?? state.appId,
-      versionToBeReleased: version?.id || state.currentVersionId,
-      // selectedVersionId: state.selectedVersion.id,
     }),
     shallow
   );
@@ -41,14 +38,12 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
 
   const releaseVersion = () => {
     setIsReleasing(true);
-    appsService
-      .releaseVersion(appId, versionToBeReleased, releasedVersionId ?? '')
+    actions
+      .release(versionToBeReleased)
       .then(() => {
         toast(`Version ${name} released`, {
           icon: '🚀',
         });
-
-        updateReleasedVersionId(versionToBeReleased);
 
         setIsReleasing(false);
         setShowConfirmation(false);
@@ -78,20 +73,7 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
         }
         setIsReleasing(false);
         setShowConfirmation(false);
-        try {
-          useStore.getState().debugger.log({
-            logLevel: 'error',
-            type: 'component',
-            key: 'Release Failed',
-            message: errorMessage,
-            description: errorDetails || errorMessage,
-            error: { message: errorMessage, description: errorDetails || errorMessage },
-            errorTarget: 'Version',
-            timestamp: new Date().toISOString(),
-          });
-        } catch (_) {
-          // debugger may not be available
-        }
+        actions.reportError?.('Release Failed', errorMessage, errorDetails || errorMessage);
       });
   };
 
@@ -119,6 +101,8 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
         <span onClick={(event) => event.stopPropagation()}>
           <ReleaseConfirmation
             show={showConfirmation}
+            darkMode={darkMode}
+            versionId={versionToBeReleased}
             onClose={() => setShowConfirmation(false)}
             onConfirm={onReleaseConfirm}
           />
@@ -152,6 +136,8 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
     <>
       <ReleaseConfirmation
         show={showConfirmation}
+        darkMode={darkMode}
+        versionId={versionToBeReleased}
         onClose={() => setShowConfirmation(false)}
         onConfirm={onReleaseConfirm}
       />
@@ -181,4 +167,4 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
   );
 };
 
-export default ReleaseVersionButton;
+export default withAppVersionLifecycle(ReleaseVersionButton);

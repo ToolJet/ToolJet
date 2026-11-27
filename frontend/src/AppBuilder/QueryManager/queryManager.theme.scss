@@ -57,7 +57,7 @@
     word-wrap: break-word;
     width: auto;
     height: auto;
-    font-size: 10px;
+    font-size: var(--app-builder-small-font-size, 10px);
     line-height: 13px;
     color: var(--slate11);
     
@@ -69,7 +69,7 @@
     .open-git-btn {
       margin-top: 5px;
       color: var(--indigo9);
-      font-size: 10px;
+      font-size: var(--app-builder-small-font-size, 10px);
       font-weight: 500;
       display: inline-block;
 
@@ -333,7 +333,7 @@
 }
 
 .datasource-picker-section-label {
-  font-size: 11px;
+  font-size: var(--app-builder-small-font-size, 11px);
   font-weight: 500;
   color: var(--text-placeholder);
   white-space: nowrap;

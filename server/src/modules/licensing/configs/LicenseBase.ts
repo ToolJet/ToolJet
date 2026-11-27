@@ -55,6 +55,7 @@ export default class LicenseBase {
   private _plan: string;
   private _isCustomGroups: boolean;
   private _modules: object;
+  private _queryLibrary: Terms['queryLibrary'];
   private _permissions: object;
   private _app: Terms['app'];
   private BASIC_PLAN_TERMS: Partial<Terms>;
@@ -133,6 +134,7 @@ export default class LicenseBase {
     this._features = licenseData?.features;
     this._ai = licenseData?.ai;
     this._modules = licenseData?.modules;
+    this._queryLibrary = licenseData?.queryLibrary;
     this._isModulesEnabled = licenseData?.modules?.enabled;
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
@@ -318,6 +320,14 @@ export default class LicenseBase {
     }
 
     return !!this._app?.['pages']?.features?.canvasPageFooter;
+  }
+
+  public get queryLibraryEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.queryLibrary?.enabled === true;
+    }
+    // Only an absent object opts valid older licenses in; malformed present terms deny access.
+    return this._queryLibrary === undefined || this._queryLibrary?.enabled === true;
   }
 
   public get moduleEnabled(): boolean {
@@ -681,6 +691,7 @@ export default class LicenseBase {
       ai: this.aiFeature,
       appWhiteLabelling: this.appWhiteLabelling,
       modulesEnabled: this.moduleEnabled,
+      queryLibraryEnabled: this.queryLibraryEnabled,
       customGroups: this.customGroups,
       appPagesAddNavGroupEnabled: this.appPagesAddNavGroupEnabled,
       appPagesHeaderAndLogoEnabled: this.appPagesHeaderAndLogoEnabled,

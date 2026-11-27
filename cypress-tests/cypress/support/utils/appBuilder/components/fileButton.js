@@ -3,7 +3,6 @@ import { fileButtonSelector } from "Selectors/appBuilder/components/fileButton";
 import {
   openNode,
   openSubNode,
-  backFromDetail,
   verifyNodeData,
 } from "Support/utils/appBuilder/inspectorTree";
 import { selectReactSelectOption } from "Support/utils/appBuilder/properties";

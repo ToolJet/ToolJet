@@ -44,7 +44,7 @@ export const formatRevisionLabel = (revision: string | undefined): string | unde
 };
 
 // Static widget-config properties (e.g. visibility) — same section every other widget's
-// DefaultComponent.jsx panel groups into "Additional Actions". Kept separate from the
+// DefaultComponent.jsx panel groups into "Additional actions". Kept separate from the
 // manifest-driven Properties list so dynamic CCL props never crowd these out.
 // disabledState is offered only to a component whose manifest declares controlState: anything else never reads
 // it, so the toggle would do nothing. It is listed even when the host config lacks it (the panel then renders

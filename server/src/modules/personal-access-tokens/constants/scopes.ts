@@ -125,6 +125,7 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   MODULES.METADATA, // instance metadata
   MODULES.FRONTEND_METRICS, // browser telemetry ingestion, not required by automation clients
   MODULES.CUSTOM_COMPONENT_LIBRARIES, // uploads code that runs inside apps; not granted pending a decision
+  MODULES.QUERY_LIBRARY, // workspace-wide query management remains denied pending an explicit token-access decision
   MODULES.ROOT, // health and version
   // Widens what pages may reach (their Content Security Policy); an admin's decision in the browser only.
   MODULES.CODE_PAGE_SECURITY,

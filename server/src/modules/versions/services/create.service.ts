@@ -1,3 +1,4 @@
+import { lockCarriedLibraryPins } from '@modules/query-library/locking';
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppVersion } from '@entities/app_version.entity';
@@ -135,6 +136,12 @@ export class VersionsCreateService implements IVersionsCreateService {
     );
     const dataSources = versionFrom?.dataSources.filter((ds) => ds.scope == DataSourceScopes.LOCAL); //Local data sources
     const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
+    await lockCarriedLibraryPins(manager, organizationId, [
+      ...globalQueries,
+      ...(dataSources ?? []).flatMap((source) =>
+        (source.dataQueries ?? []).map((query) => ({ ...query, kind: source.kind }))
+      ),
+    ]);
 
     const dataSourceMapping = {};
     const newDataQueries = [];

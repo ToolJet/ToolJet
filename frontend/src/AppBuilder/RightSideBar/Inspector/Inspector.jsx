@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
@@ -21,6 +21,7 @@ import {
 } from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
+import { useMenuDismiss } from './hooks/useMenuDismiss';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -30,8 +31,7 @@ import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
-import Student from '@/_ui/Icon/solidIcons/Student';
-import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
+import PanelDocumentationLink from '@/AppBuilder/Shared/Panel/PanelDocumentationLink';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import classNames from 'classnames';
@@ -52,7 +52,9 @@ import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
 import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
-import { Button } from '@/components/ui/Button/Button';
+import PanelCloseButton from '@/AppBuilder/Shared/Panel/PanelCloseButton';
+import { getPanelCloseLabel, getRuntimeToggleLabel } from '@/AppBuilder/panelLayout';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
@@ -67,7 +69,7 @@ import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
-    label: 'Inspect',
+    label: getRuntimeToggleLabel(false, 'inspect'),
     value: 'inspect',
     icon: <SquareDashedMousePointer size={16} color="var(--icon-weak)" />,
   },
@@ -224,6 +226,8 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
+  const closeHeaderActionsMenu = useCallback(() => setShowHeaderActionsMenu(false), []);
+  useMenuDismiss(showHeaderActionsMenu, closeHeaderActionsMenu, '#list-menu');
   const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
   // Its Styles tab is manifest-driven accordions (LibraryComponentStyles), laid out like a revamped widget's.
   const isLibraryComponent = component.component.component === 'LibraryComponent';
@@ -557,35 +561,14 @@ export const Inspector = ({
     return <Accordion items={items} />;
   };
 
-  const renderDocumentationLink = () => {
-    return (
-      <span className="widget-documentation-link">
-        <a
-          href={getDocsLink(componentMeta?.component)}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="widget-documentation-link"
-        >
-          <span>
-            <Student width={13} fill={'#3E63DD'} />
-            <small className="widget-documentation-link-text">
-              {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta:
-                  componentMeta.displayName === 'Toggle Switch (Legacy)'
-                    ? 'Toggle (Legacy)'
-                    : componentMeta.displayName === 'Toggle Switch'
-                      ? 'Toggle Switch'
-                      : componentMeta.component,
-              })}
-            </small>
-          </span>
-          <span>
-            <ArrowRight width={20} fill={'#3E63DD'} />
-          </span>
-        </a>
-      </span>
-    );
-  };
+  const componentDocsLabel = t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
+    componentMeta:
+      componentMeta.displayName === 'Toggle Switch (Legacy)'
+        ? 'Toggle (Legacy)'
+        : componentMeta.displayName === 'Toggle Switch'
+          ? 'Toggle Switch'
+          : componentMeta.component,
+  });
 
   const propertiesTab = isMounted && (
     <FallbackBoundary
@@ -673,20 +656,6 @@ export const Inspector = ({
     </FallbackBoundary>
   );
 
-  React.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showHeaderActionsMenu && event.target.closest('#list-menu') === null) {
-        setShowHeaderActionsMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ showHeaderActionsMenu })]);
-
   const renderAppNameInput = () => {
     if (isModuleContainer) {
       return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
@@ -727,6 +696,13 @@ export const Inspector = ({
         <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
           <div className={`panel-header-name ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           <div className="panel-header-actions">
+            {!isPackComponent && (
+              <PanelDocumentationLink
+                href={getDocsLink(componentMeta?.component)}
+                label={componentDocsLabel}
+                dataCy="widget-documentation-link"
+              />
+            )}
             {!isModuleContainer && (
               <>
                 <div data-cy={'component-inspector-options'}>
@@ -755,7 +731,7 @@ export const Inspector = ({
                                 <div className="list-item-popover-menu-option-icon">{option.icon}</div>
                                 <div
                                   className={classNames('list-item-option-menu-label', {
-                                    'color-tomato9': option.value === 'delete',
+                                    'tw-text-editor-text-danger': option.value === 'delete',
                                     'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
                                   })}
                                 >
@@ -787,13 +763,12 @@ export const Inspector = ({
                       </Popover>
                     }
                   >
-                    <Button
-                      iconOnly
+                    <PanelIconButton
+                      label="Component options"
                       leadingIcon="ellipsis-vertical"
                       onClick={() => setShowHeaderActionsMenu(true)}
-                      variant="ghost"
                       size="medium"
-                      isLucid={true}
+                      isLucid
                       data-cy="menu-icon"
                     />
                   </OverlayTrigger>
@@ -817,14 +792,10 @@ export const Inspector = ({
                 />
               </>
             )}
-            <Button
-              iconOnly
-              leadingIcon="x"
-              onClick={handleRightSidebarToggle}
-              variant="ghost"
-              size="medium"
-              isLucid={true}
-              data-cy="inspector-close-button"
+            <PanelCloseButton
+              label={getPanelCloseLabel('component')}
+              onClose={handleRightSidebarToggle}
+              dataCy="inspector-close-button"
             />
           </div>
         </div>
@@ -833,8 +804,6 @@ export const Inspector = ({
           {renderTabs()}
         </div>
       </div>
-      {/* A pack component has no page of its own in the docs yet. */}
-      {!isPackComponent && renderDocumentationLink()}
     </div>
   );
 };

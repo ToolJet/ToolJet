@@ -16,7 +16,6 @@ describe('Checkbox — events facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-Events-App`);
         cy.openApp();
         cy.dragAndDropWidget('Checkbox', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // ── On change ─────────────────────────────────────────────────────────────

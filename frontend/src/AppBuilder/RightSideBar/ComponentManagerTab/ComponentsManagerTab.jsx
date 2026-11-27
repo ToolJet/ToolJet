@@ -15,7 +15,8 @@ import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibra
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
-import { Button } from '@/components/ui/Button/Button';
+import PanelHeader from '@/AppBuilder/Shared/Panel/PanelHeader';
+import { NoMatchesEmptyState } from '@/AppBuilder/Shared/Panel/PanelEmptyState';
 import { ModuleManager } from '@/modules/Modules/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useLicenseStore } from '@/_stores/licenseStore';
@@ -23,6 +24,7 @@ import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import './styles.scss';
+import { getComponentPickerClassName, getPanelCloseLabel, SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 
 // Simple error boundary component for module errors
 class ModuleErrorBoundary extends React.Component {
@@ -53,7 +55,7 @@ class ModuleErrorBoundary extends React.Component {
 // TODO: scrolling
 // TODO: searching
 
-export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
+export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surface = 'right' }) => {
   const _shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
@@ -145,6 +147,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   );
 
   const handleToggle = () => {
+    if (onClose) return onClose();
     setActiveRightSideBarTab(null);
     setRightSidebarOpen(false);
   };
@@ -177,6 +180,15 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   filterComponentsRef.current = filterComponents;
 
+  // The SearchBox keeps its own text, so clearing from outside it remounts it empty (LP-32).
+  const [searchBoxKey, setSearchBoxKey] = useState(0);
+  const clearSearch = () => {
+    handleSearchQueryChange.cancel();
+    setSearchQuery('');
+    filterComponents('');
+    setSearchBoxKey((key) => key + 1);
+  };
+
   const { t } = useTranslation();
 
   function renderComponentCard(component, index) {
@@ -201,24 +213,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   function segregateSections() {
     if (filteredComponents.length === 0) {
       return (
-        <div className="empty">
-          <p className="empty-title">{t('widgetManager.noResults', 'No results found')}</p>
-          <p className={`empty-subtitle ${darkMode ? 'text-white-50' : 'text-secondary'}`}>
-            {t(
-              'widgetManager.tryAdjustingFilterMessage',
-              "Try adjusting your search or filter to find what you're looking for."
-            )}
-          </p>
-          <button
-            className=" btn-sm tj-tertiary-btn mt-3"
-            onClick={() => {
-              setSearchQuery('');
-              filterComponents('');
-            }}
-          >
-            {t('widgetManager.clearQuery', 'clear query')}
-          </button>
-        </div>
+        <NoMatchesEmptyState
+          term={searchQuery}
+          description="Search matches component names."
+          onClearSearch={clearSearch}
+          dataCy="components-no-matches"
+        />
       );
     }
 
@@ -271,9 +271,16 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   }
 
   const searchBox = () => {
+    const searchName =
+      activeTab === 'components'
+        ? t('globals.searchComponents', 'Search widgets')
+        : activeTab === 'custom'
+          ? t('globals.searchCustomComponents', 'Search components')
+          : t('globals.searchModules', 'Search modules');
     return (
       <div className={`input-icon tj-app-input ${isModuleEditor ? '' : 'mt-3'}`}>
         <SearchBox
+          key={searchBoxKey}
           dataCy={`widget-search-box`}
           initialValue={''}
           callBack={(e) => handleSearchQueryChange(e.target.value)}
@@ -281,37 +288,27 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             setSearchQuery('');
             filterComponents('');
           }}
-          placeholder={
-            activeTab === 'components'
-              ? t('globals.searchComponents', 'Search widgets')
-              : t('globals.searchModules', 'Search modules')
-          }
+          placeholder={searchName}
+          ariaLabel={searchName}
           customClass={`tj-widgets-search-input tj-text-xsm`}
           showClearButton={false}
-          width={266}
+          width={surface === 'left' ? '100%' : 266}
         />
       </div>
     );
   };
 
   return (
-    <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
+    <div className={`${getComponentPickerClassName(surface)} ${shouldFreeze ? 'disabled' : ''}`}>
       {isModuleEditor || edition === 'ce' ? (
         <>
-          <div className="panel-header">
-            <span className="panel-header-title">Components</span>
-            <div className="panel-header-actions">
-              <Button
-                iconOnly
-                leadingIcon="x"
-                onClick={handleToggle}
-                variant="ghost"
-                size="medium"
-                isLucid={true}
-                data-cy="components-close-button"
-              />
-            </div>
-          </div>
+          <PanelHeader
+            title={SIDEBAR_ITEMS.components.name}
+            onClose={handleToggle}
+            closeLabel={getPanelCloseLabel('components')}
+            closeDataCy="components-close-button"
+            divider={false}
+          />
           {hasLibraryChoices && (
             <div className="tw-px-4 tw-pt-3">
               <LibraryPicker value={library} choices={choices} onChange={pickLibrary} />
@@ -322,20 +319,13 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
         </>
       ) : (
         <>
-          <div className="panel-header">
-            <span className="panel-header-title">Add new component</span>
-            <div className="panel-header-actions">
-              <Button
-                iconOnly
-                leadingIcon="x"
-                onClick={handleToggle}
-                variant="ghost"
-                size="medium"
-                isLucid={true}
-                data-cy="components-close-button"
-              />
-            </div>
-          </div>
+          <PanelHeader
+            title={SIDEBAR_ITEMS.components.name}
+            onClose={handleToggle}
+            closeLabel={getPanelCloseLabel('components')}
+            closeDataCy="components-close-button"
+            divider={false}
+          />
           <Tabs
             activeKey={activeTab}
             onSelect={(key) => {

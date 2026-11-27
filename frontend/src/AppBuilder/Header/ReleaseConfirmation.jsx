@@ -1,36 +1,56 @@
-import React, { useState } from 'react';
+import { useVersionLifecycle } from '@/AppBuilder/Header/VersionManager/VersionLifecycleContext';
+import { withAppVersionLifecycle } from '@/AppBuilder/Header/VersionManager/AppVersionLifecycleProvider';
+import React, { useEffect, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '@/_styles/versions.scss';
-import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import ReleaseConfirmationExtras from './ReleaseConfirmationExtras';
 import { ReleaseScanGate, ReleaseCodeChanges } from '@/AppBuilder/_helpers/codeModeHooks';
 
-export default function ReleaseConfirmation(props) {
-  const { onClose, onConfirm, show } = props;
+function ReleaseConfirmation(props) {
+  const { onClose, onConfirm, show, appId, versionId } = props;
+  const [notices, setNotices] = useState([]);
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
-  const { name, selectedVersionId, appId, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } =
-    useStore(
-      (state) => ({
-        name: state?.selectedVersion?.name,
-        selectedVersionId: state?.selectedVersion?.id,
-        appId: state.appStore.modules.canvas?.app?.appId,
-        releasedVersionId: state.releasedVersionId,
-        versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
-        developmentVersions: state.developmentVersions,
-      }),
-      shallow
-    );
+  const {
+    resourceType,
+    versions,
+    selectedVersionId,
+    releasedVersionId,
+    notices: suppliedNotices = [],
+    actions,
+  } = useVersionLifecycle();
+  // The code-mode checks below are app-scoped requests; a library version has no app to check.
+  const isLibraryVersion = resourceType === 'library-query';
+  const name = versions.find((v) => v.id === (versionId || selectedVersionId))?.name;
+  const releasedVersionName = versions.find((v) => v.id === releasedVersionId)?.name;
+  const loadNotices = React.useRef(actions.loadReleaseNotices);
+  loadNotices.current = actions.loadReleaseNotices;
+  useEffect(() => {
+    setNotices([]);
+    if (!show || !loadNotices.current || !versionId) return;
+    let cancelled = false;
+    loadNotices
+      .current(versionId, appId)
+      .then((result) => !cancelled && setNotices(result))
+      .catch(() => !cancelled && setNotices([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [show, appId, versionId]);
+  const releaseNotices = actions.loadReleaseNotices
+    ? notices
+    : Array.isArray(suppliedNotices)
+      ? suppliedNotices
+      : suppliedNotices.release || [];
   // A full-screen view opened from this dialog needs the focus and the Escape key.
   const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
   const [releaseLocked, setReleaseLocked] = useState(false);
   const [scanLocked, setScanLocked] = useState(false);
-  const releasedVersionName =
-    versionsPromotedToEnvironment.find((v) => v.id === releasedVersionId)?.name ||
-    developmentVersions.find((v) => v.id === releasedVersionId)?.name;
+  const targetVersionId = versionId || selectedVersionId;
+
   return (
     <Modal
       show={show}
@@ -69,16 +89,30 @@ export default function ReleaseConfirmation(props) {
             ? `Are you sure you want to release version ${name}?`
             : `Releasing version ${name} will override ${releasedVersionName}. Are you sure you want to continue?`}
         </div>
-        <ReleaseConfirmationExtras
-          show={show}
-          appId={appId}
-          versionId={selectedVersionId}
-          releasedVersionId={releasedVersionId}
-          releasedVersionName={releasedVersionName}
-          onLockedChange={setReleaseLocked}
-        />
-        <ReleaseCodeChanges show={show} appId={appId} versionId={selectedVersionId} />
-        {show && <ReleaseScanGate appId={appId} versionId={selectedVersionId} onLockedChange={setScanLocked} />}
+        {releaseNotices.length > 0 && (
+          <ul
+            className="tw-mt-3 tw-mb-0 tw-p-0 tw-list-none tw-font-body-small tw-text-text-placeholder"
+            data-testid="library-release-notices"
+          >
+            {releaseNotices.map((notice) => (
+              <li key={notice}>{notice}</li>
+            ))}
+          </ul>
+        )}
+        {!isLibraryVersion && (
+          <ReleaseConfirmationExtras
+            show={show}
+            appId={appId}
+            versionId={targetVersionId}
+            releasedVersionId={releasedVersionId}
+            releasedVersionName={releasedVersionName}
+            onLockedChange={setReleaseLocked}
+          />
+        )}
+        {!isLibraryVersion && <ReleaseCodeChanges show={show} appId={appId} versionId={targetVersionId} />}
+        {show && !isLibraryVersion && (
+          <ReleaseScanGate appId={appId} versionId={targetVersionId} onLockedChange={setScanLocked} />
+        )}
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
@@ -91,3 +125,5 @@ export default function ReleaseConfirmation(props) {
     </Modal>
   );
 }
+
+export default withAppVersionLifecycle(ReleaseConfirmation);

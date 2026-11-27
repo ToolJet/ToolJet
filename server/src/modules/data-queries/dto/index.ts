@@ -83,3 +83,28 @@ export class ListTablesDto {
   @IsOptional()
   limit?: number;
 }
+
+export class RunLibraryQueryDto {
+  @IsObject()
+  @IsOptional()
+  inputs?: Record<string, unknown>;
+}
+
+export class AddToLibraryDto {
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @IsNotEmpty()
+  name: string;
+
+  // The app query's options as the client saw them; compared with the stored row to refuse a stale conversion.
+  @IsObject()
+  sourceOptions: Record<string, unknown>;
+
+  // The query logic for the library copy: app references already turned into `{{input.x}}`.
+  @IsObject()
+  libraryOptions: Record<string, unknown>;
+
+  // Input name -> the original expression the app fills it with.
+  @IsObject()
+  inputs: Record<string, string>;
+}

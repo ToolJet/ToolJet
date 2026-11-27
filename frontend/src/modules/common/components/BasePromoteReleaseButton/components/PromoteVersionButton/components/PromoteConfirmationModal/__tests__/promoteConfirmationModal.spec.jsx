@@ -54,6 +54,12 @@ const mockState = {
   releasedVersionId: null,
   selectedVersion: { id: 'v-1', name: 'v1' },
   developmentVersions: [{ id: 'v-1', name: 'v1' }],
+  getCanPromoteAndRelease: () => ({
+    canPromote: true,
+    canRelease: false,
+    isPromoteVersionEnabled: true,
+    isReleaseVersionEnabled: true,
+  }),
   appStore: { modules: { canvas: { app: { appId: 'app-1', creationMode: 'DEFAULT' } } } },
   isEditorOverlayOpen: false,
   promoteAppVersionAction: jest.fn(),

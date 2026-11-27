@@ -31,6 +31,7 @@ const RightTopHeaderButtons = ({ isModuleEditor, isAppUnsyncedToGit = false }) =
             without this OR, this wrapper never even mounts LifecycleCTAButton outside dev,
             so its own internal isUnsynced exception never gets a chance to run. */}
         {(isNotPromotedOrReleased || isWorkspaceGitApp || isAppUnsyncedToGit) && <LifecycleCTAButton />}
+        <div className="navbar-seperator header-share-separator" aria-hidden="true" />
         {/* need to review if we need this or not */}
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>

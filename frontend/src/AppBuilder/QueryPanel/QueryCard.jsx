@@ -8,10 +8,12 @@ import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
+import { isLibraryQueryLocked } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { EllipsisVerticalIcon } from 'lucide-react';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const { isModuleEditor } = useModuleContext();
@@ -25,6 +27,17 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+
+  const openQueryConfiguration = () => {
+    setSelectedQuery(dataQuery?.id);
+    setPreviewData(null);
+    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.QUERY);
+    setRightSidebarOpen(true);
+  };
+
+  const isLibraryLocked = useStore((state) => isLibraryQueryLocked(state, dataQuery.id));
 
   const renamingQueryId = useStore((state) => state.queryPanel.renamingQueryId);
   const setRenamingQuery = useStore((state) => state.queryPanel.setRenamingQuery);
@@ -40,6 +53,9 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
 
   const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
+  const hasOpenMenu = useStore(
+    (state) => state.queryPanel.showQueryHandlerMenu && state.queryPanel.menuQueryId === dataQuery.id
+  );
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isRestricted = dataQuery.permissions && dataQuery.permissions.length !== 0;
@@ -96,7 +112,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         }
         key={dataQuery.id}
         onClick={(e) => {
-          if (isQuerySelected) return;
+          if (isQuerySelected) {
+            openQueryConfiguration();
+            return;
+          }
           if (!shouldFreeze) {
             const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
             if (menuBtn && menuBtn.contains(e.target)) {
@@ -106,15 +125,15 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             }
           }
           setTimeout(() => {
-            setSelectedQuery(dataQuery?.id);
-            setPreviewData(null);
+            openQueryConfiguration();
           }, 0);
         }}
         role="button"
       >
         <div className="query-card-leading">
           <div className="query-icon d-flex">
-            <DataSourceIcon source={dataQuery} height={16} />
+            {/* A Query Library row has no kind until its version loads; it brings its icon source separately. */}
+            <DataSourceIcon source={dataQuery.librarySource ?? dataQuery} height={16} />
           </div>
           <div className="query-row-query-name">
             {isRenaming ? (
@@ -128,10 +147,11 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                 >
                   <span
                     ref={queryNameEleRef}
-                    className="text-truncate"
+                    // Only the selected query's name reads as editable; elsewhere the row is one click target.
+                    className={`text-truncate${isQuerySelected ? ' query-name-editable' : ''}`}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
-                      if (!shouldFreeze) setRenamingQuery(dataQuery.id);
+                      if (!shouldFreeze && !isLibraryLocked) setRenamingQuery(dataQuery.id);
                     }}
                   >
                     {decodeEntities(dataQuery.name)}
@@ -142,7 +162,9 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                     {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
                   </div>
                 </ToolTip>{' '}
-                {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
+                {!dataQuery.librarySource && !isQueryRunnable(dataQuery) && (
+                  <small className="mx-2 text-secondary">Draft</small>
+                )}
                 {localDs && (
                   <>
                     <a
@@ -166,18 +188,13 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         </div>
         {!shouldFreeze && hasPermissions && (
           <div
-            className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}
+            className="col-auto query-rename-delete-btn query-row-options d-flex"
             onClick={(e) => e.stopPropagation()}
           >
-            <ButtonComponent
-              iconOnly
-              onClick={(e) => {
-                if (!isQuerySelected) {
-                  setSelectedQuery(dataQuery?.id);
-                  setPreviewData(null);
-                }
-                toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`);
-              }}
+            <PanelIconButton
+              label="Query options"
+              aria-expanded={hasOpenMenu}
+              onClick={() => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`, dataQuery?.id)}
               size="small"
               variant="outline"
               className=""
@@ -185,7 +202,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
               data-cy={`query-handler-menu-${dataQuery.name.toLowerCase()}`}
             >
               <EllipsisVerticalIcon color="var(--icon-strong)" size={12} />
-            </ButtonComponent>
+            </PanelIconButton>
           </div>
         )}
       </div>

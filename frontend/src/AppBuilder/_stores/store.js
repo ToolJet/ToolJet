@@ -37,6 +37,8 @@ import { createCodeSearchSlice } from './slices/codeSearchSlice';
 import { createModuleSlice } from './slices/moduleSlice';
 import { createLibrarySlice } from './slices/librarySlice';
 import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
+import { createQueryLibrarySlice } from './slices/queryLibrarySlice';
+import { getEditionSpecificSlice } from '@/modules/common/helpers/getEditionSpecificSlice';
 import { createEditorOverlaySlice } from './slices/editorOverlaySlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
 import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
@@ -45,6 +47,15 @@ import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareG
 
 const exposeCompareProbe = compareGuard.exposeCompareProbe ?? (() => {});
 enableMapSet();
+
+// In EE the query library wraps the data query actions for its editor; elsewhere they are the app's own.
+const withQueryLibraryDataQuery = (slice, set, get) => ({
+  ...slice,
+  dataQuery: {
+    ...slice.dataQuery,
+    ...getEditionSpecificSlice('createQueryLibraryDataQuerySlice')(set, get, slice.dataQuery).dataQuery,
+  },
+});
 
 const useStore = create(
   zustandDevTools(
@@ -60,7 +71,7 @@ const useStore = create(
       ...createModeSlice(...state),
       ...createQueryPanelSlice(...state),
       ...createDataSourceSlice(...state),
-      ...createDataQuerySlice(...state),
+      ...withQueryLibraryDataQuery(createDataQuerySlice(...state), ...state),
       ...createUndoRedoSlice(...state),
       ...createResolvedSlice(...state),
       ...createLayoutSlice(...state),
@@ -83,6 +94,7 @@ const useStore = create(
       ...createModuleSlice(...state),
       ...createLibrarySlice(...state),
       ...createDataQueryFolderSlice(...state),
+      ...createQueryLibrarySlice(...state),
       ...createEditorOverlaySlice(...state),
       // component slices
       ...createFormComponentSlice(...state),

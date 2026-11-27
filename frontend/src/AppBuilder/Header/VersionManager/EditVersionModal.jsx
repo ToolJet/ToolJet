@@ -1,23 +1,16 @@
+import { useVersionLifecycle } from './VersionLifecycleContext';
+import { withAppVersionLifecycle } from './AppVersionLifecycleProvider';
+import { validateVersionName, validateVersionDescription } from './versionValidation';
 import React, { useState } from 'react';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { shallow } from 'zustand/shallow';
-import useStore from '@/AppBuilder/_stores/store';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionToEdit }) => {
-  const { moduleId } = useModuleContext();
+  const { versions, selectedVersionId, actions } = useVersionLifecycle();
+  const selectedVersion = versions.find((v) => v.id === selectedVersionId);
   const [isEditingVersion, setIsEditingVersion] = useState(false);
-  const { updateVersionNameAction, selectedVersion, appId } = useStore(
-    (state) => ({
-      updateVersionNameAction: state.updateVersionNameAction,
-      selectedVersion: state.selectedVersion,
-      appId: state.appId ?? state.appStore.modules[moduleId]?.app?.appId,
-    }),
-    shallow
-  );
 
   // Use versionToEdit if provided, otherwise fall back to selectedVersion
   const editingVersion = versionToEdit || selectedVersion;
@@ -27,23 +20,16 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
   const [nameError, setNameError] = useState('');
   const [descriptionError, setDescriptionError] = useState('');
   const { t } = useTranslation();
-
-  const validateVersionName = (value) => {
-    if (value.trim() === '') {
-      return t('editor.appVersionManager.emptyNameError', 'Version name should not be empty');
-    } else if (value.length > 25) {
-      return t('editor.appVersionManager.maxLengthError', 'Version name cannot exceed 25 characters');
-    } else if (/[\s~^:?*[\]\\@{]/.test(value.trim())) {
-      return 'Version name cannot contain spaces or special characters (~ ^ : ? * [ \\ @ {).';
-    }
-    return '';
+  const nameValidationMessage = (value) => {
+    const error = validateVersionName(value);
+    if (error === 'Version name should not be empty') return t('editor.appVersionManager.emptyNameError', error);
+    if (error === 'Version name cannot exceed 25 characters')
+      return t('editor.appVersionManager.maxLengthError', error);
+    return error;
   };
-
-  const validateVersionDescription = (value) => {
-    if (value.length > 500) {
-      return t('editor.appVersionManager.maxDescriptionLengthError', 'Description cannot exceed 500 characters');
-    }
-    return '';
+  const descriptionValidationMessage = (value) => {
+    const error = validateVersionDescription(value);
+    return error ? t('editor.appVersionManager.maxDescriptionLengthError', error) : '';
   };
 
   React.useEffect(() => {
@@ -61,8 +47,8 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
     setDescriptionError('');
 
     let hasError = false;
-    const hasNameError = validateVersionName(versionName);
-    const hasDescriptionError = validateVersionDescription(versionDescription);
+    const hasNameError = nameValidationMessage(versionName);
+    const hasDescriptionError = descriptionValidationMessage(versionDescription);
 
     if (hasDescriptionError) {
       setDescriptionError(hasDescriptionError);
@@ -78,17 +64,14 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
     if (hasError) return;
 
     setIsEditingVersion(true);
-    updateVersionNameAction(
-      appId,
-      editingVersion?.id,
-      versionName,
-      versionDescription,
-      () => {
+    actions
+      .editDraft(editingVersion?.id, { name: versionName, description: versionDescription })
+      .then(() => {
         toast.success('Version details updated successfully!');
         setIsEditingVersion(false);
         setShowEditAppVersion(false);
-      },
-      (error) => {
+      })
+      .catch((error) => {
         setIsEditingVersion(false);
         const errorMessage =
           error?.error === 'Already exists!'
@@ -96,8 +79,7 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
             : t('editor.appVersionManager.updateFailed', 'Failed to update version');
         setNameError(errorMessage);
         toast.error(errorMessage);
-      }
-    );
+      });
   };
 
   return (
@@ -130,7 +112,7 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
               onChange={(e) => {
                 const value = e.target.value;
                 setVersionName(value);
-                setNameError(validateVersionName(value));
+                setNameError(nameValidationMessage(value));
               }}
               className="form-control"
               data-cy="edit-version-name-input-field"
@@ -158,7 +140,7 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
               type="text"
               onChange={(e) => {
                 setVersionDescription(e.target.value);
-                setDescriptionError(validateVersionDescription(e.target.value));
+                setDescriptionError(descriptionValidationMessage(e.target.value));
               }}
               className="form-control edit-version-description"
               data-cy="edit-version-description-input-field"
@@ -208,4 +190,4 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
     </AlertDialog>
   );
 };
-export default EditVersionModal;
+export default withAppVersionLifecycle(EditVersionModal);

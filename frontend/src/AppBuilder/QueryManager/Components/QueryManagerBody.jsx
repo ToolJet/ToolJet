@@ -5,7 +5,15 @@ import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
-import { resolveQueryEditor } from '../utils';
+import { getQueryPluginSchemaForSurface, resolveQueryEditor } from '../utils';
+import {
+  getQueryDetailsClassName,
+  getQueryDetailsStyle,
+  getQueryDetailsOverflowStyle,
+  getQueryTypographyClassName,
+  isCodeQueryLayout,
+  PREVIEW_PANEL,
+} from '@/AppBuilder/panelLayout';
 import DataSourcePicker from './DataSourcePicker';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
@@ -26,12 +34,19 @@ import { getSubpath } from '@/_helpers/routes';
 import { appendBranchName } from '@/_helpers/active-branch';
 import { SquarePen } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
+import {
+  isQueryLibraryMode,
+  isLibraryQueryLocked,
+  viewedLibraryVersionId,
+  withViewedLibraryVersion,
+} from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { shallow } from 'zustand/shallow';
 
-export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null }) => {
+export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null, surface = 'bottom' }) => {
   const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const getResolvedValue = useStore((state) => state.getResolvedValue);
@@ -41,8 +56,14 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const sampleDataSource = useStore((state) => state.sampleDataSource);
   const currentEnvironment = useStore((state) => state.selectedEnvironment);
   const paramListContainerRef = useRef(null);
-  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
-  const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
+  // In the library editor a saved version picked in the version dropdown is shown (read-only) in place of the draft.
+  const selectedQuery = useStore((state) => withViewedLibraryVersion(state, state.queryPanel.selectedQuery), shallow);
+  const viewedLibraryVersion = useStore((state) => viewedLibraryVersionId(state, state.queryPanel.selectedQuery?.id));
+  const selectedDataSource = useStore((state) =>
+    isQueryLibraryMode(state)
+      ? state.queryPanel.resolveDataSourceForQuery(withViewedLibraryVersion(state, state.queryPanel.selectedQuery))
+      : state.queryPanel.selectedDataSource
+  );
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
   const [showLocalDataSourceDeprecationBanner, setshowLocalDataSourceDeprecationBanner] = useState(false);
@@ -54,6 +75,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
        - Ref PR #6763
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
+  const librarySessionId = useStore((state) => state.queryLibrary.sessionId);
+  const libraryWorkspaceId = useStore((state) => state.queryLibrary.workspaceId);
   const queryName = selectedQuery?.name ?? '';
 
   const editor = resolveQueryEditor({ selectedDataSource, selectedQuery });
@@ -62,7 +85,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
 
   const defaultOptions = useRef({});
 
-  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isFreezed = useStore(
+    (state) =>
+      state.getShouldFreeze(false, isModuleEditor) || isLibraryQueryLocked(state, state.queryPanel.selectedQuery?.id)
+  );
+  const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
 
   useEffect(() => {
     setDataSourceMeta(
@@ -94,8 +121,26 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     // Without this check, the old query's options would be written onto the newly selected query.
     const currentStoreQueryId = useStore.getState().queryPanel.selectedQuery?.id;
     if (currentStoreQueryId !== selectedQuery?.id) return;
+    if (
+      isQueryLibrary &&
+      (viewedLibraryVersion !== viewedLibraryVersionId(useStore.getState(), currentStoreQueryId) ||
+        librarySessionId !== useStore.getState().queryLibrary.sessionId ||
+        libraryWorkspaceId !== useStore.getState().queryLibrary.workspaceId)
+    )
+      return;
     const updatedOptions = cleanFocusedFields(newOptions);
-    updateDataQuery(deepClone({ ...options, ...updatedOptions }));
+    updateDataQuery(
+      deepClone({ ...options, ...updatedOptions }),
+      moduleId,
+      isQueryLibrary
+        ? {
+            sessionId: librarySessionId,
+            workspaceId: libraryWorkspaceId,
+            queryId: selectedQuery?.id,
+            versionId: viewedLibraryVersion,
+          }
+        : undefined
+    );
   };
 
   const optionchanged = (option, value) => {
@@ -112,46 +157,87 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     optionchanged(option, !currentValue);
   };
   const optionsChangedforParams = (newOptions) => {
-    updateDataQuery(deepClone(newOptions));
+    updateDataQuery(
+      deepClone(newOptions),
+      moduleId,
+      isQueryLibrary
+        ? {
+            sessionId: librarySessionId,
+            workspaceId: libraryWorkspaceId,
+            queryId: selectedQuery?.id,
+            versionId: viewedLibraryVersion,
+          }
+        : undefined
+    );
   };
 
-  const handleAddParameter = (newParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
-      const newOptions = {
-        ...prevOptions,
-        parameters: [...(prevOptions?.parameters ?? []), newParameter],
-      };
-      optionsChangedforParams(newOptions);
+  // Add/change/remove handlers for one named list in the query options: `inputs` in the library editor,
+  // `parameters` everywhere else.
+  const listHandlers = (key) => ({
+    handleAdd: (newItem) => {
+      const prevOptions = { ...options };
+      //check if name already used
+      if (!prevOptions[key]?.some((item) => item.name === newItem.name)) {
+        optionsChangedforParams({ ...prevOptions, [key]: [...(prevOptions[key] ?? []), newItem] });
+      }
+    },
+    handleChange: (index, updatedItem) => {
+      const prevOptions = { ...options };
+      //check if name already used
+      if (!prevOptions[key]?.some((item, idx) => item.name === updatedItem.name && index !== idx)) {
+        const updatedItems = [...prevOptions[key]];
+        updatedItems[index] = updatedItem;
+        optionsChangedforParams({ ...prevOptions, [key]: updatedItems });
+      }
+    },
+    handleRemove: (index) => {
+      const prevOptions = { ...options };
+      optionsChangedforParams({ ...prevOptions, [key]: prevOptions[key].filter((item, i) => index !== i) });
+    },
+  });
+  // A library query takes inputs instead of parameters; a library consumer fills its inputs in the Library editor.
+  const renderParameterLists = () => {
+    if (selectedQuery?.kind === 'library') return null;
+    if (isQueryLibrary) {
+      const inputHandlers = listHandlers('inputs');
+      return (
+        <div className="tw-mb-2" data-cy="query-inputs-list">
+          <ParameterList
+            label="Inputs"
+            idPrefix="inputs-"
+            noun="input"
+            parameters={options?.inputs}
+            handleAddParameter={inputHandlers.handleAdd}
+            handleParameterChange={inputHandlers.handleChange}
+            handleParameterRemove={inputHandlers.handleRemove}
+            darkMode={darkMode}
+            containerRef={paramListContainerRef}
+          />
+        </div>
+      );
     }
+    const parameterHandlers = listHandlers('parameters');
+    return (
+      <ParameterList
+        parameters={options.parameters}
+        handleAddParameter={parameterHandlers.handleAdd}
+        handleParameterChange={parameterHandlers.handleChange}
+        handleParameterRemove={parameterHandlers.handleRemove}
+        darkMode={darkMode}
+        containerRef={paramListContainerRef}
+      />
+    );
   };
-
-  const handleParameterChange = (index, updatedParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
-      const updatedParameters = [...prevOptions.parameters];
-      updatedParameters[index] = updatedParameter;
-      optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
-    }
-  };
-
-  const handleParameterRemove = (index) => {
-    const prevOptions = { ...options };
-    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-    optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
-  };
-  const [previewHeight, setPreviewHeight] = useState(40);
+  const [previewHeight, setPreviewHeight] = useState(PREVIEW_PANEL.collapsedPx);
 
   const calculatePreviewHeight = (height, previewPanelExpanded) => {
-    setPreviewHeight(previewPanelExpanded ? height : 40);
+    setPreviewHeight(previewPanelExpanded ? height : PREVIEW_PANEL.collapsedPx);
   };
   const renderDataSourcesList = () => {
     return (
       <div
         className={cx(`datasource-picker p-0`, {
-          'disabled ': isFreezed,
+          'disabled ': !isQueryLibrary && isFreezed,
         })}
       >
         <DataSourcePicker darkMode={darkMode} />
@@ -184,27 +270,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     updateDataQuery(options);
   };
 
-  let docLinkStatic = '';
-  switch (selectedDataSource?.kind) {
-    case 'restapi':
-      docLinkStatic = `https://docs.tooljet.com/docs/data-sources/restapi/querying-rest-api`;
-      break;
-    case 'tooljetdb':
-      docLinkStatic = `https://docs.tooljet.com/docs/tooljet-db/querying-tooljet-db`;
-      break;
-    case 'runjs':
-      docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-js`;
-      break;
-    case 'runpy':
-      docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-py`;
-      break;
-  }
-
   const renderQueryElement = () => {
     return (
       <div
         className={cx({
           'disabled ': isFreezed,
+          'query-code-layout': isCodeQueryLayout(surface, activeTab, selectedDataSource?.kind),
         })}
       >
         <div ref={paramListContainerRef} style={{ marginBottom: '16px' }}>
@@ -213,39 +284,14 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
               selectedDataSource?.kind === 'runpy' ||
               selectedDataSource?.kind === 'tooljetdb' ||
               (selectedDataSource?.kind === 'restapi' && selectedDataSource?.type !== 'default')) && (
-              <>
-                <div style={{ marginBottom: '2px' }}>
-                  {`To know more about querying ${selectedDataSource?.kind} data,`}
-                  &nbsp;
-                  <a
-                    href={docLinkStatic}
-                    target="_blank"
-                    style={{
-                      marginLeft: '0px !important',
-                      color: 'hsl(226, 70.0%, 55.5%)',
-                      textDecoration: 'underline',
-                    }}
-                    rel="noreferrer"
-                  >
-                    {t('globals.readDocumentation', 'read documentation').toLowerCase()}
-                  </a>
-                </div>
-                <ParameterList
-                  parameters={options.parameters}
-                  handleAddParameter={handleAddParameter}
-                  handleParameterChange={handleParameterChange}
-                  handleParameterRemove={handleParameterRemove}
-                  darkMode={darkMode}
-                  containerRef={paramListContainerRef}
-                />
-              </>
+              <>{renderParameterLists()}</>
             )}
         </div>
         {ElementToRender && (
           <ElementToRender
             renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
-            key={selectedQuery?.id}
-            pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
+            key={`${selectedQuery?.id}:${viewedLibraryVersion ?? ''}`}
+            pluginSchema={getQueryPluginSchemaForSurface(selectedDataSource?.plugin?.operations_file?.data, surface)}
             selectedDataSource={selectedDataSource}
             options={selectedQuery?.options}
             optionsChanged={optionsChanged}
@@ -253,6 +299,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
             darkMode={darkMode}
             isEditMode={true} // Made TRUE always to avoid setting default options again
             queryName={queryName}
+            surface={surface}
             currentEnvironment={currentEnvironment}
             currentAppEnvironmentId={currentEnvironment?.id}
             onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
@@ -266,7 +313,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     const queryComponent = mockDataQueryAsComponent(options?.events || []);
     return (
       <div
-        className={cx('d-flex', {
+        className={cx('d-flex query-option-field', {
           'disabled ': isFreezed,
         })}
         data-cy="query-events-section"
@@ -291,13 +338,13 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const renderTimeout = () => {
     return (
       <div
-        className={cx('d-flex', { 'disabled ': isFreezed })}
+        className={cx('d-flex query-option-field', { 'disabled ': isFreezed })}
         data-param="query_timeout"
         data-cy="query-timeout-section"
         style={{ marginBottom: '16px' }}
       >
         <div className="form-label mt-2" data-cy="query-manager-timeout-label">
-          {t('editor.queryManager.timeout', 'Timeout ( ms )')}
+          {t('editor.queryManager.timeout', 'Timeout (ms)')}
         </div>
         <div className="query-manager-query-timeout">
           <CodeHinter
@@ -314,7 +361,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const renderDisableQuery = () => {
     return (
       <div
-        className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })}
+        className={cx('d-flex tw-mb-4 query-option-field', { 'disabled ': isFreezed })}
         data-param="disableQuery"
         data-cy="query-disable-section"
       >
@@ -338,7 +385,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     const hasDisableExpression = !!selectedQuery?.options?.disableQuery?.trim();
     return (
       <div
-        className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })}
+        className={cx('d-flex tw-mb-4 query-option-field', { 'disabled ': isFreezed })}
         data-param="disabledMessage"
         data-cy="query-disabled-message-section"
       >
@@ -370,6 +417,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
         <div
           className={cx(`d-flex pb-1`, {
             'disabled ': isFreezed,
+            'query-option-field': true,
           })}
           data-cy="query-triggers-section"
         >
@@ -442,7 +490,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
               ))}
           </div>
         </div>
-        <div className="d-flex">
+        <div className="d-flex query-option-field query-success-options">
           <div className="form-label">{}</div>
           <SuccessNotificationInputs
             // currentState={currentState}
@@ -478,27 +526,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     if (isEmpty(selectableDataSources)) {
       return '';
     }
-    const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
-    const docLink = isSampleDb
-      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
-      : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className={cx({ 'disabled ': isFreezed })} ref={paramListContainerRef}>
-          {selectedQuery && !showLocalDataSourceDeprecationBanner && (
-            <ParameterList
-              parameters={options.parameters}
-              handleAddParameter={handleAddParameter}
-              handleParameterChange={handleParameterChange}
-              handleParameterRemove={handleParameterRemove}
-              darkMode={darkMode}
-              containerRef={paramListContainerRef}
-            />
-          )}
+          {selectedQuery && !showLocalDataSourceDeprecationBanner && renderParameterLists()}
         </div>
-        <div className="d-flex" style={{ marginBottom: '16px', marginTop: '12px' }}>
+        <div className="d-flex query-option-field" style={{ marginBottom: '16px', marginTop: '12px' }}>
           <div
             className={cx(
               'd-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source',
@@ -537,7 +570,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
             </div>
             {selectedDataSource?.is_dummy && (
               <div
-                className="tw-text-text-danger tw-mt-1 tw-font-body-small tw-pointer-events-auto tw-select-text tw-cursor-text"
+                className="tw-text-editor-text-danger tw-mt-1 tw-font-body-small tw-pointer-events-auto tw-select-text tw-cursor-text"
                 data-cy="query-manager-source-missing-warning"
               >
                 {t(
@@ -547,22 +580,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
                 )}
               </div>
             )}
-            <div
-              className={cx({ 'disabled ': isFreezed })}
-              style={{ marginBottom: '2px' }}
-              data-cy="query-manager-source-doc-link"
-            >
-              {`To know more about querying ${selectedDataSource?.kind} data,`}
-              &nbsp;
-              <a
-                href={docLink}
-                target="_blank"
-                style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
-                rel="noreferrer"
-              >
-                {t('globals.readDocumentation', 'read documentation').toLowerCase()}
-              </a>
-            </div>
           </div>
         </div>
       </>
@@ -593,13 +610,13 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
 
   return (
     <div
-      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
-        !hasPermissions ? 'disabled' : ''
-      }`}
+      className={cx(getQueryDetailsClassName(surface, activeTab, selectedDataSource?.kind), {
+        'tooljetdb-query-details': selectedDataSource?.kind === 'tooljetdb',
+        disabled: !hasPermissions,
+      })}
       style={{
-        height: `calc(100% - ${selectedQuery ? previewHeight + 40 : 0}px)`,
-        overflowY: 'auto',
-        scrollbarWidth: 'none',
+        ...getQueryDetailsStyle(surface),
+        ...getQueryDetailsOverflowStyle(surface, Boolean(selectedQuery), previewHeight),
       }} // 40px for preview header height
     >
       {selectedDataSource === null || !selectedQuery ? (
@@ -619,7 +636,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
             renderChangeDataSource()}
           {activeTab === 1 && renderQueryElement()}
           {activeTab === 2 && renderTransformation()}
-          {activeTab === 3 && renderQueryOptions()}
+          {activeTab === 3 && !isQueryLibrary && renderQueryOptions()}
           <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
         </>
       )}
@@ -670,6 +687,10 @@ const CustomToggleFlag = ({
           label={t(translatedLabel, label)}
           subLabel={subLabel}
           disabled={fxMode}
+          classes={{
+            toggleLabel: getQueryTypographyClassName('label'),
+            toggleSubLabel: getQueryTypographyClassName('helper'),
+          }}
         />
         {fx && onFxToggle && <FxButton active={!!fxMode} onPress={onFxToggle} dataCy={dataCy} />}
       </div>

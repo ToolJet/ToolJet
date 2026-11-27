@@ -1,6 +1,13 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
-import { APP_TYPES } from '@modules/apps/constants';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
@@ -12,6 +19,7 @@ import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { VersionsCreateService } from './services/create.service';
 import { camelizeKeys } from 'humps';
 import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
+import { APP_TYPES } from '@modules/apps/constants';
 import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppsUtilService } from '@modules/apps/util.service';
@@ -37,7 +45,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { Inject, Optional } from '@nestjs/common';
+import { LibraryPin } from '@modules/data-queries/library/library-query.util';
 import { CodeModeSourceService } from '@modules/code-mode-source/service';
 import { draftVersionName } from './helpers/draft-version-name.helper';
 
@@ -261,6 +269,22 @@ export class VersionService implements IVersionService {
   // License terms the released-app cache key depends on (see getAppDataRevision).
   getViewerLicenseTerms(organizationId: string): Promise<unknown> {
     return this.licenseTermsService.getLicenseTerms(VIEWER_LICENSE_FIELDS, organizationId);
+  }
+
+  // ValidAppGuard ignores versionId when the URL names the app by slug, so tie the version to this workspace's app
+  // here: another workspace's version must not leak its query names.
+  async getLibraryPins(app: App, versionId: string, user: User): Promise<{ pins: LibraryPin[] }> {
+    const owned =
+      app.organizationId === user.organizationId &&
+      isUUID(versionId) &&
+      (await this.versionRepository.exists({ where: { id: versionId, appId: app.id } }));
+    if (!owned) throw new NotFoundException('App version not found');
+    const pins = await this.appUtilService.getLibraryPinsForAppVersion(
+      versionId,
+      user.organizationId,
+      this.versionRepository.manager
+    );
+    return { pins };
   }
 
   async getVersion(app: App, user: User, mode?: string): Promise<any> {

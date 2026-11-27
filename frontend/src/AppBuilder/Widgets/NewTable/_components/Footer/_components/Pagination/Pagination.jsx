@@ -146,7 +146,7 @@ export const Pagination = function Pagination({
       <Popover
         id="popover-basic"
         data-cy="popover-card"
-        className={`table-widget-popup pagination-popup ${darkMode && 'dark-theme'}`}
+        className={`table-widget-popup pagination-popup tj-widget-overlay ${darkMode && 'dark-theme'}`}
         style={{
           maxHeight: height - 79 > 128 ? `${height - 79}px` : '128px',
         }}

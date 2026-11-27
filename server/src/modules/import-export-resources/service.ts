@@ -10,8 +10,16 @@ import { addTablesInJoinOperation, InternalTableRepository } from '@modules/tool
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { AppsRepository } from '@modules/apps/repository';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
+import { InternalTable } from '@entities/internal_table.entity';
+import { isLibraryUuid } from '@modules/data-queries/library/library-query.util';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import {
+  libraryTooljetDbTableIds,
+  libraryTooljetDbTableNames,
+  LibraryExportQuery,
+  remapLibraryTooljetDbTables,
+} from '@modules/data-queries/library/library-export.util';
 
 interface ExportedJoinTable {
   from?: { name?: string };
@@ -124,9 +132,9 @@ export class ImportExportResourcesService {
     user: User,
     exportResourcesDto: ExportResourcesDto,
     branchId?: string,
-    // An app's stored code and builds: for a file a person takes elsewhere and for a clone. Git sync has its own
-    // folder for code, and the AI callers want the definition only.
-    code?: 'file' | 'clone'
+    // Fourth arg is either a code-export mode ('file' | 'clone') or `{ forGit: true }` from git sync.
+    // Git push/pull never carries library queries. Code export is for a file a person takes elsewhere, or a clone.
+    codeOrGit?: 'file' | 'clone' | { forGit?: boolean }
   ): Promise<{
     tooljet_database?: Array<ImportTooljetDatabaseDto>;
     app?: Array<Record<string, any>>; // TODO: Define the type for app
@@ -142,8 +150,8 @@ export class ImportExportResourcesService {
 
     const coRelationIdByTableId: Record<string, string> = {};
     if (exportResourcesDto.tooljet_database?.length) {
-      const exportedDbs: ImportTooljetDatabaseDto[] = [];
-      // export() appends the tables foreign keys reference, so this loop visits those too
+      // export() appends the tables foreign keys reference, so this loop visits those too.
+      // The library pass below owns resourcesExport.tooljet_database; this pass only builds the id map.
       for (const tjdb of exportResourcesDto.tooljet_database) {
         const exportedDb = await this.tooljetDbImportExportService.export(
           user.organizationId,
@@ -151,17 +159,18 @@ export class ImportExportResourcesService {
           exportResourcesDto.tooljet_database
         );
         if (!exportedDb) continue;
-        exportedDbs.push(exportedDb);
         coRelationIdByTableId[tjdb.table_id] = exportedDb.id;
       }
-
-      if (exportedDbs.length > 0) resourcesExport.tooljet_database = exportedDbs;
     }
 
     if (exportResourcesDto.app?.length) {
       const exportedApps: Record<string, unknown>[] = [];
+      const code = typeof codeOrGit === 'string' ? codeOrGit : undefined;
+      const forGit = typeof codeOrGit === 'object' && !!codeOrGit?.forGit;
       for (const app of exportResourcesDto.app) {
-        const definition = await this.appImportExportService.export(user, app.id, app.search_params, branchId);
+        const definition = await this.appImportExportService.export(user, app.id, app.search_params, branchId, {
+          withLibraryQueries: !forGit,
+        });
         if (code) await this.appImportExportService.addCodeToExport(user, definition, code === 'file');
         if (!isEmpty(coRelationIdByTableId)) {
           this.appImportExportService.pointTooljetDbQueriesAtCoRelationIds(definition, coRelationIdByTableId);
@@ -170,6 +179,64 @@ export class ImportExportResourcesService {
       }
 
       if (exportedApps.length > 0) resourcesExport.app = exportedApps;
+    }
+
+    // Library queries bring their ToolJet DB tables along, but only when the caller asked for tables at all.
+    // Appended to the caller's own array, like the foreign-key tables the table export adds: git push zips that
+    // array against the result to map local ids to co_relation_ids.
+    const tableList = exportResourcesDto.tooljet_database;
+    type ExportedDefinition = { appV2: { libraryQueries?: LibraryExportQuery[] } };
+    const libraryQueries = (resourcesExport.app ?? []).flatMap(
+      (exportedApp) => (exportedApp.definition as ExportedDefinition).appV2.libraryQueries ?? []
+    );
+    if (tableList) {
+      // A table deleted since the snapshot was taken is skipped by the table export, which would shift git push's
+      // index-based mapping of the entries after it. Only append tables that still exist in this workspace.
+      const candidateIds = libraryTooljetDbTableIds(libraryQueries).filter(isLibraryUuid);
+      // SQL-mode queries name tables, not ids; resolved by name in this workspace, as findTooljetDbTables does.
+      const names = libraryTooljetDbTableNames(libraryQueries);
+      const organizationId = exportResourcesDto.organization_id;
+      const clauses = [
+        ...(candidateIds.length ? [{ organizationId, id: In(candidateIds) }] : []),
+        ...(names.length ? [{ organizationId, tableName: In(names) }] : []),
+      ];
+      const existing = clauses.length
+        ? await this.internalTableRepository.manager.find(InternalTable, {
+            where: clauses.length === 1 ? clauses[0] : clauses,
+            select: ['id'],
+          })
+        : [];
+      const existingIds = new Set(existing.map((table) => table.id));
+      for (const table_id of new Set([...candidateIds, ...existingIds])) {
+        if (existingIds.has(table_id) && !tableList.some((table) => table.table_id === table_id)) {
+          tableList.push({ table_id });
+        }
+      }
+    }
+
+    if (tableList?.length) {
+      const exportedDbs: ImportTooljetDatabaseDto[] = [];
+      const portableTables: Record<string, { id: string }> = {};
+      for (const tjdb of tableList) {
+        const exportedDb = await this.tooljetDbImportExportService.export(
+          exportResourcesDto.organization_id,
+          tjdb,
+          tableList
+        );
+        if (!exportedDb) continue;
+        exportedDbs.push(exportedDb);
+        portableTables[tjdb.table_id] = { id: exportedDb.id };
+      }
+      // Library snapshots still name tables by this workspace's ids; rename them to the ids the tables travel under.
+      remapLibraryTooljetDbTables(libraryQueries, (options) =>
+        this.appImportExportService.replaceTooljetDbTableIds(
+          options,
+          portableTables,
+          exportResourcesDto.organization_id
+        )
+      );
+
+      if (exportedDbs.length > 0) resourcesExport.tooljet_database = exportedDbs;
     }
 
     if (exportResourcesDto.app?.length) {
@@ -201,6 +268,14 @@ export class ImportExportResourcesService {
       throw new ForbiddenException('Cannot import resources into a different organization.');
     }
 
+    // ToolJet DB tables below commit on their own; refusals an app import would hit must happen before them.
+    if (!isEmpty(importResourcesDto.tooljet_database)) {
+      const importingUser = Object.assign(new User(), user, {
+        organizationId: importResourcesDto.organization_id ?? user.organizationId,
+      });
+      for (const app of importResourcesDto.app ?? [])
+        await this.appImportExportService.assertImportAccess(importingUser, app.definition);
+    }
     let tableNameMapping: Record<string, { id: string }> = {};
     // tableNameMapping plus the internal ids of legacy exports (see legacyTableRefsToEntryIds)
     let queryTableMapping: Record<string, { id: string }> = {};

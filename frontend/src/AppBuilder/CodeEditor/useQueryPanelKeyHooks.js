@@ -3,6 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 export const useQueryPanelKeyHooks = (onChange, value, type) => {
   const moduleId = useModuleId();
@@ -13,9 +14,11 @@ export const useQueryPanelKeyHooks = (onChange, value, type) => {
   // keep a stable identity (see useStableCallback). Store values are read at
   // keystroke time instead of being subscribed to.
   const runShortcut = useStableCallback((shortcutAction) => {
-    const { queryPanelHeight, runQueryOnShortcut, previewQueryOnShortcut } = useStore.getState().queryPanel;
+    const { isRightSidebarOpen, activeRightSideBarTab, queryPanel } = useStore.getState();
+    const { runQueryOnShortcut, previewQueryOnShortcut } = queryPanel;
     const isEditor = pathname.includes('/apps/');
-    if (queryPanelHeight !== 0 && isEditor) {
+    const isQueryShown = isRightSidebarOpen && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.QUERY;
+    if (isQueryShown && isEditor) {
       onChange(type === 'multiline' ? value.current : value);
       if (shortcutAction === 'run') {
         runQueryOnShortcut();

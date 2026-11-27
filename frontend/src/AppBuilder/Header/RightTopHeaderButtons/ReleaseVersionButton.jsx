@@ -98,6 +98,8 @@ const ReleaseVersionButton = function DeployVersionButton() {
     <>
       <ReleaseConfirmation
         show={showConfirmation}
+        appId={appId}
+        versionId={versionToBeReleased}
         onClose={() => setShowConfirmation(false)}
         onConfirm={onReleaseConfirm}
       />

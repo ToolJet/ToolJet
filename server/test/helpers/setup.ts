@@ -309,13 +309,14 @@ export async function rollbackTestTransaction() {
  * Currently used by: tooljet-db-import-export.service.spec.ts (bulk import rollback test).
  */
 export async function withRealTransactions(fn: () => Promise<void>) {
+  // rollbackSuiteTransaction drops the current test's SAVEPOINT. beginTestTransaction
+  // opens a fresh one on the new suite transaction so afterEach can still roll back to it.
   const inTest = !!_testSavepoint;
   await rollbackSuiteTransaction();
   try {
     await fn();
   } finally {
     await beginSuiteTransaction();
-    // afterEach rolls back to the test savepoint; without a fresh one it aborts the new suite transaction.
     if (inTest) await beginTestTransaction();
   }
 }
@@ -376,6 +377,12 @@ function createResilientLicenseTermsMock(plan: string) {
       }
       return Promise.resolve(getLicenseFieldValue(LICENSE_FIELD.ALL, mock._licenseInstance));
     },
+
+    // /license/access reads this to pick the free plan's limits. Test plans are written against the
+    // original free limits, as on CE.
+    usesNewFreeLimits() {
+      return Promise.resolve(false);
+    },
   };
   return mock;
 }
@@ -407,6 +414,8 @@ async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: 
 }
 
 export interface InitTestAppOptions {
+  /** Local browser harness origin; applied before Nest installs its routes. */
+  browserOrigin?: string;
   /** Edition to simulate. Default: 'ce'. Each edition loads different modules — gets its own cache slot. */
   edition?: 'ce' | 'ee' | 'cloud';
   /**
@@ -479,7 +488,9 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock(plan));
 
   const moduleRef = await moduleBuilder.compile();
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication(
+    options?.browserOrigin ? { cors: { origin: options.browserOrigin, credentials: true } } : {}
+  );
 
   await configureApp(app, moduleRef);
   await app.init();

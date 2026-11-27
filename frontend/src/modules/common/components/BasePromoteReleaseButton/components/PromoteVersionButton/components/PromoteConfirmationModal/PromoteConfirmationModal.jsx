@@ -1,15 +1,16 @@
+import { useVersionLifecycle } from '@/AppBuilder/Header/VersionManager/VersionLifecycleContext';
+import { withAppVersionLifecycle } from '@/AppBuilder/Header/VersionManager/AppVersionLifecycleProvider';
 import React, { useState, useEffect, useCallback } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { capitalize } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { gitSyncService, authenticationService, tooljetDatabaseService, appVersionService } from '@/_services';
+import { authenticationService, tooljetDatabaseService, appVersionService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { missingTablesFrom, promoteErrorMessage, promoteTablesOneUp } from './missingTables';
 import { toast } from 'react-hot-toast';
 import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
 import '@/_styles/versions.scss';
-import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import PromoteConfirmationExtras from './PromoteConfirmationExtras';
@@ -17,9 +18,15 @@ import { ReleaseScanGate } from '@/AppBuilder/_helpers/codeModeHooks';
 import { NESTED_WORKFLOW_PINS_BLOCKED } from '@/AppBuilder/Header/NestedWorkflowPinsBlockedDialog';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
-const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
-  const { moduleId } = useModuleContext();
+const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion, darkMode: suppliedDarkMode }) => {
+  const { versions, selectedVersionId, actions } = useVersionLifecycle();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
+  const { moduleId } = useModuleContext();
+  const darkMode = suppliedDarkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
+  const [showModal, setShow] = useState(data);
+  const { t } = useTranslation();
+  const versionIdToPromote = editingVersion || selectedVersionId;
+  const versionToPromote = versions.find((v) => v.id === versionIdToPromote);
   const [missingTables, setMissingTables] = useState(null);
   const [tablePromoteError, setTablePromoteError] = useState(null);
   // Tables this dialog already promoted, so a failed app step says they are in the target without the app.
@@ -30,29 +37,9 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   const [scanLocked, setScanLocked] = useState(false);
   // A review still waiting on this version holds the promotion (PromoteConfirmationExtras says why).
   const [promoteLocked, setPromoteLocked] = useState(false);
-  const darkMode = localStorage.getItem('darkMode') === 'true' || false;
-  const currentVersionId = useStore((state) => state.currentVersionId);
-  const [showModal, setShow] = useState(data);
-  const { t } = useTranslation();
   const { current_organization_id } = authenticationService.currentSessionValue;
-
-  const { promoteAppVersionAction, selectedVersion, creationMode, versions, appId, releasedVersionId } = useStore(
-    (state) => ({
-      appId: state.appStore.modules[moduleId].app.appId,
-      releasedVersionId: state.releasedVersionId,
-      promoteAppVersionAction: state.promoteAppVersionAction,
-      selectedVersion: state.selectedVersion,
-      creationMode: state.appStore.modules[moduleId].app.creationMode,
-      versions: state.developmentVersions || [],
-    }),
-    shallow
-  );
-
-  // Use editingVersion if provided, otherwise fall back to currentVersionId
-  const versionIdToPromote = editingVersion || currentVersionId;
-
-  // Find the version object to display the correct name
-  const versionToPromote = versions.find((v) => v.id === versionIdToPromote) || selectedVersion;
+  const appId = useStore((state) => state.appStore.modules[moduleId]?.app?.appId ?? state.appId);
+  const releasedVersionId = useStore((state) => state.releasedVersionId);
 
   useEffect(() => {
     setShow(data);
@@ -87,58 +74,14 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
     setPromotingEnvironment(true);
     setPromoteError(null);
 
-    promoteAppVersionAction(
-      versionIdToPromote,
-      async (response) => {
+    actions
+      .promote(versionIdToPromote)
+      .then(() => {
         toast.success(`${versionToPromote.name} has been promoted to ${data.target.name}!`);
         setPromotingEnvironment(false);
         onClose();
-
-        {
-          /* Can clean when autoCommit is removed completely */
-        }
-        // if (
-        //   data?.current?.name == 'development' &&
-        //   (creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit))
-        // ) {
-        //   try {
-        //     const gitData = await gitSyncService.getAppConfig(current_organization_id, versionToPromote?.id);
-        //     const appGit = gitData?.app_git;
-        //     if (appGit && appGit?.org_git?.auto_commit) {
-        //       const body = {
-        //         gitAppName: appGit?.git_app_name,
-        //         versionId: versionToPromote?.id,
-        //         lastCommitMessage: ` ${versionToPromote.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
-        //         gitVersionName: versionToPromote?.name,
-        //         allowMasterPush: true,
-        //       };
-        //       await gitSyncService.gitPush(body, appGit?.id, versionToPromote?.id);
-        //       toast.success('Changes committed successfully');
-        //     }
-        //   } catch (err) {
-        //     const status = err?.statusCode;
-        //     const error = err?.error;
-        //     if (
-        //       !(status === 404 && error === 'Git Configuration not found') &&
-        //       !(error === 'No Git Provider is enabled for the workspace')
-        //     ) {
-        //       toast.error(error, {
-        //         style: {
-        //           width: 'auto',
-        //           maxWidth: '339px',
-        //         },
-        //       });
-        //     }
-        //   }
-        // }
-
-        // setSelectedEnvironment(response);
-        // set env id here-----> state update
-        // appEnvironmentChanged(response, true);
-        setPromotingEnvironment(false);
-        onClose();
-      },
-      (error) => {
+      })
+      .catch((error) => {
         const tables = missingTablesFrom(error);
         if (tables?.length) {
           // Shown in the dialog with a way through, not as a toast that is gone before it is read.
@@ -159,20 +102,9 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           toast.error(errorMessage);
           setPromoteError(errorMessage);
         }
-        useStore.getState().debugger.log({
-          logLevel: 'error',
-          type: 'component',
-          key: 'Promote Failed',
-          message: errorMessage,
-          description: errorDetails || errorMessage,
-          error: { message: errorMessage, description: errorDetails || errorMessage },
-          errorTarget: 'Version',
-          timestamp: new Date().toISOString(),
-        });
+        actions.reportError?.('Promote Failed', errorMessage, errorDetails || errorMessage);
         setPromotingEnvironment(false);
-      },
-      moduleId
-    );
+      });
   };
 
   const handlePromoteTablesAndApp = async () => {
@@ -342,4 +274,4 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   );
 });
 
-export default PromoteConfirmationModal;
+export default withAppVersionLifecycle(PromoteConfirmationModal);

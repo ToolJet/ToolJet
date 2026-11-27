@@ -1092,6 +1092,8 @@ export class AppsService implements IAppsService {
       }
 
       await this.appsUtilService.checkModulesReleasedInApp(versionToBeReleased, user.organizationId, manager);
+      // Apps and modules alike: EE release() reaches this through super.release.
+      await this.appsUtilService.checkLibraryQueriesReleasedInApp(versionToBeReleased, user.organizationId, manager);
       await assertReleaseBaseline(manager, appId, versionReleaseDto.expectedReleasedVersionId);
       await this.appsUtilService.checkWorkflowsReleasedInApp(versionToBeReleased, user.organizationId, manager);
       await this.beforeVersionRelease(manager, appId, versionToBeReleased);

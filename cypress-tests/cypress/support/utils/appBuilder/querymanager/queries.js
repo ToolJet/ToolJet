@@ -1,6 +1,7 @@
 // ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
 // queries.js
 //   selectQueryFromLandingPage       -                    → common
+//   openQueriesPanel                 -                    → common
 //   deleteQuery                      -                    → common
 //   query                            -                    → common
 //   changeQueryToggles               -                    → common
@@ -23,7 +24,7 @@
 /**
  * MODULE — appBuilder/querymanager/queries: **Query panel** helpers (create, rename,
  * configure, preview, delete queries + wire query events).
- * FOR AI: operate the bottom query manager, not a component. Route by need:
+ * FOR AI: operate the left-rail Queries panel, not a component. Route by need:
  *   create via API+UI      → addQuery / addQueryN / addQueryAndOpenEditor / addDsAndAddQuery
  *   create purely via API  → createDataQuery / createRestAPIQuery
  *   rename / duplicate /    → renameQueryFromEditor · performQueryAction · deleteQuery
@@ -60,10 +61,25 @@ export const selectQueryFromLandingPage = (dbName, label) => {
 
 /**
  * @tjBlock  common
+ * @tjUsage  openQueriesPanel()
+ * @tjDom    left-sidebar-queries-button, clicked only while close-query-panel is absent
+ */
+// The rail button toggles, so click it only when the Queries panel is closed.
+export const openQueriesPanel = () => {
+  cy.get("body").then(($body) => {
+    if (!$body.find('[data-cy="close-query-panel"]').length) {
+      cy.get('[data-cy="left-sidebar-queries-button"]').click();
+    }
+  });
+};
+
+/**
+ * @tjBlock  common
  * @tjUsage  deleteQuery('restapi1')
  * @tjDom    list-query-<name> → delete-query-<name> → component-inspector-delete-button
  */
 export const deleteQuery = (queryName) => {
+  openQueriesPanel();
   cy.get(`[data-cy="list-query-${queryName}"]`).click();
   cy.get(`[data-cy="delete-query-${queryName}"]`).click();
   cy.get('[data-cy="component-inspector-delete-button"]').click();
@@ -219,6 +235,7 @@ export const selectRunQueryEvent = (
  * @tjDom    list-query-<name> → query-tab-settings → selectRunQueryEvent → query-selection-field combobox
  */
 export const chainQuery = (currentQuery, trigger) => {
+  openQueriesPanel();
   cy.get(`[data-cy="list-query-${currentQuery}"]`).click();
   cy.wait(1000);
   cy.get('[data-cy="query-tab-settings"]').click();

@@ -11,6 +11,13 @@ import { User } from '@entities/user.entity';
 import { AppValidationService } from '@modules/app-validation/service';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
+// The write-back runs in a transaction that locks the row (and its library consumers); the unit has no database,
+// so the transaction hands its callback a fake manager.
+const mockManager = { query: jest.fn(), findOneOrFail: jest.fn() };
+jest.mock('src/helpers/database.helper', () => ({
+  dbTransactionWrap: (callback: (manager: unknown) => unknown) => callback(mockManager),
+}));
+
 /**
  * Running a query from the editor writes the posted options back to the query (an authoring
  * convenience). A non-UI client (MCP/PAT) can call that run endpoint against the released version
@@ -54,6 +61,8 @@ describe('DataQueriesService.runQueryOnBuilder on the released version', () => {
       {} as GitSyncConfigsUtilService
     );
     runAndGetResult = jest.spyOn(service as any, 'runAndGetResult').mockResolvedValue({ status: 'ok' });
+    jest.spyOn(service as any, 'lockLibraryConsumers').mockResolvedValue(undefined);
+    mockManager.findOneOrFail.mockResolvedValue({ id: 'query-id', options: {}, dataSource });
   });
 
   it('does not write the run options back to a query on the released version', async () => {
@@ -74,7 +83,7 @@ describe('DataQueriesService.runQueryOnBuilder on the released version', () => {
   it('still writes the run options back to a query on a draft version', async () => {
     await runQueryOn(DRAFT_VERSION_ID);
 
-    expect(dataQueryRepository.updateOne).toHaveBeenCalledWith('query-id', { options });
+    expect(dataQueryRepository.updateOne).toHaveBeenCalledWith('query-id', { options }, mockManager);
     expect(runAndGetResult).toHaveBeenCalledTimes(1);
   });
 });

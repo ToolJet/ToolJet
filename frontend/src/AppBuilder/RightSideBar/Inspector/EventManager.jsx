@@ -1381,7 +1381,7 @@ export const EventManager = ({
             variant="outline"
             size="default"
             leadingVisual={<Plus className="tw-h-4 tw-w-4" />}
-            className="tw-shadow-elevation-100 tw-mt-1"
+            className="tw-shadow-elevation-100 tw-mt-1 tw-border-border-default"
             data-cy="add-event-handler"
           >
             {t('editor.inspector.eventManager.addHandler', 'Add new event handler')}
@@ -1431,7 +1431,7 @@ export const EventManager = ({
           <EmptyMedia variant="icon">
             <MousePointerClick />
           </EmptyMedia>
-          <EmptyTitle>{t('editor.inspector.eventManager.emptyTitle', 'No events added yet.')}</EmptyTitle>
+          <EmptyTitle>{t('editor.inspector.eventManager.emptyTitle', 'No events added yet')}</EmptyTitle>
           <EmptyDescription>
             {t(
               'editor.inspector.eventManager.emptyDescription',

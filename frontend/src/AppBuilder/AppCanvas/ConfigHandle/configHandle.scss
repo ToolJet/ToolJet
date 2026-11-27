@@ -40,7 +40,7 @@
   }
 
   .badge {
-    font-size: 9px;
+    font-size: 12px; // chrome inside the canvas, where the small-size variable is reset
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 
@@ -112,6 +112,6 @@
 
 .config-handle-button {
   .badge {  
-    font-size: 11px;
+    font-size: 12px; // chrome inside the canvas, where the small-size variable is reset
   }
 }

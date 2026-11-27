@@ -9,14 +9,14 @@
   "subsystems": [
     { "id": "loading-versions-compatibility", "name": "Loading, versions, and compatibility", "owner": "", "roots": ["Header/AppVersionsManager", "Header/EnvironmentManager", "Header/VersionManager"] },
     { "id": "bindings-evaluation-state", "name": "Bindings, evaluation, and state", "owner": "", "roots": ["CodeBuilder", "CodeEditor", "_contexts", "_helpers", "_hooks", "_stores", "_utils"] },
-    { "id": "queries-events-actions-exposed-values", "name": "Queries, events, actions, and exposed values", "owner": "", "roots": ["QueryManager", "QueryPanel"] },
+    { "id": "queries-events-actions-exposed-values", "name": "Queries, events, actions, and exposed values", "owner": "", "roots": ["QueryManager", "QueryPanel", "QueryLibrary"] },
     { "id": "canvas-layout-interaction-reflow", "name": "Canvas layout, interaction, and reflow", "owner": "", "roots": ["AppCanvas"] },
     { "id": "widget-definitions-runtime", "name": "Widget definitions and runtime", "owner": "", "roots": ["WidgetManager", "Widgets"] },
     { "id": "inspector-configuration", "name": "Inspector and configuration", "owner": "", "roots": ["RightSideBar"] },
     { "id": "persistence-import-export", "name": "Persistence, import, and export", "owner": "", "roots": [] },
     { "id": "editor-viewer", "name": "Editor and Viewer", "owner": "", "roots": ["Viewer"] },
     { "id": "collaboration-history", "name": "Collaboration and history", "owner": "", "roots": ["RealTimeEditor"] },
-    { "id": "builder-shell", "name": "Builder shell", "owner": "", "roots": ["Header", "LeftSidebar", "Popups", "Shared"], "files": ["AgentBuildingOverlay.jsx", "AppBuilder.jsx", "Cursor.jsx", "EmbedApp.jsx", "RealtimeCursors.jsx", "index.js"] }
+    { "id": "builder-shell", "name": "Builder shell", "owner": "", "roots": ["Header", "LeftSidebar", "Popups", "Shared"], "files": ["AgentBuildingOverlay.jsx", "AppBuilder.jsx", "Cursor.jsx", "EmbedApp.jsx", "RealtimeCursors.jsx", "index.js", "panelLayout.js"] }
   ],
   "overrides": {
     "src/AppBuilder/_stores/slices/appSlice.js": "persistence-import-export",
@@ -33,7 +33,8 @@
     "src/AppBuilder/_stores/slices/inspectorSlice.js": "inspector-configuration",
     "src/AppBuilder/_stores/slices/rightSideBarSlice.js": "inspector-configuration",
     "src/AppBuilder/_stores/slices/undoRedoSlice.js": "collaboration-history",
-    "src/AppBuilder/_stores/slices/multiplayerSlice.js": "collaboration-history"
+    "src/AppBuilder/_stores/slices/multiplayerSlice.js": "collaboration-history",
+    "src/AppBuilder/_hooks/useAppBuilderChrome.js": "builder-shell"
   },
   "exceptions": []
 }

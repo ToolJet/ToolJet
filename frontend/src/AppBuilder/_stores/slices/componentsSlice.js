@@ -386,15 +386,10 @@ export const createComponentsSlice = (set, get) => ({
   clearSelectedComponents: () =>
     set(
       (state) => {
+        // Canvas selection only: the right panel's tab and subject stay exactly as they were.
         state.selectedComponents = [];
         state.isCanvasHeaderSelected = false;
         state.isCanvasFooterSelected = false;
-        if (state.isRightSidebarOpen) {
-          state.activeRightSideBarTab =
-            state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
-              ? RIGHT_SIDE_BAR_TAB.PAGES
-              : RIGHT_SIDE_BAR_TAB.COMPONENTS;
-        }
       },
       false,
       'clearSelectedComponents'
@@ -2622,6 +2617,7 @@ export const createComponentsSlice = (set, get) => ({
         state.selectedComponents = components;
         state.isCanvasHeaderSelected = false;
         state.isCanvasFooterSelected = false;
+        state.rightPanelSubject = { type: 'component', id: components[0] };
         if (components.length === 1) {
           if (state.isRightSidebarOpen) {
             state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
@@ -2639,11 +2635,12 @@ export const createComponentsSlice = (set, get) => ({
     }
     set(
       (state) => {
-        state.selectedComponents = componentId ? [componentId] : [];
+        state.selectedComponents = [componentId];
         state.isCanvasHeaderSelected = false;
         state.isCanvasFooterSelected = false;
+        state.rightPanelSubject = { type: 'component', id: componentId };
         if (state.isRightSidebarOpen) {
-          state.activeRightSideBarTab = componentId ? RIGHT_SIDE_BAR_TAB.CONFIGURATION : RIGHT_SIDE_BAR_TAB.COMPONENTS;
+          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
         }
       },
       false,

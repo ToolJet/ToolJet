@@ -31,7 +31,6 @@ describe('Toggle Switch — customerIssues facet', { testIsolation: false }, () 
         cy.apiCreateApp(`${fake.companyName}-ToggleSwitch-CustomerIssues-${Date.now().toString().slice(-6)}`);
         cy.openApp();
         cy.dragAndDropWidget('Toggle Switch', 450, 200); // source: toggleswitchv2.js:3
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it.skip('[STUB] add one it-block per tracked customer issue', () => {

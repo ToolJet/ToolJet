@@ -17,8 +17,16 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 
 describe('GitSyncConfigsUtilService (CE)', () => {
   let svc: GitSyncConfigsUtilService;
+  let Service: typeof GitSyncConfigsUtilService;
   let manager: any;
   let qb: any;
+
+  beforeAll(async () => {
+    // The transaction setup can preload this service before the test's mock is installed.
+    await jest.isolateModulesAsync(async () => {
+      Service = (await import('@modules/git-sync-configs/util.service')).GitSyncConfigsUtilService;
+    });
+  });
 
   beforeEach(() => {
     qb = {
@@ -37,7 +45,7 @@ describe('GitSyncConfigsUtilService (CE)', () => {
       query: jest.fn().mockResolvedValue([{ '?column?': 1 }]), // EnsureDefaultBranch migration applied
     };
     (globalThis as any).__fakeManager = manager;
-    svc = new GitSyncConfigsUtilService();
+    svc = new Service();
   });
 
   describe('getDetails — license gate', () => {
@@ -47,9 +55,9 @@ describe('GitSyncConfigsUtilService (CE)', () => {
       } as Partial<HttpException>);
     });
     it('throws 451 when multi-branching is mandatory', async () => {
-      await expect(svc.getDetails('org', undefined, { isMultiBranchingMandatory: true })).rejects.toBeInstanceOf(
-        HttpException
-      );
+      await expect(svc.getDetails('org', undefined, { isMultiBranchingMandatory: true })).rejects.toMatchObject({
+        status: 451,
+      });
     });
   });
 

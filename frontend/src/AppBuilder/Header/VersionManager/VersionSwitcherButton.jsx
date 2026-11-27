@@ -1,14 +1,15 @@
 import React from 'react';
 import cx from 'classnames';
 
-import useStore from '@/AppBuilder/_stores/store';
-import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
+import { useVersionLifecycle } from './VersionLifecycleContext';
+import { withAppVersionLifecycle } from './AppVersionLifecycleProvider';
 
 import './version-switcher-button.scss';
 
 const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionId, isOpen, darkMode }) => {
-  const isAiBuildingApp = useStore((state) => state.ai?.isLoading ?? false);
-  const { isGitSyncEnabled } = useGitSyncConfig();
+  const { capabilities = {} } = useVersionLifecycle();
+  const isAiBuildingApp = capabilities.isAiBuildingApp;
+  const isGitSyncEnabled = capabilities.git?.enabled;
 
   const isDraft = version?.status === 'DRAFT';
   const isReleased = version?.id === releasedVersionId;
@@ -64,4 +65,4 @@ const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionI
   );
 };
 
-export default VersionSwitcherButton;
+export default withAppVersionLifecycle(VersionSwitcherButton);

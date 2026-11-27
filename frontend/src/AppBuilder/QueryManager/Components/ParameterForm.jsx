@@ -13,6 +13,7 @@ const ParameterForm = ({
   onSubmit,
   showModal,
   otherParams = [],
+  noun = 'parameter',
 }) => {
   const [name, setName] = useState();
   const [defaultValue, setDefaultValue] = useState();
@@ -52,7 +53,7 @@ const ParameterForm = ({
     <>
       <Popover.Header className={`${darkMode && 'dark-theme'}`}>
         <p className="tj-text-xsm " style={{ fontWeight: '600' }}>
-          {isEdit ? 'UPDATE PARAMETER' : 'ADD PARAMETER'}
+          {`${isEdit ? 'UPDATE' : 'ADD'} ${noun.toUpperCase()}`}
         </p>
       </Popover.Header>
       <Popover.Body

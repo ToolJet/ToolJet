@@ -197,7 +197,10 @@ describe('ImportExportResourcesService.import', () => {
   });
 
   const setup = () => {
-    const appImportExportService = { import: jest.fn().mockResolvedValue({ newApp: { id: 'app-1', name: 'app' } }) };
+    const appImportExportService = {
+      import: jest.fn().mockResolvedValue({ newApp: { id: 'app-1', name: 'app' } }),
+      assertImportAccess: jest.fn().mockResolvedValue(undefined),
+    };
     const tooljetDbImportExportService = {
       bulkImport: jest.fn().mockResolvedValue({
         tableNameMapping: { 'corel-clients': createdTable },

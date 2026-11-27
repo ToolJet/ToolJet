@@ -1,12 +1,17 @@
 import { DataSourcesUtilService } from '../../../../src/modules/data-sources/util.service';
+import * as ssrfProtection from '../../../../src/helpers/ssrf-protection.helper';
 
 // These specs cover option and credential binding, not SSRF: their made-up hosts never resolve, which the SSRF check
 // blocks before the plugin runs. test-connection-ssrf.spec.ts covers the SSRF check itself.
-jest.mock('@helpers/ssrf-protection.helper', () => ({
-  ...jest.requireActual('@helpers/ssrf-protection.helper'),
-  validateHostForSSRF: jest.fn().mockResolvedValue(undefined),
-  validateUrlForSSRF: jest.fn().mockResolvedValue(undefined),
-}));
+// A spy, not jest.mock: the global test setup loads the app (and this service) before the spec's mocks register.
+beforeEach(() => {
+  jest.spyOn(ssrfProtection, 'validateHostForSSRF').mockResolvedValue(undefined);
+  jest.spyOn(ssrfProtection, 'validateUrlForSSRF').mockResolvedValue(undefined);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 function serviceWith(pluginService: object): DataSourcesUtilService {
   return new DataSourcesUtilService(

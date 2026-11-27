@@ -8,6 +8,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
+import { runArgNames } from '@/AppBuilder/_utils/libraryQuery';
 import { isCompareMuted } from '@/AppBuilder/_utils/compareFrame';
 import { awaitSdkAction, getSdkActionReadiness } from '@/AppBuilder/_utils/sdkActionReadiness';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
@@ -1193,11 +1194,7 @@ export const createEventsSlice = (set, get) => ({
           return;
         }
 
-        if (!_.isEmpty(query?.options?.parameters)) {
-          query.options.parameters?.forEach(
-            (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
-          );
-        }
+        runArgNames(query).forEach((name) => parameters && (processedParams[name] = parameters?.[name]));
 
         if (isPreview) {
           return previewQuery(query, true, processedParams, moduleId, callbackFns);
