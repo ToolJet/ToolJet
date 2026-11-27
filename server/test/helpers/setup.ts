@@ -1,6 +1,9 @@
 /** App factory with caching, license mocking, and DB lifecycle for tests. */
 import { DynamicModule, INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { RedisService } from '@modules/redis/service';
+import { getQueueToken } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { WORKFLOW_EXECUTION_QUEUE } from '@modules/workflows/constants';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
@@ -485,6 +488,7 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
 
   await configureApp(app, moduleRef);
   await app.init();
+  if (edition !== 'ce') await waitForWorkflowWorker(app);
   setDataSources(app);
   await beginSuiteTransaction();
   configurePlanMock(app, plan);
@@ -503,15 +507,36 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
 }
 
 /*
+ * Sync workflow runs wait for a worker (enqueue-and-wait), and tests run that worker in-process.
+ * Its Redis connection comes up a few seconds after the app does (lazyConnect in tests), and until
+ * then the queue reports no worker, so a suite's first sync run would get the production 503.
+ * Wait for it once per app, so suites see the worker a deployment would have.
+ */
+async function waitForWorkflowWorker(app: INestApplication, timeoutMs = 20_000): Promise<void> {
+  let queue: Queue;
+  try {
+    queue = app.get<Queue>(getQueueToken(WORKFLOW_EXECUTION_QUEUE), { strict: false });
+  } catch {
+    return; // No workflow queue in this app
+  }
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if ((await queue.getWorkers()).length) return;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  console.warn(`No workflow worker registered within ${timeoutMs} ms; sync runs in this suite will get 503`);
+}
+
+/*
  * Webhook rate limits (`tj:rl:*`, `@modules/rate-limit`) and workflow execution quotas
- * (`tj:wfq:*`) and queue depth (`tj:wfdepth:*`) count in Redis, so they outlive a test app: a suite that trips a limit would leave
+ * (`tj:wfq:*`), queue depth (`tj:wfdepth:*`) and run slots (`tj:wfslots:*`) count in Redis, so they outlive a test app: a suite that trips a limit would leave
  * it tripped for the next one, and quota counters would not match the suite's database rows.
  * Each suite starts with no counters.
  */
 async function clearRateLimitCounters(app: INestApplication): Promise<void> {
   try {
     const redis = app.get(RedisService, { strict: false }).getClient();
-    for (const pattern of ['tj:rl:*', 'tj:wfq:*', 'tj:wfdepth:*']) {
+    for (const pattern of ['tj:rl:*', 'tj:wfq:*', 'tj:wfdepth:*', 'tj:wfslots:*']) {
       let cursor = '0';
       do {
         const [next, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 500);
