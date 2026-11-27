@@ -52,14 +52,17 @@ const renderHeader = async () => {
   return { user, header: document.querySelector('.tj-panel-header') };
 };
 
-// Break this catches: the query header hand-rolls its own 80px grid instead of the panel header.
-test('renders the query name, Run, Preview and the close button in the panel header', async () => {
+// Break this catches: the query header hand-rolls its own 80px grid instead of the panel header,
+// or Run and Preview drift back out of the tabs row.
+test('renders the query name and close button in the panel header, with Run and Preview in the tabs row', async () => {
   const { header } = await renderHeader();
+  const tabsRow = document.querySelector('.query-manager-tabs-row');
 
   expect(header).not.toBeNull();
   expect(within(header).getByText('restapi1')).toBeInTheDocument();
-  expect(within(header).getByRole('button', { name: 'Run query' })).toBeInTheDocument();
-  expect(within(header).getByRole('button', { name: /Preview/ })).toBeInTheDocument();
+  expect(within(tabsRow).getByRole('button', { name: 'Run query' })).toBeInTheDocument();
+  expect(within(tabsRow).getByRole('button', { name: /Preview/ })).toBeInTheDocument();
+  expect(within(header).queryByRole('button', { name: 'Run query' })).toBeNull();
   expect(within(header).getByRole('button', { name: getPanelCloseLabel('query') })).toHaveAttribute(
     'data-cy',
     'query-configuration-close-button'
