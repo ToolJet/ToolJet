@@ -1,7 +1,7 @@
 const ADD_NEW_ROW_PLACEMENTS = ['table', 'dialog'];
 const NON_ADDABLE_COLUMN_TYPES = ['button'];
 
-export const resolveAddNewRowIn = (value) => (ADD_NEW_ROW_PLACEMENTS.includes(value) ? value : 'table');
+export const resolveAddNewRowIn = (value) => (ADD_NEW_ROW_PLACEMENTS.includes(value) ? value : 'dialog');
 
 // Same key the add-row draft is stored under (accessorKey in generateColumnsData).
 export const getColumnKey = (column) => column.key || column.name;
