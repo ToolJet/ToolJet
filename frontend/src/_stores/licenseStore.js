@@ -15,11 +15,16 @@ export const useLicenseStore = create(
     (set, get) => ({
       ...initialState,
       actions: {
-        fetchFeatureAccess: () => {
-          licenseService.getFeatureAccess().then((data) => {
-            set({ featureAccess: data, featuresLoaded: true });
-          });
-        },
+        fetchFeatureAccess: () =>
+          licenseService
+            .getFeatureAccess()
+            .then((data) => {
+              set({ featureAccess: data, featuresLoaded: true });
+            })
+            // Callers fire and forget, so an unhandled failure would surface as an uncaught rejection.
+            .catch((error) => {
+              console.error('Failed to load feature access', error);
+            }),
 
         checkModuleAccess: () => {
           // Check if user is an end-user; if so, do not give module access

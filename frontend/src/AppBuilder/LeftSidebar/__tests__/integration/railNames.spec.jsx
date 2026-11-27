@@ -11,6 +11,20 @@ import useStore from '@/AppBuilder/_stores/store';
 import { seedApp } from '@/test/app-builder';
 import { createAppBuilderControls } from '@/test/app-builder/controls';
 import { render } from '@/test/test-utils';
+import { createAppBuilderNetwork } from '@/test/app-builder/network';
+
+// The Components panel mounts ModuleManager, which asks the server for modules, the licence and the
+// built-in packs. Answer them here so nothing reaches a real port: an unanswered request rejects after
+// the test ends and kills the Jest worker.
+let network;
+beforeAll(() => {
+  network = createAppBuilderNetwork([
+    { url: '*/api/license/access', json: {} },
+    { url: '*/api/apps', json: { apps: [], meta: { total_pages: 1 } } },
+    { url: '*/api/builtin-packs', json: [] },
+  ]);
+});
+afterAll(() => network.close());
 
 const controls = createAppBuilderControls();
 const railHooks = () =>
