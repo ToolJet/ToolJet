@@ -10,6 +10,7 @@ import {
 } from '../utils/dynamicHeightReflow';
 import { resolveWidgetVisibility } from '../dynamicHeight/visibility';
 import { bindModuleAwareGetResolvedComponent } from '../dynamicHeight/moduleScope';
+import { createDynamicHeightScheduler } from '../dynamicHeight/scheduler';
 import { getDynamicElementSelector, getDynamicLayoutKey, normalizeLayoutContext } from '../dynamicHeight/layoutKeys';
 import { heightHeldInView, isUi2PerRowType, sizesToDropAreas } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
@@ -47,6 +48,11 @@ const initialState = {
 };
 
 export const createGridSlice = (set, get) => {
+  // The app's dynamic height scheduler (dynamicHeight/scheduler.js): it owns the height registry and runs the
+  // engine once per frame. One per store, kept here rather than in state: it holds pending work and DOM observers,
+  // which are not app state. Widgets reach it through getDynamicHeightScheduler.
+  const dynamicHeightScheduler = createDynamicHeightScheduler({ getState: get });
+
   // Batch reflow scheduler. Collects adjustComponentPositions requests that
   // arrive in the same JS tick (e.g. 50 Tables in a ListView all reporting
   // height changes on data load), fires them in one shared rAF, and lets
@@ -71,6 +77,7 @@ export const createGridSlice = (set, get) => {
 
   return {
     ...initialState,
+    getDynamicHeightScheduler: () => dynamicHeightScheduler,
     scheduleReflow,
     setFlexContainerDropTarget: (payload) =>
       set((state) => {
