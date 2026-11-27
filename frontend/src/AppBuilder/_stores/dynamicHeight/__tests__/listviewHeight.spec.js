@@ -2,8 +2,7 @@ import { listviewFallbackRowHeight, listviewHeight, listviewRowCount, listviewRo
 
 const ROWS = [{ n: 1 }, { n: 2 }, { n: 3 }];
 
-// Values match the native List view on main (pinned in
-// _stores/utils/__tests__/integration/dynamicHeightReflowListview.spec.js).
+// Values match the native List view on main (pinned by the old engine's List view spec until it was deleted in B4).
 describe('dynamic height: List view', () => {
   describe('rows a page shows', () => {
     it('[DynamicHeight-LIST-001] counts every row of its data without pagination', () => {

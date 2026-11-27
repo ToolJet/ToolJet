@@ -1,8 +1,8 @@
 import { collapsedAccordionHeight, containerChrome } from '../containerChrome';
 
 // The chrome is the space a container draws around its content (padding, borders, header, tab strip...): its
-// height is its content plus this. Values match what the canvas draws today (dynamicHeightReflow.js
-// getExtraContainerHeight on main).
+// height is its content plus this. Values match what the canvas draws (the old engine's getExtraContainerHeight on
+// main, deleted in B4).
 describe('dynamic height: container chrome', () => {
   it('[DynamicHeight-CHROME-001] gives a Container and an Accordion 20px around their content', () => {
     // 2px box padding, 1px canvas border and 7px canvas padding, top and bottom.

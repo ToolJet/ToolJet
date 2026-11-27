@@ -79,13 +79,6 @@ const PACK_BOX_SIZED = [
 ];
 
 /**
- * Whether a UI 2.0 widget is always drawn at its box's height (it never measures itself).
- * @param {string | undefined} componentType
- * @returns {boolean}
- */
-export const isPackBoxSized = (componentType) => PACK_BOX_SIZED.includes(componentType);
-
-/**
  * Whether the editor marks the widget as dynamic height (the purple outline, handle and resize lines): its box follows
  * its content in the viewer. fitsContentInView says yes for every UI 2.0 widget whose Dynamic height is not off, so
  * widgets that never measure themselves and have no Dynamic height property (Skeleton, Button, the charts) were marked
@@ -104,23 +97,12 @@ export const heightHeldInView = (componentType, properties = {}) => {
 };
 
 /**
- * Whether a component pack widget with Dynamic height sizes itself around the components in its drop areas: they take
- * their components' height and it measures the box it then draws (SdkComponentHost, LibrarySlotCanvas). A reflow in one
- * of its drop areas leaves its height to it: sized as a grid container it had no components of its own (they sit on
- * `<id>-<slot>`), so it went back to its drawn height over the one it had measured.
- * @param {string | undefined} componentType
- * @param {Record<string, unknown>} [properties]  the widget's resolved properties
- * @returns {boolean}
- */
-export const sizesToDropAreas = (componentType, properties = {}) =>
-  isSdkComponentType(componentType) && properties.dynamicHeight === true;
-
-/**
  * Whether a child of a FlexContainer row is stretched to its line's height. An Equal heights row (or one whose Align is
  * Stretch, for FlexContainer children) stretches the children that draw a surface filling their box: a FlexContainer
  * (a card or a plain container) and a UI 2.0 Stat drawn as a card that fits its content, so cards of different content
  * heights line up. Every other child keeps its own height and the row's Align, so a heading beside a button still
- * centres. A stretched leaf is measured unstretched by the reflow (resolveWidgetMeasuredHeight), so the row can shrink.
+ * centres. A stretched leaf is measured as drawn, at its line's height; its slot's floor is its drawn height, never a
+ * measured one (FlexContainer followContentInSlot), so the row can still shrink.
  * Leaves stretch in the viewer only, where their height is their content's; in the editor they keep their drawn height.
  * @param {{ alignItems?: string, equalHeights?: boolean }} [rowProperties]  the row's resolved properties
  * @param {string | undefined} childType
@@ -139,31 +121,6 @@ export const stretchesInRow = (rowProperties = {}, childType, childProperties = 
     fitsContentInView(childType, childProperties)
   );
 };
-
-/**
- * Whether a widget moved by a sibling keeps the height its own reflow fitted, even below the height it was drawn at.
- * True for a component-pack widget, which fits its content. A native widget moved by a sibling is floored at its drawn
- * height, so a stale height cannot pin a top-label input below its label row.
- * @param {string | undefined} componentType
- * @returns {boolean}
- */
-// A component pack's widget (PackComponent, or a LibraryComponent) fits its content too: floored at its saved height,
-// an Ant Title or Statistic drawn shorter than the UI 2.0 size it was saved at left a band under it (Ant apps, room
-// bookings).
-export const keepsFittedHeightWhenMoved = (componentType) =>
-  isPackWidget(componentType) || isSdkComponentType(componentType);
-
-// UI 2.0 widgets whose rows (or cards) each take their own height in the reflow, the way the native Listview's rows
-// do: a child growing in row r writes the row's height under the widget's id at that row's context. The native
-// Listview keeps its own branches in the reflow; these names are only ever true for UI 2.0 types.
-const UI2_PER_ROW_TYPES = ['ShadListView', 'ShadKanban'];
-
-/**
- * Whether a widget is a UI 2.0 List view or Kanban, whose rows or cards are sized from the components on them.
- * @param {string | undefined} componentType
- * @returns {boolean}
- */
-export const isUi2PerRowType = (componentType) => UI2_PER_ROW_TYPES.includes(componentType);
 
 /**
  * The UI 2.0 List view's row height: its rowHeight property, 72 when unset, kept between 24 and 4000.

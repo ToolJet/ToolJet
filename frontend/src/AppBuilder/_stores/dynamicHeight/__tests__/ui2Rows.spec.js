@@ -1,7 +1,7 @@
 import { ui2RowHeight } from '../ui2Rows';
 
-// A UI 2.0 List view row and Kanban card, as the old reflow sized them (dynamicHeightReflow.resolveContainerHeight with
-// isUi2RowContext): the bottom of the components on the row plus the 8px kept under them (UI2_ROW_CHROME), never
+// A UI 2.0 List view row and Kanban card, as the old engine sized them on main (its resolveContainerHeight for UI 2.0
+// rows): the bottom of the components on the row plus the 8px kept under them (UI2_ROW_CHROME), never
 // below the Row height (72 by default) or the card height (96 by default).
 const LIST = 'ShadListView';
 const KANBAN = 'ShadKanban';

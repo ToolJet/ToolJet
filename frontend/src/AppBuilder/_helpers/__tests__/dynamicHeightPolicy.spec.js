@@ -1,10 +1,4 @@
-import {
-  boxFollowsContent,
-  fitsContentInView,
-  heightHeldInView,
-  keepsFittedHeightWhenMoved,
-  stretchesInRow,
-} from '../dynamicHeightPolicy';
+import { boxFollowsContent, fitsContentInView, heightHeldInView, stretchesInRow } from '../dynamicHeightPolicy';
 
 describe('which widgets fit their content in the viewer', () => {
   it('follows the Dynamic height property for native widgets', () => {
@@ -77,20 +71,6 @@ describe('which children an Equal heights row stretches to the line', () => {
   it('leaves other widgets at their own height, so the row keeps its Align (a heading beside a button)', () => {
     expect(stretchesInRow(equal, 'ShadHeading', {}, 'view')).toBe(false);
     expect(stretchesInRow(equal, 'Button', { dynamicHeight: true }, 'view')).toBe(false);
-  });
-});
-
-describe('keepsFittedHeightWhenMoved', () => {
-  it.each(['LibraryComponent', 'PackComponent'])(
-    'keeps a %s at the height it fitted when a sibling moves it',
-    (type) => {
-      // Break this catches: a pack component floored at its saved height when moved, leaving a band under it.
-      expect(keepsFittedHeightWhenMoved(type)).toBe(true);
-    }
-  );
-
-  it('floors a native widget at its drawn height', () => {
-    expect(keepsFittedHeightWhenMoved('TextInput')).toBe(false);
   });
 });
 
