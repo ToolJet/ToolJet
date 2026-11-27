@@ -369,6 +369,9 @@ export const createFormComponentSlice = (set, get) => ({
             // assigned directly because they have no attr level to iterate.
             if (componentDiff.component?.definition) {
               for (const [defType, defValues] of Object.entries(componentDiff.component.definition)) {
+                // A section with no value (e.g. `validation` on a Container dropped this session) has nothing
+                // to merge. Iterating it threw and dropped the whole batch, so a move into a container never saved.
+                if (!defValues || typeof defValues !== 'object') continue;
                 if (!pageComponent.component.definition[defType]) {
                   pageComponent.component.definition[defType] = {};
                 }
