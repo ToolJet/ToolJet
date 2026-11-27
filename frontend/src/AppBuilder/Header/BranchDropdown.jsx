@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import cx from 'classnames';
 import moment from 'moment';
 import { Overlay, Popover } from 'react-bootstrap';
@@ -17,6 +18,7 @@ import { AlertTriangle, Tag, Info, ExternalLink } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { pullRequestAction, pullRequestUrl, resolveDefaultBranchName } from './branchPullRequest';
+import { saveVersionAction } from './branchSaveVersion';
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -32,6 +34,8 @@ export function BranchDropdown({ appId, organizationId }) {
   const [isLoadingPRs, setIsLoadingPRs] = useState(false); // Track PR loading state
   // The branch's pull request and its apps' reviews: Create pull request waits for every committed app's approval.
   const [reviewStatus, setReviewStatus] = useState(null);
+  // Whether this branch draft may be saved as a version: Save version waits for its approved review.
+  const [saveGate, setSaveGate] = useState(null);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
@@ -173,6 +177,21 @@ export function BranchDropdown({ appId, organizationId }) {
     };
   }, [showDropdown, isMultiBranchingEnabled, activeBranchId, activeBranchIsDefault]);
   const prAction = pullRequestAction(reviewStatus);
+
+  const draftId = selectedVersion?.id;
+  useEffect(() => {
+    if (!showDropdown || !isMultiBranchingEnabled || activeBranchIsDefault || !appId || !draftId) return;
+    let cancelled = false;
+    setSaveGate(null);
+    workspaceBranchesService
+      .getSaveGate(appId, draftId)
+      .then((gate) => !cancelled && setSaveGate(gate))
+      .catch(() => !cancelled && setSaveGate(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [showDropdown, isMultiBranchingEnabled, activeBranchIsDefault, appId, draftId]);
+  const saveAction = saveVersionAction(saveGate);
 
   // Reset commit state when dropdown closes
   useEffect(() => {
@@ -772,28 +791,41 @@ export function BranchDropdown({ appId, organizationId }) {
                   <>
                     {/* Feature branch footer: Create PR + Switch branch */}
                     {/* Always show Create PR button when on sub-branch */}
-                    <button
-                      className="create-pr-btn"
-                      onClick={_handleCreatePR}
-                      disabled={prAction.disabled}
-                      title={prAction.reason ?? undefined}
-                      data-cy="create-pr-btn"
+                    {/* The reason shows on the wrapper: a disabled button gets no hover events in every browser. */}
+                    <span
+                      className="branch-action-anchor"
+                      data-tooltip-id={prAction.reason ? 'branch-dropdown-tooltip' : undefined}
+                      data-tooltip-content={prAction.reason ?? undefined}
                     >
-                      <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
-                      <span>{prAction.label}</span>
-                    </button>
-                    <div className="branch-dropdown-split-row">
                       <button
-                        className="save-version-btn"
-                        onClick={() => {
-                          setShowDropdown(false);
-                          setShowSaveVersionModal(true);
-                        }}
-                        data-cy="save-version-btn"
+                        className="create-pr-btn"
+                        onClick={_handleCreatePR}
+                        disabled={prAction.disabled}
+                        data-cy="create-pr-btn"
                       >
-                        <Tag size="14" />
-                        <span>Save version</span>
+                        <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
+                        <span>{prAction.label}</span>
                       </button>
+                    </span>
+                    <div className="branch-dropdown-split-row">
+                      <span
+                        className="branch-action-anchor save-version-anchor"
+                        data-tooltip-id={saveAction.reason ? 'branch-dropdown-tooltip' : undefined}
+                        data-tooltip-content={saveAction.reason ?? undefined}
+                      >
+                        <button
+                          className="save-version-btn"
+                          onClick={() => {
+                            setShowDropdown(false);
+                            setShowSaveVersionModal(true);
+                          }}
+                          disabled={saveAction.disabled}
+                          data-cy="save-version-btn"
+                        >
+                          <Tag size="14" />
+                          <span>Save version</span>
+                        </button>
+                      </span>
                       {allBranches.length > 0 && (
                         <>
                           <div className="branch-dropdown-split-divider" />
@@ -923,22 +955,25 @@ export function BranchDropdown({ appId, organizationId }) {
         }
       />
 
-      {/* Tooltip for PR details */}
-      {/* Tooltip for PR details */}
-      <Tooltip
-        id="branch-dropdown-tooltip"
-        className="branch-pr-tooltip"
-        style={{
-          backgroundColor: 'var(--slate12)',
-          color: 'var(--slate1)',
-          padding: '8px 12px',
-          borderRadius: '6px',
-          fontSize: '12px',
-          maxWidth: '300px',
-          whiteSpace: 'pre-line',
-          zIndex: 10000,
-        }}
-      />
+      {/* Tooltip for PR details and the footer buttons' reasons. Rendered in <body>, like the dropdown's popover, so it
+          stacks above it rather than inside the header. */}
+      {createPortal(
+        <Tooltip
+          id="branch-dropdown-tooltip"
+          className="branch-pr-tooltip"
+          style={{
+            backgroundColor: 'var(--slate12)',
+            color: 'var(--slate1)',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            fontSize: '12px',
+            maxWidth: '300px',
+            whiteSpace: 'pre-line',
+            zIndex: 10000,
+          }}
+        />,
+        document.body
+      )}
     </>
   );
 }

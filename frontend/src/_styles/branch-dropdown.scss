@@ -1211,6 +1211,21 @@
     }
   }
 
+  // Holds a footer button's reason tooltip, which a disabled button cannot show on its own.
+  .branch-action-anchor {
+    display: flex;
+    width: 100%;
+
+    // The hover lands on the wrapper, which shows the reason.
+    &:has(button:disabled) {
+      cursor: not-allowed;
+    }
+
+    button:disabled {
+      pointer-events: none;
+    }
+  }
+
   .branch-dropdown-split-row {
     display: flex;
     align-items: stretch;
@@ -1218,6 +1233,11 @@
     border: 1px solid var(--slate7);
     border-radius: 6px;
     overflow: hidden;
+
+    .save-version-anchor {
+      flex: 1;
+      width: auto;
+    }
 
     .save-version-btn {
       display: flex;
@@ -1236,8 +1256,14 @@
       cursor: pointer;
       transition: all 0.15s ease;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background: var(--slate3);
+      }
+
+      // Waiting for the branch draft's approved review; the title says why.
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
       }
 
       svg {

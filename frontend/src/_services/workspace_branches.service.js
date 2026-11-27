@@ -16,6 +16,7 @@ export const workspaceBranchesService = {
   listRemoteBranches,
   fetchPullRequests,
   getBranchReviewStatus,
+  getSaveGate,
   getEntityTags,
 };
 
@@ -172,6 +173,15 @@ function fetchPullRequests() {
 }
 
 // The branch's pull request into the default branch and the review of each app on it.
+// Whether a branch draft may be saved as a version now, and why not (the review gate's save check). Enterprise only.
+function getSaveGate(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/v2/apps/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}/release-gate?action=save`,
+    requestOptions
+  ).then((response) => handleResponse(response, false, null, true));
+}
+
 function getBranchReviewStatus(branchId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(
