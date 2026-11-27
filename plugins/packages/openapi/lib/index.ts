@@ -11,6 +11,7 @@ import {
   validateUrlForSSRF,
   getSSRFProtectionOptions,
   queryErrorMessage,
+  cancelOnAbort,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -52,7 +53,7 @@ export default class Openapi implements QueryService {
     queryOptions: QueryOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string,
-    context?: { user?: User; app?: App }
+    context?: { user?: User; app?: App; signal?: AbortSignal }
   ): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
     const { request, query, header, path: pathParams } = params;
@@ -101,7 +102,7 @@ export default class Openapi implements QueryService {
     let responseHeaders = {};
 
     try {
-      const response = await got(url, finalOptions);
+      const response = await cancelOnAbort(got(url, finalOptions), context?.signal);
       const contentType = response.headers['content-type'];
 
       result = contentType && contentType.includes('application/json') ? JSON.parse(response.body) : response.body;

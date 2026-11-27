@@ -43,7 +43,7 @@ describe('Workflow limits policy', () => {
           maxLogBytes: 1024 * 1024,
           maxNodeResultBytes: 5 * 1024 * 1024,
           maxStateBytes: 20 * 1024 * 1024,
-          stepTimeoutMs: 30_000,
+          stepTimeoutMs: 0,
         },
         trigger: { maxPayloadBytes: 1024 * 1024 },
         ratesPerMinute: {

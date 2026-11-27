@@ -157,7 +157,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           ? NaN
           : Number(parsedQueryOptions['query_timeout']);
       // Only if query timeout is set, abortController will be created
-      abortCtrl = new AbortControllerHandler(queryTimeoutMs);
+      abortCtrl = new AbortControllerHandler(queryTimeoutMs, opts?.signal);
       abortCtrl.start();
 
       queryStatus.setOptions(parsedQueryOptions);
@@ -210,6 +210,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           dataSourceOptions.updatedAt,
           {
             user: { id: user?.id },
+            // Lets the plugin cancel its request at the query's timeout or the workflow step's deadline
+            signal: abortCtrl.signal ?? undefined,
             app: {
               id: appToUse?.id,
               isPublic: effectiveIsPublic,
@@ -332,6 +334,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               dataSourceOptions.updatedAt,
               {
                 user: { id: user?.id },
+                signal: abortCtrl.signal ?? undefined,
                 app: {
                   id: appToUse?.id,
                   isPublic: effectiveIsPublic,
