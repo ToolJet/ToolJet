@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeEditor from '@/AppBuilder/CodeEditor';
 import { getFlexAxisAwareMeta } from '../Components/FlexContainer/flexChildInspectorUtils';
-import { getDefinitionInitialValue, getMissingShowRecordCountValue } from './utils';
+import { getDefinitionInitialValue } from './utils';
 
 const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
 
@@ -32,9 +32,9 @@ export const Code = ({
     if (customMeta && customMeta.defaultValue) {
       return customMeta.defaultValue;
     }
-    if (!_.isEmpty(definition)) return definition.value;
-    if (param.name === 'showRecordCount') return getMissingShowRecordCountValue(component);
-    return getDefinitionInitialValue(paramType, param.name, component, currentState, definition.value);
+    return !_.isEmpty(definition)
+      ? definition.value
+      : getDefinitionInitialValue(paramType, param.name, component, currentState, definition.value);
   }
 
   let initialValue = getInitialValue();

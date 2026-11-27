@@ -21,6 +21,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { getColumnIcon } from './utils';
+import { getMissingShowRecordCountValue } from '../../Elements/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useColumnManager, useActionButtonManager, usePopoverState } from './hooks';
 import { AddNewRowConfig } from './AddNewRowConfig/AddNewRowConfig';
@@ -146,11 +147,27 @@ export const Table = (props) => {
     [setColumnPopoverRootCloseBlocker]
   );
 
+  // A Table saved before "Show record count" has no value; show the one that matches what its count does
+  const recordCountComponent = useMemo(() => {
+    const properties = component.component.definition.properties;
+    if (properties?.showRecordCount) return component;
+    return {
+      ...component,
+      component: {
+        ...component.component,
+        definition: {
+          ...component.component.definition,
+          properties: { ...properties, showRecordCount: { value: getMissingShowRecordCountValue(component) } },
+        },
+      },
+    };
+  }, [component]);
+
   // Render helpers
   const renderCustomElement = useCallback(
     (param, paramType = 'properties', fieldActions = null) =>
       renderElement(
-        component,
+        param === 'showRecordCount' ? recordCountComponent : component,
         componentMeta,
         paramUpdated,
         dataQueries,
@@ -165,7 +182,7 @@ export const Table = (props) => {
         null,
         fieldActions
       ),
-    [component, componentMeta, paramUpdated, dataQueries]
+    [component, recordCountComponent, componentMeta, paramUpdated, dataQueries]
   );
 
   // Column popover
