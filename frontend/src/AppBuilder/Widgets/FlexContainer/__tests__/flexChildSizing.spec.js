@@ -2,6 +2,7 @@ import {
   computeFlexChildFlexStyle,
   flexCardHeaderPx,
   flexChildLineWidth,
+  followContentInSlot,
   leavesFlexFlow,
   resolveFlexChildSizing,
 } from '../flexContainer.utils';
@@ -116,5 +117,49 @@ describe('a dialog without its trigger button in a flex container', () => {
 
   it('keeps its slot in a container saved before layout version 2, as on lts-3.16', () => {
     expect(leavesFlexFlow({ modalWithoutTrigger: true, mode: 'view', layoutV2: false })).toBe(false);
+  });
+});
+
+describe('the slot of a child whose box follows its content (dynamic height, in the viewer)', () => {
+  // The slot is sized by what the child draws, so the browser lays the container out from real heights and the height
+  // registry measures them. Its floor is the height the child is drawn at, never one measured before: a measured floor
+  // could only grow.
+  it('[DynamicHeight-FLEXSLOT-001] in a column, grows from an auto basis instead of a fixed one', () => {
+    const style = computeFlexChildFlexStyle({ isFlexRow: false, fillWidth: true, effectiveHeightPx: 60 });
+    expect(followContentInSlot(style, { isFlexRow: false, floorPx: 60 })).toMatchObject({
+      flex: '0 0 auto',
+      height: 'auto',
+      minHeight: '60px',
+    });
+  });
+
+  it('[DynamicHeight-FLEXSLOT-002] in a row, keeps its width basis and takes an auto height', () => {
+    const style = computeFlexChildFlexStyle({
+      isFlexRow: true,
+      fillWidth: false,
+      effectiveWidthPx: 300,
+      effectiveHeightPx: 60,
+    });
+    expect(followContentInSlot(style, { isFlexRow: true, floorPx: 60 })).toMatchObject({
+      flex: '0 0 300px',
+      height: 'auto',
+      minHeight: '60px',
+    });
+    const fill = computeFlexChildFlexStyle({ isFlexRow: true, fillWidth: true, grow: 2, effectiveHeightPx: 60 });
+    expect(followContentInSlot(fill, { isFlexRow: true, floorPx: 60 }).flex).toBe('2 1 0px');
+  });
+
+  it('[DynamicHeight-FLEXSLOT-003] grows from an auto basis when stacked in a column', () => {
+    const style = computeFlexChildFlexStyle({
+      isFlexRow: false,
+      flexShouldStack: true,
+      fillWidth: true,
+      effectiveHeightPx: 60,
+    });
+    expect(followContentInSlot(style, { isFlexRow: false, floorPx: 60 })).toMatchObject({
+      flex: '0 0 auto',
+      height: 'auto',
+      minHeight: '60px',
+    });
   });
 });

@@ -161,6 +161,27 @@ export const computeFlexChildFlexStyle = ({
 };
 
 /**
+ * The slot of a child whose box follows its content (dynamic height, in the viewer: WidgetWrapper's
+ * dynamicHeightPolicy.boxFollowsContent). The slot is sized by what the child draws, never below `floorPx` (the height
+ * it is drawn at), so the browser lays the container out from real heights and the height registry measures them.
+ *
+ * In a column the flex basis is the height, so it becomes auto; in a row it is the width and is kept. The floor is
+ * never a measured height: a floor that follows the measurement can only grow, so a child stretched by a taller
+ * sibling (an Equal heights row) could never drop back.
+ * @param {object} style  the slot's flex style (computeFlexChildFlexStyle or computeFlexChildFlexStyleV1)
+ * @param {{ isFlexRow: boolean, floorPx: number }} options
+ */
+export const followContentInSlot = (style, { isFlexRow, floorPx }) => {
+  const [grow, shrink] = String(style.flex).split(' ');
+  return {
+    ...style,
+    ...(isFlexRow ? {} : { flex: `${grow} ${shrink} auto` }),
+    height: 'auto',
+    minHeight: `${floorPx}px`,
+  };
+};
+
+/**
  * Flex sizing of a FlexContainer child's wrapper in a container saved before the UI 2.0 layout (lts-3.16, kept as it
  * was; see _helpers/flexLayoutVersion.js). A fill child in a row grows from its content-sized basis and never shrinks,
  * so it takes the whole line and fill children stack one per line.

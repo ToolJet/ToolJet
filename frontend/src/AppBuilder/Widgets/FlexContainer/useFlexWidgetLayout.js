@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-import { computeFlexChildFlexStyle, computeFlexChildFlexStyleV1, resolveFlexChildSizing } from './flexContainer.utils';
+import {
+  computeFlexChildFlexStyle,
+  computeFlexChildFlexStyleV1,
+  followContentInSlot,
+  resolveFlexChildSizing,
+} from './flexContainer.utils';
 
 export const getFlexConfigWidgetTop = (widgetElement) => widgetElement?.offsetTop ?? 0;
 
@@ -17,6 +22,9 @@ export const useFlexWidgetLayout = ({
   measureWidth = false,
   dynamicHeight = false,
   temporaryHeight,
+  // The child's box follows its content (dynamicHeightPolicy.boxFollowsContent): its slot then does too
+  // (followContentInSlot), and the measured height above is not used.
+  followsContent = false,
   stretch = false,
   wraps = true,
   // The parent container's layout version (_helpers/flexLayoutVersion.js): false keeps the lts-3.16 child sizing.
@@ -44,9 +52,14 @@ export const useFlexWidgetLayout = ({
   // parent FlexContainer then computes the same old height and any widget below
   // it remains in place. In viewer mode, prefer the temporary height so flex
   // layout and dynamic-height reflow agree on the child's actual size.
-  const visibleHeightPx = dynamicHeight
-    ? (temporaryHeight ?? height ?? flexLayoutData.height ?? 100)
-    : (height ?? flexLayoutData.height ?? 100);
+  //
+  // A child whose box follows its content is the exception: its slot follows the content itself, and the height it is
+  // drawn at is only its floor (followContentInSlot).
+  const slotFollowsContent = dynamicHeight && followsContent; // a hidden child's slot is not drawn in the viewer
+  const visibleHeightPx =
+    dynamicHeight && !slotFollowsContent
+      ? (temporaryHeight ?? height ?? flexLayoutData.height ?? 100)
+      : (height ?? flexLayoutData.height ?? 100);
   const effectiveHeightPx = visibility ? visibleHeightPx : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
   const availableWidth = containerWidth ?? effectiveWidthPx;
   // A fill child in a row gets its share of the line from flexbox, so it is measured and rendered at that share. In a
@@ -122,10 +135,11 @@ export const useFlexWidgetLayout = ({
 
   const isStretched = stretch && isFlexRow && !flexShouldStack && !!visibility;
   const flexSizing = { isFlexRow, flexShouldStack, fillWidth, effectiveWidthPx, effectiveHeightPx, availableWidth };
+  const flexStyle = layoutV2
+    ? computeFlexChildFlexStyle({ ...flexSizing, grow, minWidthPx, wraps })
+    : computeFlexChildFlexStyleV1(flexSizing);
   const outerStyle = {
-    ...(layoutV2
-      ? computeFlexChildFlexStyle({ ...flexSizing, grow, minWidthPx, wraps })
-      : computeFlexChildFlexStyleV1(flexSizing)),
+    ...(slotFollowsContent ? followContentInSlot(flexStyle, { isFlexRow, floorPx: effectiveHeightPx }) : flexStyle),
     // A stretched child of a row fills the line's height (its own height stays the floor); the card inside fills it.
     ...(isStretched ? { height: 'auto', minHeight: `${effectiveHeightPx}px`, alignSelf: 'stretch' } : {}),
     position: 'relative',

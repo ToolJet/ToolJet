@@ -61,3 +61,38 @@ describe('a child stretched by an Equal heights row', () => {
     expect(child({ height: 120 }, { stretch: true, flexShouldStack: true }).isStretched).toBe(false);
   });
 });
+
+describe('a dynamic height child whose box follows its content, in the viewer', () => {
+  // `followsContent`: WidgetWrapper's dynamicHeightPolicy.boxFollowsContent. The measured (temporary) height never
+  // sizes the slot: the slot follows what the child draws, floored at the height it is drawn at.
+  const grown = { dynamicHeight: true, temporaryHeight: 150, followsContent: true };
+
+  it('[DynamicHeight-FLEXSLOT-004] in a column, follows its content from its drawn height up', () => {
+    const layout = child({ fillWidth: true, height: 120 }, { ...grown, flexDirection: 'column' });
+    expect(layout.outerStyle).toMatchObject({ flex: '0 0 auto', height: 'auto', minHeight: '120px' });
+  });
+
+  it('[DynamicHeight-FLEXSLOT-005] in a row, follows its content from its drawn height up', () => {
+    const layout = child({ fillWidth: false, widthPx: 300, height: 120 }, grown);
+    expect(layout.outerStyle).toMatchObject({ flex: '0 0 300px', height: 'auto', minHeight: '120px' });
+  });
+
+  it('[DynamicHeight-FLEXSLOT-006] when stretched by an Equal heights row, is floored at its drawn height, not the measured one', () => {
+    // The line is as tall as its tallest child's content; a floor at a measured height kept it from ever shrinking.
+    const layout = child({ fillWidth: true, height: 120 }, { ...grown, layoutV2: true, stretch: true });
+    expect(layout.outerStyle).toMatchObject({ height: 'auto', minHeight: '120px', alignSelf: 'stretch' });
+  });
+
+  it('[DynamicHeight-FLEXSLOT-007] keeps the measured height where its box does not follow its content', () => {
+    // A container in a FlexContainer is sized from its children by the engine.
+    const layout = child({ fillWidth: false, widthPx: 300, height: 120 }, { ...grown, followsContent: false });
+    expect(layout.outerStyle).toMatchObject({ height: '150px' });
+  });
+
+  it('[DynamicHeight-FLEXSLOT-008] is drawn at its drawn height in the editor, and hidden as before', () => {
+    expect(child({ height: 120 }, { ...grown, dynamicHeight: false, mode: 'edit' }).outerStyle).toMatchObject({
+      height: '120px',
+    });
+    expect(child({ height: 120 }, { ...grown, visibility: false }).outerStyle).toMatchObject({ display: 'none' });
+  });
+});

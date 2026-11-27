@@ -40,7 +40,7 @@ const seedOne = (id, type, properties) => {
 
 describe('the canvas box of a widget that sizes to its content', () => {
   let session;
-  const renderIn = (mode, id) => {
+  const renderIn = (mode, id, flexProps = {}) => {
     const state = useStore.getState();
     state.setEditorLoading(false, 'canvas');
     state.setCurrentMode(mode, 'canvas');
@@ -54,6 +54,7 @@ describe('the canvas box of a widget that sizes to its content', () => {
         inCanvas
         onOptionChange={() => {}}
         onOptionsChange={() => {}}
+        {...flexProps}
       />
     );
   };
@@ -91,5 +92,12 @@ describe('the canvas box of a widget that sizes to its content', () => {
     seedOne('html1', 'Html', { ...DH, rawHtml: binding('<p>Hello</p>') });
     renderIn('edit', 'html1');
     await waitFor(() => expect(box('html1')).toHaveStyle({ height: '120px' }));
+  });
+
+  it('[DynamicHeight-BOX-006] lets the slot of a FlexContainer child follow its content, not its measured height', async () => {
+    seedOne('text1', 'Text', { ...DH, text: binding('Hello') });
+    useStore.getState().setTemporaryLayouts({ text1: { height: 300 } });
+    renderIn('view', 'text1', { layoutMode: 'flex', flexDirection: 'column', containerWidth: 600 });
+    await waitFor(() => expect(box('text1')).toHaveStyle({ flex: '0 0 auto', height: 'auto', minHeight: '120px' }));
   });
 });
