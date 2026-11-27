@@ -3,6 +3,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css'; // Required to fix duplicate text appearing at the bottom from the previous page
 import { debounce } from 'lodash';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 // Constants for password prompt reasons (react-pdf v10 / pdfjs v4)
 const PasswordResponses = {
   NEED_PASSWORD: 1,
@@ -13,7 +14,16 @@ const PasswordResponses = {
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
 const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {
-  const { visibility, boxShadow, borderColor, borderRadius } = styles;
+  const {
+    visibility,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
+    borderColor,
+    borderRadius,
+    borderRadiusStyle,
+  } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const { url, scale, pageControls, showDownloadOption } = properties;
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(null);
@@ -218,7 +228,7 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
         style={{
           margin: '0 auto',
           overflow: 'hidden',
-          borderRadius: `${borderRadius}px`,
+          borderRadius: themedRadius(borderRadiusStyle, borderRadius),
           border: `1px solid ${borderColor}`,
           // The shadow lives on the SAME node as the radius so it follows the
           // rounded corner instead of drawing a square halo around it.

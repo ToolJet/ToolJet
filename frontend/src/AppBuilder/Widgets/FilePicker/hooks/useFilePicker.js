@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { formatFileSize, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { processFileContent, DEPRECATED_processFileContent, parseFileContentEnabled } from '../helpers/fileProcessing';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 import { registerFileHandle, releaseFileHandle, createFileFieldRef } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 export const useFilePicker = ({
@@ -50,9 +51,10 @@ export const useFilePicker = ({
   // --- Resolved Styles ---
   const containerBackgroundColor = styles?.containerBackgroundColor ?? 'var(--color-surface-1)';
   const containerBorder = styles?.containerBorder ?? 'transparent';
-  const boxShadow = styles?.boxShadow ?? 'none';
+  // The theme shadow / radius (or this widget's own) as CSS.
+  const boxShadow = themedShadow(styles?.boxShadowStyle, styles?.boxShadow ?? 'none');
   const containerPadding = styles?.padding ?? 'default';
-  const borderRadius = styles?.borderRadius ?? 8;
+  const borderRadius = themedRadius(styles?.borderRadiusStyle, styles?.borderRadius ?? 8);
 
   const dropzoneTitleColor = styles?.dropzoneTitleColor ?? 'var(--text-primary';
   const dropzoneActiveColor = styles?.dropzoneActiveColor ?? 'var(--primary-brand)';

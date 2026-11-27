@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const IFrame = function IFrame({
   width,
@@ -14,7 +15,9 @@ export const IFrame = function IFrame({
 }) {
   // ===== PROPS DESTRUCTURING =====
   const { source, loadingState, disabledState, visibility } = properties;
-  const { boxShadow } = styles;
+  const { boxShadow: savedBoxShadow, boxShadowStyle } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({

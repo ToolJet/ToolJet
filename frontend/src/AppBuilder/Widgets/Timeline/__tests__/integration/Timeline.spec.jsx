@@ -16,6 +16,8 @@
 import { screen, waitFor } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { timelineConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 'tl1';
 const NAME = 'timeline1';
@@ -392,5 +394,54 @@ describe('Timeline: dynamic height', () => {
     await waitFor(() => expect(items(container)).toHaveLength(3));
     expect(card()).toHaveStyle({ height: '36px', overflow: 'auto' });
     expect(card().style.minHeight).toBe('');
+  });
+});
+
+// Theme box shadow (contract D-05; Button's D-03..D-06 transferred).
+describe('Timeline: theme box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const shadowBox = () => document.querySelector('[data-cy="timeline1"]');
+
+  test('[Timeline-THEME-001] a newly dropped Timeline starts with no theme shadow, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(timelineConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(timelineConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[Timeline-THEME-002] a Timeline saved before theme styles keeps its own shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'tl1',
+      'tl1',
+      'Timeline',
+      {},
+      {
+        styles: { boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ tl1: saved })['tl1'].component.definition;
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({ styles: { ...generalStyles, ...styles, boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[Timeline-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('tl1', 'boxShadowStyle', 'custom', 'styles');
+    await waitFor(() => expect(getComputedStyle(shadowBox()).boxShadow).toBe('0px 0px 0px 0px #00000040'));
   });
 });

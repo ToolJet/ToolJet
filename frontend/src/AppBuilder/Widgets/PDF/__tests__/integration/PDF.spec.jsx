@@ -1,6 +1,8 @@
 import { screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
+import { pdfConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 'pdf1';
 
@@ -18,6 +20,9 @@ const widget = createWidgetHarness({
     visibility: binding('{{true}}'),
     borderColor: binding('rgb(1, 2, 3)'),
     borderRadius: binding('{{6}}'),
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+    borderRadiusStyle: binding('custom'),
+    boxShadowStyle: binding('custom'),
   },
 });
 
@@ -229,5 +234,66 @@ describe('PDF widget', () => {
 
     await waitFor(() => expect(counterText()).toBe('3 of 5'));
     expect(counterText('pdfb1')).toBe('1 of 5');
+  });
+});
+
+// Theme border radius and box shadow (contract D-16; Button's D-03..D-06 transferred).
+describe('PDF: theme border radius and box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const radiusBox = () => document.querySelector('[data-cy="pdf1"] > div');
+  const shadowBox = () => document.querySelector('[data-cy="pdf1"] > div');
+
+  test('[PDF-THEME-001] a newly dropped PDF starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(pdfConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(pdfConfig.definition.generalStyles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(pdfConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(pdfConfig.generalStyles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[PDF-THEME-002] a PDF saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'pdf1',
+      'pdf1',
+      'PDF',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    saved.component.definition.generalStyles = { boxShadow: binding('5px 5px 0px 0px #00000040') };
+    const { styles, generalStyles } = buildComponentMetaDefinition({ pdf1: saved })['pdf1'].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...generalStyles, ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[PDF-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('pdf1', 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('pdf1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px'));
   });
 });

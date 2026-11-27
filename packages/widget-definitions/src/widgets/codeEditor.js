@@ -74,6 +74,8 @@ export const codeEditorConfig = {
       accordian: 'container',
     },
     borderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'code',
       displayName: 'Border radius',
       validation: {
@@ -125,6 +127,9 @@ export const codeEditorConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's Large radius; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       borderRadius: { value: '{{6}}' },

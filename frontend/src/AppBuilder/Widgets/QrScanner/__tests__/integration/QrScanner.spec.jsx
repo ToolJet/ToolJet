@@ -7,6 +7,9 @@ import {
   MODULE_ID,
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { qrscannerConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for QrScanner (display name "QR Scanner").
 // Contract: frontend/ee/test/app-builder/widgets/QrScanner/TESTING.md.
@@ -113,5 +116,56 @@ describe('QrScanner widget', () => {
 
     await waitFor(() => expect(container()).toBeInTheDocument());
     expect(container()).toHaveAttribute('data-disabled', 'true');
+  });
+});
+
+// Theme box shadow (contract D-06; Button's D-03..D-06 transferred).
+describe('QrScanner: theme box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const shadowBox = () => document.querySelector('[data-cy="qrscanner1"]');
+
+  test('[QrScanner-THEME-001] a newly dropped QrScanner starts with no theme shadow, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(qrscannerConfig.definition.generalStyles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(qrscannerConfig.generalStyles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[QrScanner-THEME-002] a QrScanner saved before theme styles keeps its own shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'qrscanner1',
+      'qrscanner1',
+      'QrScanner',
+      {},
+      {
+        styles: {},
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    saved.component.definition.generalStyles = { boxShadow: binding('5px 5px 0px 0px #00000040') };
+    const { styles, generalStyles } = buildComponentMetaDefinition({ qrscanner1: saved })['qrscanner1'].component
+      .definition;
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({ styles: { ...generalStyles, ...styles, boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[QrScanner-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('qrscanner1', 'boxShadowStyle', 'custom', 'styles');
+    await waitFor(() => expect(getComputedStyle(shadowBox()).boxShadow).toBe('0px 0px 0px 0px #00000040'));
   });
 });

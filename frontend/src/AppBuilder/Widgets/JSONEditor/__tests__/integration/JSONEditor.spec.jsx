@@ -17,6 +17,8 @@ import userEvent from '@testing-library/user-event';
 import { screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding, store, drain } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
+import { jsonEditorConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 'jsoneditor1';
 
@@ -341,6 +343,9 @@ describe('JSONEditor widget', () => {
           borderColor: binding('#ff0000'),
           borderRadius: binding('{{12}}'),
           boxShadow: binding(shadow),
+          // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+          borderRadiusStyle: binding('custom'),
+          boxShadowStyle: binding('custom'),
         },
       }).container
     );
@@ -442,5 +447,67 @@ describe('JSONEditor widget', () => {
     expect(surface()).toHaveAttribute('role', 'textbox');
     expect(surface()).toHaveAttribute('aria-multiline', 'true');
     expect(container.querySelector('.cm-announced')).toHaveAttribute('aria-live', 'polite');
+  });
+});
+
+// Theme border radius and box shadow (contract D-10; Button's D-03..D-06 transferred).
+// The family is THEMESTYLE: THEME is this widget's CodeMirror colour-theme family.
+describe('JSONEditor: theme border radius and box shadow', () => {
+  beforeEach(() => jsonEditor.setup());
+  afterEach(() => jsonEditor.teardown());
+  const radiusBox = () => document.querySelector('.json-editor-widget');
+  const shadowBox = () => document.querySelector('.json-editor-widget');
+
+  test('[JSONEditor-THEMESTYLE-001] a newly dropped JSONEditor starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(jsonEditorConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(jsonEditorConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(jsonEditorConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(jsonEditorConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[JSONEditor-THEMESTYLE-002] a JSONEditor saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'jsoneditor1',
+      'jsoneditor1',
+      'JSONEditor',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ jsoneditor1: saved })['jsoneditor1'].component
+      .definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    jsonEditor.render({
+      styles: { ...generalStyles, ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[JSONEditor-THEMESTYLE-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    jsonEditor.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    jsonEditor.setComponentProperty('jsoneditor1', 'borderRadiusStyle', 'custom', 'styles');
+    jsonEditor.setComponentProperty('jsoneditor1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px'));
   });
 });

@@ -8,6 +8,9 @@ import {
   MODULE_ID,
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { audioRecorderConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for AudioRecorder (react-media-recorder). Sibling of Camera.
 // Contract: frontend/ee/test/app-builder/widgets/AudioRecorder/TESTING.md.
@@ -41,6 +44,9 @@ const defaultStyles = {
   borderColor: binding('var(--cc-default-border)'),
   borderRadius: binding('{{6}}'),
   boxShadow: binding('0px 0px 0px 0px #00000040'),
+  // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+  borderRadiusStyle: binding('custom'),
+  boxShadowStyle: binding('custom'),
   iconVisibility: binding('{{true}}'),
 };
 
@@ -286,5 +292,68 @@ describe('AudioRecorder widget', () => {
     });
 
     expect(exposed().isDisabled).toBe(true);
+  });
+});
+
+// Theme border radius and box shadow (contract D-09; Button's D-03..D-06 transferred).
+describe('AudioRecorder: theme border radius and box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const radiusBox = () =>
+    document.querySelector('.audio-recorder-button-container, .audio-recorder-loader-container')?.parentElement;
+  const shadowBox = () =>
+    document.querySelector('.audio-recorder-button-container, .audio-recorder-loader-container')?.parentElement;
+
+  test('[AudioRecorder-THEME-001] a newly dropped AudioRecorder starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(audioRecorderConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(audioRecorderConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(audioRecorderConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(audioRecorderConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[AudioRecorder-THEME-002] a AudioRecorder saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'audiorecorder1',
+      'audiorecorder1',
+      'AudioRecorder',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ audiorecorder1: saved })['audiorecorder1']
+      .component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...generalStyles, ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[AudioRecorder-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('audiorecorder1', 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('audiorecorder1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px'));
   });
 });

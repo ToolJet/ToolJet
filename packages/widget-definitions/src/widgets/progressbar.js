@@ -196,6 +196,8 @@ export const progressbarConfig = {
       skipAutoConditionCheck: true,
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: {
@@ -258,6 +260,9 @@ export const progressbarConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      boxShadowStyle: { value: 'none' },
       textColor: { value: 'var(--cc-primary-text)' },
       textSize: { value: '{{30}}' },
       alignment: { value: 'side' },

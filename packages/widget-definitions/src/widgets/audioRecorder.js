@@ -110,6 +110,8 @@ export const audioRecorderConfig = {
       accordian: 'container',
     },
     borderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'numberInput',
       displayName: 'Border radius',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
@@ -117,6 +119,8 @@ export const audioRecorderConfig = {
       accordian: 'container',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
@@ -166,6 +170,10 @@ export const audioRecorderConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
       recorderIcon: { value: 'IconMicrophone' },
       recorderIconColor: { value: '#F6430D' },
       labelColor: { value: 'var(--cc-primary-text)' },

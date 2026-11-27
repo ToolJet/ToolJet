@@ -11,6 +11,7 @@ import { sass } from '@codemirror/lang-sass';
 import { debounce } from 'lodash';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import './codeEditor.scss';
+import { themedRadius } from '@/AppBuilder/_helpers/themeStyles';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -109,7 +110,7 @@ const CodeEditor = ({
           ...(isDynamicHeightEnabled
             ? { minHeight: height - 1, maxHeight: '100%', overflow: 'auto' }
             : { minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }),
-          borderRadius: `${styles.borderRadius}px`,
+          borderRadius: themedRadius(styles.borderRadiusStyle, styles.borderRadius),
           boxShadow: styles.boxShadow,
           border: `1px solid ${styles.borderColor}`,
           '--cc-code-editor-min-height': `${height - 1}px`,

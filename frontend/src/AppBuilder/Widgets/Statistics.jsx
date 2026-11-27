@@ -10,6 +10,7 @@ import WidgetIcon from '@/../assets/images/icons/widgets';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import WidgetTooltip from '@/AppBuilder/AppCanvas/WidgetTooltip';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 // Same result the Value property's string validation gives: text, finite numbers as text, anything else blank.
 const toDisplayText = (value) => {
@@ -137,10 +138,14 @@ export const Statistics = function Statistics({
     backgroundColor,
     borderColor,
     borderRadius,
-    boxShadow,
+    borderRadiusStyle,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
     padding,
     iconVisibility,
   } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   const { moduleId } = useModuleContext();
   const cardKey = `${moduleId}:${id}:${subContainerIndex ?? ''}`;
@@ -269,7 +274,7 @@ export const Statistics = function Statistics({
   ]);
 
   const baseStyle = {
-    borderRadius: `${borderRadius ?? 4}px`,
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius ?? 4),
     backgroundColor: backgroundColor ?? 'var(--cc-surface1-surface)',
     margin: '0px auto',
     border: `1px solid ${borderColor ?? 'var(--cc-default-border)'}`,

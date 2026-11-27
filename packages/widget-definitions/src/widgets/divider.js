@@ -114,6 +114,8 @@ export const dividerConfig = {
       isFxNotRequired: true,
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box Shadow',
       validation: {
@@ -151,6 +153,9 @@ export const dividerConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      boxShadowStyle: { value: 'none' },
       dividerColor: { value: 'var(--cc-default-border)' },
       labelAlignment: { value: 'center' },
       dividerStyle: { value: 'solid' },

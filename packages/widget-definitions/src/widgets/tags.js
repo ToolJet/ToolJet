@@ -117,6 +117,8 @@ export const tagsConfig = {
       accordian: 'pills',
     },
     borderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'input',
       displayName: 'Border radius',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: '8' },
@@ -136,6 +138,8 @@ export const tagsConfig = {
       accordian: 'container',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: {
@@ -230,6 +234,10 @@ export const tagsConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
       padding: { value: 'default' },
       alignment: { value: 'left' },
       size: { value: 'small' },

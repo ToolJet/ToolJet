@@ -12,6 +12,7 @@ import './colorpicker.scss';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import { SketchPicker } from 'react-color';
 import { getTinyColorInstance, getExposedColorState } from './utils';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const ColorPicker = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -44,10 +45,14 @@ export const ColorPicker = (props) => {
     textColor,
     errTextColor,
     borderRadius,
-    boxShadow,
+    borderRadiusStyle,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
     padding,
     labelFontSize,
   } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
@@ -258,7 +263,7 @@ export const ColorPicker = (props) => {
         : borderColor;
 
   const buttonStyles = {
-    borderRadius: `${borderRadius}px`,
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius),
     height: _height,
     border: `1px solid ${buttonBorderColor}`,
     outline: isFocusedOrOpen ? `1px solid ${accentColor}` : 'none',

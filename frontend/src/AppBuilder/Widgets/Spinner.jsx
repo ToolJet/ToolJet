@@ -1,7 +1,10 @@
 import React from 'react';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const Spinner = ({ styles, height, dataCy }) => {
-  const { colour, size, visibility, boxShadow } = styles;
+  const { colour, size, visibility, boxShadow: savedBoxShadow, boxShadowStyle } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   const baseStyle = {
     height,

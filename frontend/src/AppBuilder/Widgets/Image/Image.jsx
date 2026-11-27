@@ -10,6 +10,7 @@ import ZoomInImage from '@/AppBuilder/Widgets/Image/icons/zoomin-image.svg';
 import ZoomOutImage from '@/AppBuilder/Widgets/Image/icons/zoomout-image.svg';
 import RotateImage from '@/AppBuilder/Widgets/Image/icons/rotate-image.svg';
 import './image.scss';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export default function Image({
   setExposedVariable,
@@ -36,11 +37,15 @@ export default function Image({
     backgroundColor,
     padding,
     customPadding,
-    boxShadow,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
     borderRadius,
+    borderRadiusStyle,
     borderColor,
     alignment,
   } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   const isInitialRender = useRef(true);
 
@@ -219,7 +224,7 @@ export default function Image({
             ? '50%'
             : borderType === 'rounded' || borderType === 'img-thumbnail'
               ? '4px'
-              : `${borderRadius}px`,
+              : themedRadius(borderRadiusStyle, borderRadius),
         borderColor: borderColor || (borderType === 'img-thumbnail' ? '#e7eaef' : 'transparent'),
         objectPosition: alignment,
       }}

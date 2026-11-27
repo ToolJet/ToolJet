@@ -325,12 +325,16 @@ export const filepickerConfig = {
     //   accordian: 'Container',
     // },
     borderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'numberInput',
       displayName: 'Border Radius',
       validation: { schema: { type: 'number' }, defaultValue: 6 },
       accordian: 'Container',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: { schema: { type: 'string' }, defaultValue: '0px 1px 3px 0px #0000001A' },
@@ -391,6 +395,10 @@ export const filepickerConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
       borderRadius: { value: '{{6}}' },
       dropzoneTitleColor: { value: 'var(--cc-primary-text)' },
       // dropzoneActiveColor: { value: 'var(--cc-primary-brand)' },

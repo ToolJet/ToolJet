@@ -291,7 +291,8 @@
     },
     {
       "componentType": "Timer",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Timer/TESTING.md"
     },
     {
       "componentType": "Spinner",
@@ -320,7 +321,8 @@
     },
     {
       "componentType": "IFrame",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/IFrame/TESTING.md"
     },
     {
       "componentType": "FilePicker",
@@ -349,7 +351,8 @@
     },
     {
       "componentType": "Chat",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Chat/TESTING.md"
     },
     {
       "componentType": "ReorderableList",

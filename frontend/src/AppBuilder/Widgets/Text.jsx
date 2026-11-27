@@ -10,6 +10,7 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -49,13 +50,17 @@ export const Text = function Text({
     letterSpacing,
     wordSpacing,
     fontVariant,
-    boxShadow,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
     verticalAlignment,
     borderColor,
     borderRadius,
+    borderRadiusStyle,
     isScrollRequired,
     padding,
   } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const boxHeight = padding === 'none' ? height + BOX_PADDING * 2 : height;
   const isInitialRender = useRef(true);
   const { loadingState, textFormat, disabledState } = properties;
@@ -179,7 +184,7 @@ export const Text = function Text({
     boxShadow,
     border: '1px solid',
     borderColor: darkMode && ['#f2f2f5'].includes(borderColor) ? '#2f3c4c' : borderColor ? borderColor : 'transparent',
-    borderRadius: borderRadius ? `${borderRadius}px` : '0px',
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius || 0),
     fontSize: `${textSize}px`,
   };
 

@@ -36,6 +36,11 @@ export const qrscannerConfig = {
   exposedVariables: {
     lastDetectedValue: '',
   },
+  // The universal General Box Shadow, as a dropdown of the app theme's shadows + Custom (this shadow); the choice is
+  // generalStyles.boxShadowStyle (the canvas merges generalStyles into the widget's styles).
+  generalStyles: {
+    boxShadow: { type: 'boxShadow', displayName: 'Box Shadow', themeTokens: 'shadows' },
+  },
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -43,6 +48,10 @@ export const qrscannerConfig = {
     },
     properties: {},
     events: [],
+    // New drops follow the theme's None shadow (NEW_DROP_ONLY_STYLES in ../utils.js).
+    generalStyles: {
+      boxShadowStyle: { value: 'none' },
+    },
     styles: {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },

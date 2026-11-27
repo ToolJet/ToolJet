@@ -5,6 +5,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import './jsonExplorer.scss';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const JSONExplorer = function JSONExplorer(props) {
   // ===== PROPS DESTRUCTURING =====
@@ -24,7 +25,16 @@ export const JSONExplorer = function JSONExplorer(props) {
 
   const { value, shouldExpandEntireJSON, shouldShowRootNode, loadingState, visibility, disabledState, theme } =
     properties;
-  const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
+  const {
+    backgroundColor,
+    borderColor,
+    borderRadius,
+    borderRadiusStyle,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
+  } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   // ===== STATE MANAGEMENT =====
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
@@ -73,7 +83,7 @@ export const JSONExplorer = function JSONExplorer(props) {
     ...(isDynamicHeightEnabled ? { minHeight: `${height}px` } : {}),
     backgroundColor,
     border: `1px solid ${borderColor}`,
-    borderRadius: `${borderRadius}px`,
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius),
     boxShadow,
     visibility: exposedVariablesTemporaryState.isVisible ? 'visible' : 'hidden',
     ...(exposedVariablesTemporaryState.isLoading

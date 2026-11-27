@@ -30,6 +30,8 @@ import userEvent from '@testing-library/user-event';
 import { screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
+import { codeEditorConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 'codeeditor1';
 const WIDGET_HEIGHT = 120;
@@ -312,6 +314,8 @@ describe('CodeEditor widget', () => {
             borderColor: binding('#ff0000'),
             backgroundColor: binding('#00ff00'),
             boxShadow: binding(shadow),
+            // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+            borderRadiusStyle: binding('custom'),
           },
         }).container
       );
@@ -469,5 +473,59 @@ describe('CodeEditor widget', () => {
       expect(surface()).toHaveAttribute('aria-multiline', 'true');
       expect(container.querySelector('.cm-announced')).toHaveAttribute('aria-live', 'polite');
     });
+  });
+});
+
+// Theme border radius (contract D-08; Button's D-03..D-06 transferred).
+describe('CodeEditor: theme border radius', () => {
+  beforeEach(() => codeEditor.setup());
+  afterEach(() => codeEditor.teardown());
+  const radiusBox = () => document.querySelector('.code-editor-widget');
+
+  test('[CodeEditor-THEME-001] a newly dropped CodeEditor starts on the theme Large radius, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(codeEditorConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(codeEditorConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+  });
+
+  test('[CodeEditor-THEME-002] a CodeEditor saved before theme styles keeps its own radius after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'codeeditor1',
+      'codeeditor1',
+      'CodeEditor',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ codeeditor1: saved })['codeeditor1'].component
+      .definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    codeEditor.render({
+      styles: { ...generalStyles, ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px');
+  });
+
+  test('[CodeEditor-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    codeEditor.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+      },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+
+    codeEditor.setComponentProperty('codeeditor1', 'borderRadiusStyle', 'custom', 'styles');
+    codeEditor.setComponentProperty('codeeditor1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px'));
   });
 });

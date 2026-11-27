@@ -58,6 +58,8 @@ export const pdfConfig = {
       },
     },
     borderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'numberInput',
       displayName: 'Border radius',
       validation: {
@@ -67,6 +69,11 @@ export const pdfConfig = {
     },
   },
   exposedVariables: {},
+  // The universal General Box Shadow, as a dropdown of the app theme's shadows + Custom (this shadow); the choice is
+  // generalStyles.boxShadowStyle (the canvas merges generalStyles into the widget's styles).
+  generalStyles: {
+    boxShadow: { type: 'boxShadow', displayName: 'Box Shadow', themeTokens: 'shadows' },
+  },
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -89,7 +96,14 @@ export const pdfConfig = {
       collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
+    // New drops follow the theme's None shadow (NEW_DROP_ONLY_STYLES in ../utils.js).
+    generalStyles: {
+      boxShadowStyle: { value: 'none' },
+    },
     styles: {
+      // New drops follow the theme's Large radius; a saved widget without the key keeps its own value
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
       visibility: { value: '{{true}}' },
       borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: 6 },

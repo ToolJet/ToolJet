@@ -194,6 +194,8 @@ export const circularProgressbarConfig = {
       accordian: 'progress circle',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: {
@@ -257,6 +259,9 @@ export const circularProgressbarConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      boxShadowStyle: { value: 'none' },
       textColor: { value: 'var(--cc-primary-text)' },
       textSize: { value: '{{16}}' },
       trackColor: { value: 'var(--cc-surface3-surface)' },

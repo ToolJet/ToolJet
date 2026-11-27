@@ -43,7 +43,7 @@ describe('StarRating: theme box shadow', () => {
     expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
 
     widget.render({
-      styles: { ...styles, ...generalStyles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+      styles: { ...generalStyles, ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
     });
     await waitFor(() => expect(themedBox()).toBeTruthy());
     expect(themedBox().style.boxShadow).toBe('5px 5px 0px 0px #00000040');

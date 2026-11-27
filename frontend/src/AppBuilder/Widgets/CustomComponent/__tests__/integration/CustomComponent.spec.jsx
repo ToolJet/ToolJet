@@ -15,6 +15,7 @@ import { AppBuilderTestSession, componentDefinition, defineAppBuilderScenario, s
 import { customComponentConfig as frontendConfig } from '@tooljet/widget-definitions';
 // eslint-disable-next-line import/no-relative-packages
 import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const serverConfig = serverWidgets.customComponentConfig;
 
@@ -726,7 +727,10 @@ describe('CustomComponent widget', () => {
     // Break this catches: dropping the configured shadow, or letting the
     // universal generalStyles duplicate win over the widget's own style.
     const shadow = '1px 2px 3px 4px rgba(0, 0, 0, 0.5)';
-    const { container } = widget.render({ styles: { boxShadow: binding(shadow) } });
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+    const { container } = widget.render({
+      styles: { boxShadow: binding(shadow), boxShadowStyle: binding('custom') },
+    });
     await waitFor(() => expect(root(container)).toHaveStyle({ boxShadow: shadow }));
 
     await setProperty('data', dataExpr({ changed: true }));
@@ -762,7 +766,9 @@ describe('CustomComponent widget', () => {
   test('[CustomComponent-STY-003] Border radius is applied from the resolved style', async () => {
     // Break this catches: forwarding a falsy radius straight into the template
     // literal, which renders the malformed length "falsepx".
-    const { container } = widget.render({ styles: { borderRadius: binding('{{12}}') } });
+    const { container } = widget.render({
+      styles: { borderRadius: binding('{{12}}'), borderRadiusStyle: binding('custom') },
+    });
     await waitFor(() => expect(root(container)).toHaveStyle({ borderRadius: '12px' }));
 
     await setStyle('borderRadius', '');
@@ -1047,5 +1053,65 @@ describe('CustomComponent frame bridge', () => {
 
     expect(authorScripts(frameWindow)).toHaveLength(1);
     expect(frameWindow.script).toBe('author value');
+  });
+});
+
+// Theme border radius and box shadow (contract D-15; Button's D-03..D-06 transferred).
+describe('CustomComponent: theme border radius and box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const radiusBox = () => document.querySelector('[data-cy="customComponent1"]');
+  const shadowBox = () => document.querySelector('[data-cy="customComponent1"]');
+
+  test('[CustomComponent-THEME-001] a newly dropped CustomComponent starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(frontendConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(frontendConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(frontendConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(frontendConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[CustomComponent-THEME-002] a CustomComponent saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'cc1',
+      'cc1',
+      'CustomComponent',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ cc1: saved })['cc1'].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...generalStyles, ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[CustomComponent-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('cc1', 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('cc1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px'));
   });
 });

@@ -1,11 +1,23 @@
 import { max, min } from 'lodash';
 import React from 'react';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 const DASH_WIDTH = 4;
 const DASH_GAP = 4;
 
 export const Divider = function Divider({ dataCy, height, width, darkMode, styles, properties }) {
-  const { labelAlignment, labelColor, dividerColor, boxShadow, dividerStyle, padding, textWrap } = styles;
+  const {
+    labelAlignment,
+    labelColor,
+    dividerColor,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
+    dividerStyle,
+    padding,
+    textWrap,
+  } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const { label, visibility } = properties;
   const color =
     dividerColor === '' || ['#000', '#000000'].includes(dividerColor) ? (darkMode ? '#fff' : '#000') : dividerColor;

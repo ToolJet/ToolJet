@@ -3,6 +3,7 @@ import Label from '@/_ui/Label';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './progressbar.scss';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 // Text that is not a number (e.g. setValue('abc')) becomes 0, like an empty or NaN value.
 const clampProgress = (value) => {
@@ -24,10 +25,13 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
     progressTrackColor,
     completionColor,
     progressBarThickness,
-    boxShadow,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
     textSize,
     padding,
   } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   // ===== COMPUTED VALUES =====
   const computedHeight = padding !== 'none' ? height - 2 * BOX_PADDING : height;

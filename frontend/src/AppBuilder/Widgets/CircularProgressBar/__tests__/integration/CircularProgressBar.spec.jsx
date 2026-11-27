@@ -11,6 +11,7 @@ import {
 import { pasteComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
 // eslint-disable-next-line import/no-relative-packages
 import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const serverConfig = serverWidgets.circularProgressbarConfig;
 
@@ -47,6 +48,8 @@ const defaultStyles = {
   alignment: binding('center'),
   counterClockwise: binding('{{false}}'),
   boxShadow: binding('0px 0px 0px 0px #00000040'),
+  // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+  boxShadowStyle: binding('custom'),
   padding: binding('default'),
 };
 
@@ -510,5 +513,54 @@ describe('CircularProgressBar widget', () => {
     await setProperty('labelType', 'custom');
     await setProperty('text', 'Three quarters complete');
     await waitFor(() => expect(within(progressSvg).getByText('Three quarters complete')).toBe(label(container)));
+  });
+});
+
+// Theme box shadow (contract D-06; Button's D-03..D-06 transferred).
+describe('CircularProgressBar: theme box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const shadowBox = () => document.querySelector('[data-cy="circularprogressbar1"]');
+
+  test('[CircularProgressBar-THEME-001] a newly dropped CircularProgressBar starts with no theme shadow, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(frontendConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(frontendConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[CircularProgressBar-THEME-002] a CircularProgressBar saved before theme styles keeps its own shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'circle1',
+      'circle1',
+      'CircularProgressBar',
+      {},
+      {
+        styles: { boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ circle1: saved })['circle1'].component.definition;
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({ styles: { ...generalStyles, ...styles, boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[CircularProgressBar-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('circle1', 'boxShadowStyle', 'custom', 'styles');
+    await waitFor(() => expect(getComputedStyle(shadowBox()).boxShadow).toBe('0px 0px 0px 0px #00000040'));
   });
 });

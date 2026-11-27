@@ -6,6 +6,7 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { sanitizeAuthoredHtml } from '@/_helpers/sanitizeAuthoredHtml';
 import './html.scss';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const Html = function ({
   id,
@@ -23,7 +24,9 @@ export const Html = function ({
   componentType,
 }) {
   const { rawHtml: stringifyHTML, loadingState, disabledState, visibility } = properties || {};
-  const { boxShadow, backgroundColor } = styles || {};
+  const { boxShadow: savedBoxShadow, boxShadowStyle, backgroundColor } = styles || {};
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const baseStyle = {
     backgroundColor: backgroundColor ? backgroundColor : darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',

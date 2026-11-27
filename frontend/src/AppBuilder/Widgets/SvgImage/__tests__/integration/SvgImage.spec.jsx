@@ -9,6 +9,7 @@ import { componentDefinition } from '@/test/app-builder';
 import { svgImageConfig as frontendConfig } from '@tooljet/widget-definitions';
 // eslint-disable-next-line import/no-relative-packages
 import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const serverConfig = serverWidgets.svgImageConfig;
 
@@ -186,7 +187,11 @@ describe('SvgImage widget', () => {
       const { container } = widget.render({
         currentMode,
         styles: { alignment: binding('center') },
-        afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'generalStyles'),
+        afterSeed: () => {
+          widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'generalStyles');
+          // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+          widget.setComponentProperty(ID, 'boxShadowStyle', 'custom', 'generalStyles');
+        },
       });
       const imageNode = await within(container).findByRole('img');
       expect(root(container).style.display).toBe('');
@@ -210,7 +215,11 @@ describe('SvgImage widget', () => {
     // Break this catches: rebuilding the container's inline style on a property change without the
     // merged universal generalStyles boxShadow.
     const { container } = widget.render({
-      afterSeed: () => widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'generalStyles'),
+      afterSeed: () => {
+        widget.setComponentProperty(ID, 'boxShadow', SHADOW, 'generalStyles');
+        // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+        widget.setComponentProperty(ID, 'boxShadowStyle', 'custom', 'generalStyles');
+      },
     });
     await within(container).findByRole('img');
     await waitFor(() => expect(root(container)).toHaveStyle({ boxShadow: SHADOW }));
@@ -334,5 +343,55 @@ describe('SvgImage widget', () => {
     expect(frontendConfig.definition.properties.data.value).toContain('<svg');
     expect(frontendConfig.definition.properties.collapseWhenHidden).toEqual({ value: '{{false}}' });
     expect(frontendConfig.actions ?? []).toEqual([]);
+  });
+});
+
+// Theme box shadow (contract D-04; Button's D-03..D-06 transferred).
+describe('SvgImage: theme box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const shadowBox = () => document.querySelector('[data-cy="svgimage1"]');
+
+  test('[SvgImage-THEME-001] a newly dropped SvgImage starts with no theme shadow, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(frontendConfig.definition.generalStyles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(frontendConfig.generalStyles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[SvgImage-THEME-002] a SvgImage saved before theme styles keeps its own shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'svg1',
+      'svg1',
+      'SvgImage',
+      {},
+      {
+        styles: {},
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    saved.component.definition.generalStyles = { boxShadow: binding('5px 5px 0px 0px #00000040') };
+    const { styles, generalStyles } = buildComponentMetaDefinition({ svg1: saved })['svg1'].component.definition;
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({ styles: { ...generalStyles, ...styles, boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[SvgImage-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('svg1', 'boxShadowStyle', 'custom', 'styles');
+    await waitFor(() => expect(getComputedStyle(shadowBox()).boxShadow).toBe('0px 0px 0px 0px #00000040'));
   });
 });

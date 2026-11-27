@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const Timer = function Timer({ height, properties = {}, styles, setExposedVariable, fireEvent, dataCy }) {
   const getTimeObj = ({ HH, MM, SS, MS }) => {
@@ -154,7 +155,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
       style={{
         height,
         display: styles.visibility ? '' : 'none',
-        boxShadow: styles.boxShadow,
+        boxShadow: themedShadow(styles.boxShadowStyle, styles.boxShadow),
         backgroundColor: 'var(--cc-surface1-surface)',
       }}
       data-cy={dataCy}

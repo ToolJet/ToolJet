@@ -9,6 +9,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
 import { tagsConfig } from '@tooljet/widget-definitions';
 import { binding, createWidgetHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const ID = 't1';
 const NAME = 'tags1';
@@ -74,7 +75,8 @@ describe('Tags widget', () => {
       expect(el.style.color).toBe(text);
       expect(el.style.height).toBe('20px');
       expect(el.style.fontSize).toBe('12px');
-      expect(el.style.borderRadius).toBe('8px');
+      // A new drop follows the theme's Large radius (D-04), with the shipped 8px as the fallback.
+      expect(el.style.borderRadius).toBe('var(--cc-border-radius-large, 8px)');
       await waitFor(() => expect(icon(title)).not.toBeNull());
     }
     expect(collection().style.justifyContent).toBe('flex-start');
@@ -325,6 +327,8 @@ describe('Tags widget', () => {
     expect(badge('a').style.fontSize).toBe('13px');
     expect(icon('a').style.width).toBe('16px');
 
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+    await setProperty('borderRadiusStyle', 'custom', 'styles');
     await setProperty('borderRadius', '12', 'styles');
     await waitFor(() => expect(badge('a').style.borderRadius).toBe('12px'));
 
@@ -340,6 +344,7 @@ describe('Tags widget', () => {
       await waitFor(() => expect(collection().parentElement.style.justifyContent).toBe(justify));
     }
 
+    await setProperty('boxShadowStyle', 'custom', 'styles');
     await setProperty('boxShadow', '0px 1px 2px 0px #00000040', 'styles');
     await waitFor(() =>
       expect(screen.getByRole('region', { name: 'Tags widget container' }).style.boxShadow).toBe(
@@ -457,5 +462,63 @@ describe('Tags widget', () => {
     expect(instance().querySelector('img')).toBeNull();
     expect(instance().querySelector('script')).toBeNull();
     expect(badges()[0].children).toHaveLength(0);
+  });
+});
+
+// Theme border radius and box shadow (contract D-04; Button's D-03..D-06 transferred).
+describe('Tags: theme border radius and box shadow', () => {
+  const radiusBox = () => document.querySelector('._tooljet-tags1 .badge');
+  const shadowBox = () => document.querySelector('[aria-label="Tags widget container"]');
+
+  test('[Tags-THEME-001] a newly dropped Tags starts on the theme Large radius and no shadow, with the theme dropdowns', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(tagsConfig.definition.styles.borderRadiusStyle).toEqual({ value: 'large' });
+    expect(tagsConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(tagsConfig.styles.borderRadius.themeTokens).toBe('borderRadius');
+    expect(tagsConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[Tags-THEME-002] a Tags saved before theme styles keeps its own radius and shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      't1',
+      't1',
+      'Tags',
+      {},
+      {
+        styles: { borderRadius: binding('{{10}}'), boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ t1: saved })['t1'].component.definition;
+    expect(styles).not.toHaveProperty('borderRadiusStyle');
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({
+      styles: { ...generalStyles, ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[Tags-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        borderRadius: binding('{{6}}'),
+        borderRadiusStyle: binding('medium'),
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(radiusBox()).toBeTruthy());
+    expect(getComputedStyle(radiusBox()).borderRadius).toBe('var(--cc-border-radius-medium, 6px)');
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('t1', 'borderRadiusStyle', 'custom', 'styles');
+    widget.setComponentProperty('t1', 'borderRadius', '{{10}}', 'styles');
+    await waitFor(() => expect(getComputedStyle(radiusBox()).borderRadius).toBe('10px'));
   });
 });

@@ -205,6 +205,8 @@ export const imageConfig = {
       accordian: 'Container',
     },
     borderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'numberInput',
       displayName: 'Border radius',
       conditionallyRender: {
@@ -215,6 +217,8 @@ export const imageConfig = {
       accordian: 'Container',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: {
@@ -298,6 +302,10 @@ export const imageConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
       imageFit: { value: 'contain' },
       borderType: { value: 'none' },
       backgroundColor: { value: '#ffffff00' },

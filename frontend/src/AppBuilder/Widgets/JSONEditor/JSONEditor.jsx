@@ -12,6 +12,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export async function loadCodeMirrorTheme(theme) {
   const mod = await import('@uiw/codemirror-themes-all');
@@ -47,7 +48,16 @@ export const JSONEditor = function JSONEditor(props) {
   } = props;
 
   const { value, shouldExpandEntireJSON, loadingState, visibility, disabledState, theme } = properties;
-  const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
+  const {
+    backgroundColor,
+    borderColor,
+    borderRadius,
+    borderRadiusStyle,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
+  } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
@@ -117,7 +127,7 @@ export const JSONEditor = function JSONEditor(props) {
     height: isDynamicHeightEnabled ? '100%' : height,
     backgroundColor,
     border: `1px solid ${borderColor}`,
-    borderRadius: `${borderRadius}px`,
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius),
     boxShadow,
     visibility: exposedVariablesTemporaryState.isVisible ? 'visible' : 'hidden',
     ...(exposedVariablesTemporaryState.isLoading

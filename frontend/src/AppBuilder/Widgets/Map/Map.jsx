@@ -5,6 +5,7 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
 import { useTranslation } from 'react-i18next';
 import './styles.scss';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 // Static identity: useJsApiLoader warns (and can reload) when `libraries` is a new
 // array each render.
@@ -243,7 +244,11 @@ export default function Map({
   return (
     <div
       data-disabled={parsedDisabledState}
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none', boxShadow: styles.boxShadow }}
+      style={{
+        height,
+        display: parsedWidgetVisibility ? '' : 'none',
+        boxShadow: themedShadow(styles.boxShadowStyle, styles.boxShadow),
+      }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id);

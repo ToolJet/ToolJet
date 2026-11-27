@@ -963,7 +963,7 @@ describe('NumberInput: theme border radius and box shadow', () => {
     expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
 
     widget.render({
-      styles: { ...styles, ...generalStyles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+      styles: { ...generalStyles, ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
     });
     await waitFor(() => expect(themedBox()).toBeTruthy());
     expect(themedBox().style.borderRadius).toBe('10px');

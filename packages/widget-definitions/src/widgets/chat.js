@@ -228,6 +228,8 @@ export const chatConfig = {
       accordian: 'Container',
     },
     boxShadowContainer: {
+      // A dropdown of the app theme's shadows + Custom (this colour's shadow); the choice is styles.boxShadowContainerStyle.
+      themeTokens: 'shadows',
       type: 'colorSwatches',
       displayName: 'Box shadow',
       validation: {
@@ -237,6 +239,8 @@ export const chatConfig = {
       accordian: 'Container',
     },
     borderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'numberInput',
       displayName: 'Border radius',
       validation: {
@@ -360,6 +364,10 @@ export const chatConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowContainerStyle: { value: 'none' },
       name: { value: 'var(--cc-primary-text)' },
       message: { value: 'var(--cc-primary-text)' },
       timestamp: { value: 'var(--cc-placeholder-text)' },

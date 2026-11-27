@@ -2,6 +2,7 @@ import React from 'react';
 import { isArray } from 'lodash';
 import { getSafeRenderableValue } from './utils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const Timeline = function Timeline({
   id,
@@ -16,7 +17,9 @@ export const Timeline = function Timeline({
   subContainerIndex,
   componentType,
 }) {
-  const { boxShadow } = styles;
+  const { boxShadow: savedBoxShadow, boxShadowStyle } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const { data, hideDate, visibility } = properties;
 
   const darkModeStyle = darkMode && 'text-white-50';

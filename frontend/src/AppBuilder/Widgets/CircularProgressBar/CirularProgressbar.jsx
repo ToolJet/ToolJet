@@ -4,6 +4,7 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import cx from 'classnames';
 import 'react-circular-progressbar/dist/styles.css';
 import './circularProgressbar.scss';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 // Text that is not a number (e.g. setValue('abc')) becomes 0. No clamp: negative and >100 values are allowed.
 const toProgress = (value) => {
@@ -27,12 +28,15 @@ export const CircularProgressBar = function CircularProgressBar({
     strokeWidth,
     counterClockwise,
     circleRatio,
-    boxShadow,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
     trackColor,
     completionColor,
     alignment,
     negativeColor,
   } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isVisible: visibility,

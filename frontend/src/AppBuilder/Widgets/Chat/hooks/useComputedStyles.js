@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const useComputedStyles = (styles) => {
   return useMemo(() => {
@@ -44,13 +45,15 @@ export const useComputedStyles = (styles) => {
       computedStyles.container.border = `1px solid ${styles.borderColorContainer}`;
     }
 
-    if (styles?.boxShadowContainer && ['#121212', '#121212ff'].includes(styles.boxShadowContainer)) {
-      computedStyles.container.boxShadow = 'var(--elevation-400-box-shadow) var(--elevation-700-box-shadow)';
-    } else {
-      computedStyles.container.boxShadow = `0px 8px 16px 0px ${styles.boxShadowContainer}, 0px 0px 1px 0px ${styles.boxShadowContainer}`;
-    }
+    // Box shadow is a colour (Custom): a shadow drawn in it, the default #121212 meaning the elevation shadow. A theme
+    // shadow (boxShadowContainerStyle) replaces it, with the colour's shadow as the fallback.
+    const colourShadow =
+      styles?.boxShadowContainer && ['#121212', '#121212ff'].includes(styles.boxShadowContainer)
+        ? 'var(--elevation-400-box-shadow) var(--elevation-700-box-shadow)'
+        : `0px 8px 16px 0px ${styles.boxShadowContainer}, 0px 0px 1px 0px ${styles.boxShadowContainer}`;
+    computedStyles.container.boxShadow = themedShadow(styles?.boxShadowContainerStyle, colourShadow);
 
-    computedStyles.container.borderRadius = styles.borderRadius;
+    computedStyles.container.borderRadius = themedRadius(styles?.borderRadiusStyle, styles.borderRadius);
 
     // message styles
     if (styles?.message && ['#1B1F24', '#1b1f24', '#1b1f24ff', '#1B1F24FF'].includes(styles.message)) {
@@ -114,6 +117,7 @@ export const useComputedStyles = (styles) => {
     styles?.containerBackgroundColor,
     styles?.borderColorContainer,
     styles?.boxShadowContainer,
+    styles?.boxShadowContainerStyle,
     styles?.message,
     styles?.timestamp,
     styles?.name,
@@ -123,5 +127,6 @@ export const useComputedStyles = (styles) => {
     styles?.textColorField,
     styles?.sendIconColorField,
     styles?.borderRadius,
+    styles?.borderRadiusStyle,
   ]);
 };

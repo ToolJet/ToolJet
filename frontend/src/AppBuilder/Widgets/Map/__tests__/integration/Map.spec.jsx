@@ -13,6 +13,9 @@ import {
   setVariableOn,
   drain,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { mapConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for the Map widget.
 // Contract: frontend/ee/test/app-builder/widgets/Map/TESTING.md.
@@ -589,7 +592,10 @@ describe('Map widget', () => {
   test('[Map-STYLE-003] boxShadow is applied inline', async () => {
     // Break this catches: dropping `boxShadow: styles.boxShadow` (Map.jsx:160), so
     // the configured shadow never renders.
-    widget.render({ styles: { boxShadow: binding('0px 1px 2px 0px rgb(10, 20, 30)') } });
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+    widget.render({
+      styles: { boxShadow: binding('0px 1px 2px 0px rgb(10, 20, 30)'), boxShadowStyle: binding('custom') },
+    });
 
     await waitFor(() => expect(container()).toBeInTheDocument());
     expect(container().style.boxShadow).toBe('0px 1px 2px 0px rgb(10, 20, 30)');
@@ -731,5 +737,64 @@ describe('Map widget', () => {
     await waitFor(() => expect(container()).toBeInTheDocument());
     expect(screen.queryByTestId('google-map')).not.toBeInTheDocument();
     expect(container().textContent).toMatch(/loading/i);
+  });
+});
+
+// Theme box shadow (contract D-17; Button's D-03..D-06 transferred).
+describe('Map: theme box shadow', () => {
+  // Map's own setup (see 'Map widget' above): the mocked Maps API is reset and given a key.
+  beforeEach(() => {
+    widget.setup();
+    __resetMapProps();
+    originalPublicConfig = window.public_config;
+    window.public_config = { ...(window.public_config || {}), GOOGLE_MAPS_API_KEY: 'test-key' };
+  });
+  afterEach(() => {
+    widget.teardown();
+    window.public_config = originalPublicConfig;
+  });
+  const shadowBox = () => document.querySelector('.map-widget');
+
+  test('[Map-THEME-001] a newly dropped Map starts with no theme shadow, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(mapConfig.definition.generalStyles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(mapConfig.generalStyles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[Map-THEME-002] a Map saved before theme styles keeps its own shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'map1',
+      'map1',
+      'Map',
+      {},
+      {
+        styles: {},
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    saved.component.definition.generalStyles = { boxShadow: binding('5px 5px 0px 0px #00000040') };
+    const { styles, generalStyles } = buildComponentMetaDefinition({ map1: saved })['map1'].component.definition;
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({ styles: { ...styles, ...generalStyles, boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[Map-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('map1', 'boxShadowStyle', 'custom', 'styles');
+    await waitFor(() => expect(getComputedStyle(shadowBox()).boxShadow).toBe('0px 0px 0px 0px #00000040'));
   });
 });

@@ -16,6 +16,7 @@ import {
   setVariableOn,
   store,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 
 const serverConfig = serverWidgets.iconConfig;
 
@@ -43,6 +44,8 @@ const defaultStyles = {
   iconAlign: binding('center'),
   padding: binding('default'),
   boxShadow: binding('0px 0px 0px 0px #00000040'),
+  // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+  boxShadowStyle: binding('custom'),
 };
 
 const widget = createWidgetHarness({
@@ -556,5 +559,54 @@ describe('Icon widget', () => {
       'setLoading',
       'setDisable',
     ]);
+  });
+});
+
+// Theme box shadow (contract D-09; Button's D-03..D-06 transferred).
+describe('Icon: theme box shadow', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+  const shadowBox = () => document.querySelector('[data-cy="icon1"]');
+
+  test('[Icon-THEME-001] a newly dropped Icon starts with no theme shadow, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(frontendConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(frontendConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[Icon-THEME-002] a Icon saved before theme styles keeps its own shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'ico1',
+      'ico1',
+      'Icon',
+      {},
+      {
+        styles: { boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ ico1: saved })['ico1'].component.definition;
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    widget.render({ styles: { ...generalStyles, ...styles, boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[Icon-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    widget.render({
+      styles: {
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    widget.setComponentProperty('ico1', 'boxShadowStyle', 'custom', 'styles');
+    await waitFor(() => expect(getComputedStyle(shadowBox()).boxShadow).toBe('0px 0px 0px 0px #00000040'));
   });
 });

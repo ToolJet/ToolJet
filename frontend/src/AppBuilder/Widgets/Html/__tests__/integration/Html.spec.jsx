@@ -1,6 +1,9 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import DOMPurify from 'dompurify';
+import { htmlConfig } from '@tooljet/widget-definitions';
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { componentDefinition } from '@/test/app-builder';
 
 const ID = 'html1';
 const INITIAL_HTML = '<main><h1 style="color: red">Initial content</h1><button>Run</button></main>';
@@ -19,6 +22,8 @@ const html = createWidgetHarness({
   },
   defaultStyles: {
     boxShadow: binding('none'),
+    // Pinned to Custom: the registered definition now seeds new drops onto the theme.
+    boxShadowStyle: binding('custom'),
   },
 });
 
@@ -427,5 +432,54 @@ describe('Html widget', () => {
     expect(root(container)).toHaveAttribute('aria-disabled', 'true');
     expect(root(container)).toHaveAttribute('inert');
     await expectExposed({ isDisabled: true, isLoading: false });
+  });
+});
+
+// Theme box shadow (contract D-10; Button's D-03..D-06 transferred).
+describe('Html: theme box shadow', () => {
+  beforeEach(() => html.setup());
+  afterEach(() => html.teardown());
+  const shadowBox = () => document.querySelector('.html-widget-container');
+
+  test('[Html-THEME-001] a newly dropped Html starts with no theme shadow, with the theme dropdown', () => {
+    // Break this catches: the config losing the new-drop defaults or the inspector's theme dropdowns.
+    expect(htmlConfig.definition.styles.boxShadowStyle).toEqual({ value: 'none' });
+    expect(htmlConfig.styles.boxShadow.themeTokens).toBe('shadows');
+  });
+
+  test('[Html-THEME-002] a Html saved before theme styles keeps its own shadow after load', async () => {
+    // Break this catches: the load merge stamping the new-drop defaults onto saved widgets.
+    const saved = componentDefinition(
+      'html1',
+      'html1',
+      'Html',
+      {},
+      {
+        styles: { boxShadow: binding('5px 5px 0px 0px #00000040') },
+        seedFromRegisteredDefinition: false,
+      }
+    );
+    const { styles, generalStyles } = buildComponentMetaDefinition({ html1: saved })['html1'].component.definition;
+    expect(styles).not.toHaveProperty('boxShadowStyle');
+    expect(generalStyles ?? {}).not.toHaveProperty('boxShadowStyle');
+
+    html.render({ styles: { ...generalStyles, ...styles, boxShadowStyle: binding('custom') } });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('5px 5px 0px 0px #00000040');
+  });
+
+  test('[Html-THEME-003] a theme item renders its variable with the saved value as fallback; custom renders the saved value', async () => {
+    // Break this catches: the widget rendering its raw value whatever the theme style.
+    html.render({
+      styles: {
+        boxShadow: binding('0px 0px 0px 0px #00000040'),
+        boxShadowStyle: binding('300'),
+      },
+    });
+    await waitFor(() => expect(shadowBox()).toBeTruthy());
+    expect(getComputedStyle(shadowBox()).boxShadow).toBe('var(--cc-box-shadow-300, 0px 0px 0px 0px #00000040)');
+
+    html.setComponentProperty('html1', 'boxShadowStyle', 'custom', 'styles');
+    await waitFor(() => expect(getComputedStyle(shadowBox()).boxShadow).toBe('0px 0px 0px 0px #00000040'));
   });
 });

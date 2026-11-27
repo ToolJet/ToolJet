@@ -10,6 +10,7 @@ import { blobToDataURL } from '@/AppBuilder/_stores/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const AudioRecorder = ({
   styles,
@@ -27,10 +28,14 @@ export const AudioRecorder = ({
     backgroundColor,
     borderColor,
     borderRadius,
-    boxShadow,
+    borderRadiusStyle,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
     accentColor,
     iconVisibility,
   } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const { label, loadingState, disabledState, visibility } = properties;
 
   // State
@@ -262,7 +267,7 @@ export const AudioRecorder = ({
     height: '100%',
     backgroundColor: backgroundColor,
     border: `1px solid ${borderColor}`,
-    borderRadius: `${borderRadius}px`,
+    borderRadius: themedRadius(borderRadiusStyle, borderRadius),
     padding: '16px',
     boxShadow: boxShadow,
     display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',

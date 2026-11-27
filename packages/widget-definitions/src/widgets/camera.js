@@ -96,6 +96,8 @@ export const cameraConfig = {
       accordian: 'container',
     },
     borderRadius: {
+      // A dropdown of the app theme's radii + Custom (this number); the choice is styles.borderRadiusStyle.
+      themeTokens: 'borderRadius',
       type: 'numberInput',
       displayName: 'Border radius',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
@@ -103,6 +105,8 @@ export const cameraConfig = {
       accordian: 'container',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
@@ -150,6 +154,10 @@ export const cameraConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's Large radius and None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      borderRadiusStyle: { value: 'large' },
+      boxShadowStyle: { value: 'none' },
       textColor: { value: 'var(--cc-primary-text)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },

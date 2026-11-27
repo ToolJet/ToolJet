@@ -4,12 +4,22 @@ import iframeContent from './iframe.html';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const CustomComponent = (props) => {
   const { height, properties, styles, id, setExposedVariable, dataCy, componentName, currentMode } = props;
   const { moduleId } = useModuleContext();
   const onEvent = useStore((state) => state.eventsSlice.onEvent, shallow);
-  const { visibility, boxShadow, borderColor, borderRadius } = styles;
+  const {
+    visibility,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
+    borderColor,
+    borderRadius,
+    borderRadiusStyle,
+  } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);
   const iFrameRef = useRef(null);
@@ -176,7 +186,7 @@ export const CustomComponent = (props) => {
         height,
         boxShadow,
         border: `1px solid var(--cc-custom-component-border-color) !important`,
-        borderRadius: `${borderRadius}px`,
+        borderRadius: themedRadius(borderRadiusStyle, borderRadius),
         overflow: 'clip',
         outline: 'none', // To override outline coming from card.scss
       }}

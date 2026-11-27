@@ -71,6 +71,8 @@ export const verticalDividerConfig = {
       accordian: 'Divider',
     },
     boxShadow: {
+      // A dropdown of the app theme's shadows + Custom (this shadow); the choice is styles.boxShadowStyle.
+      themeTokens: 'shadows',
       type: 'boxShadow',
       displayName: 'Box Shadow',
       validation: {
@@ -107,6 +109,9 @@ export const verticalDividerConfig = {
     },
     events: [],
     styles: {
+      // New drops follow the theme's None shadow; a saved widget without these keys keeps its own values
+      // (NEW_DROP_ONLY_STYLES in ../utils.js).
+      boxShadowStyle: { value: 'none' },
       dividerColor: { value: 'var(--cc-default-border)' },
       dividerStyle: { value: 'solid' },
       padding: { value: 'default' },

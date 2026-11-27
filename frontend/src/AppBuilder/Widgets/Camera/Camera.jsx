@@ -7,6 +7,7 @@ import { Footer } from './Footer';
 import './camera.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { mapCameraDevices, hasFrontAndBackCameras, isMobileBrowser } from './cameraDevices';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 // Mobile cameras are selected by facing direction, not deviceId: iOS lists several
 // rear lenses ("Back Ultra Wide Camera", "Back Dual Wide Camera") whose ids are not
@@ -24,7 +25,18 @@ const debugAlert = (headline, details = '') => {
 
 export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
   // Props
-  const { backgroundColor, borderRadius, borderColor, boxShadow, textColor, accentColor } = styles;
+  const {
+    backgroundColor,
+    borderRadius,
+    borderRadiusStyle,
+    borderColor,
+    boxShadow: savedBoxShadow,
+    boxShadowStyle,
+    textColor,
+    accentColor,
+  } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
   const { content: contentType, visibility, disabledState } = properties;
 
   // State
@@ -493,7 +505,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const containerStyle = {
     backgroundColor,
     border: `1px solid ${borderColor}`,
-    borderRadius: isFullscreen ? 0 : `${borderRadius}px`,
+    borderRadius: isFullscreen ? 0 : themedRadius(borderRadiusStyle, borderRadius),
     display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
     overflow: 'hidden',
     boxShadow,

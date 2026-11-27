@@ -43,7 +43,7 @@ describe('Chart: theme border radius and box shadow', () => {
     expect(generalStyles.boxShadow).toEqual(binding('5px 5px 0px 0px #00000040'));
 
     widget.render({
-      styles: { ...styles, ...generalStyles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
+      styles: { ...generalStyles, ...styles, borderRadiusStyle: binding('custom'), boxShadowStyle: binding('custom') },
     });
     await waitFor(() => expect(chart()).toBeInTheDocument());
     expect(chart().style.borderRadius).toBe('10px');

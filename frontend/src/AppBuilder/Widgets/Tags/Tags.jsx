@@ -8,6 +8,7 @@ import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import './tags.scss';
+import { themedRadius, themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 export const Tags = function Tags({
   id,
@@ -33,7 +34,9 @@ export const Tags = function Tags({
     disabledState,
     visibility,
   } = properties;
-  const { boxShadow, alignment, borderRadius, size } = styles;
+  const { boxShadow: savedBoxShadow, boxShadowStyle, alignment, borderRadius, borderRadiusStyle, size } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   const isInitialRender = useRef(true);
   const containerRef = useRef(null);
@@ -261,7 +264,7 @@ export const Tags = function Tags({
       cursor: isComponentDisabled ? 'not-allowed' : 'default',
       flexShrink: overflow === 'wrap' ? 1 : 0,
       margin: overflow === 'wrap' ? '0 3px 3px 0' : '0 3px 0 0',
-      borderRadius: borderRadius + 'px' || '0.25rem',
+      borderRadius: themedRadius(borderRadiusStyle, borderRadius),
       outline: 'none',
       ...sizeStyles,
       boxSizing: 'border-box',

@@ -56,7 +56,7 @@ const UploadArea = ({
       onFocus={onFocus}
       onBlur={onBlur}
       tabIndex={isDisabled ? -1 : 0}
-      style={{ borderRadius: `${borderRadius}px`, height }}
+      style={{ borderRadius, height }}
     >
       <input
         {...getInputProps()}

@@ -4,6 +4,7 @@ import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { themedShadow } from '@/AppBuilder/_helpers/themeStyles';
 
 const Icon = ({
   id,
@@ -19,7 +20,9 @@ const Icon = ({
 }) => {
   const isInitialRender = useRef(true);
   const { icon, loadingState, disabledState } = properties;
-  const { iconAlign, iconColor, boxShadow } = styles;
+  const { iconAlign, iconColor, boxShadow: savedBoxShadow, boxShadowStyle } = styles;
+  // The theme shadow (or this widget's own) as CSS.
+  const boxShadow = themedShadow(boxShadowStyle, savedBoxShadow);
 
   // Saved apps from before the theme-token default (D-08) still carry the literal '#000'; keep its dark-mode remap.
   const color = iconColor === '#000' ? (darkMode ? '#fff' : '#000') : iconColor;
