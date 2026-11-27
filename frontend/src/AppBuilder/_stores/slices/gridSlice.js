@@ -40,20 +40,9 @@ export const createGridSlice = (set, get) => {
   // which are not app state. Widgets reach it through getDynamicHeightScheduler.
   const dynamicHeightScheduler = createDynamicHeightScheduler({ getState: get });
 
-  // The old entry point, kept for its remaining callers (RenderWidget's collapse when hidden; moved in B3): a widget
-  // asks to be sized again, and the scheduler runs the engine on the next frame. The layout and container flag the
-  // old engine needed are worked out by the new one.
-  const scheduleReflow = (id, _layout, _isContainer, contextIndices, moduleId) =>
-    dynamicHeightScheduler.scheduleDynamicHeight({
-      id,
-      contextIndices: contextIndices ?? null,
-      moduleId: moduleId || 'canvas',
-    });
-
   return {
     ...initialState,
     getDynamicHeightScheduler: () => dynamicHeightScheduler,
-    scheduleReflow,
     setFlexContainerDropTarget: (payload) =>
       set((state) => {
         const current = state.flexContainerDropTarget;

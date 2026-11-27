@@ -246,11 +246,11 @@ export const rowSlotAttr = (id, index) => `tj-row-${id}-${index}`;
 
 // The height a fitted row (a Kanban card) is drawn at: the lowest bottom of its components as the reflow placed them in
 // this row (a Text that wraps in a narrow column grows and pushes the ones below it down), plus the space UI 2.0's
-// Kanban keeps under a card's lowest component, and never below the pack's row height. The native List view sizes its
-// rows from the same per-row layouts (dynamicHeightReflow getListviewTemplateHeight). Measured here rather than read
-// from the row's own temporary layout: the reflow sizes a LibraryComponent's row as a plain container, floored at the
-// whole widget's height. A component hidden on this card (a button shown only for some cards) is left out, slot and all,
-// as UI 2.0's Kanban leaves it out: the row canvas does not draw it.
+// Kanban keeps under a card's lowest component, and never below the pack's row height. Worked out here: the dynamic
+// height engine places a pack list's row components but leaves the row's own height to the pack (its contract's
+// `rowFit: 'host'`, dynamicHeight/contracts.js), since only the pack knows its row height. A component hidden on this
+// card (a button shown only for some cards) is left out, slot and all, as UI 2.0's Kanban leaves it out: the row canvas
+// does not draw it.
 export const fittedRowHeight = ({
   childIds,
   components,

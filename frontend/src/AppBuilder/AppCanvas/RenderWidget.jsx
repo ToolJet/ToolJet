@@ -359,14 +359,13 @@ const RenderWidget = ({
     if (exposed !== undefined) return exposed;
     return resolved?.properties?.visibility ?? resolved?.styles?.visibility ?? true;
   }, shallow);
+  // In the viewer, a widget that collapses when hidden asks for a dynamic height pass as soon as it is shown or hidden.
+  // The scheduler runs it in the next frame, together with whatever else changed.
   useEffect(() => {
     if (currentMode !== 'view') return;
     if (!collapseWhenHidden) return;
     const contextIndices = normalizeLayoutContext(resolveIndex);
-    const handle = requestAnimationFrame(() => {
-      useStore.getState().scheduleReflow(id, currentLayout, false, contextIndices, moduleId);
-    });
-    return () => cancelAnimationFrame(handle);
+    useStore.getState().getDynamicHeightScheduler().scheduleDynamicHeight({ id, contextIndices, moduleId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedWidgetVisibility, collapseWhenHidden, currentMode]);
 
