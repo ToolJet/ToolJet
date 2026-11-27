@@ -217,9 +217,10 @@ export class AppModule implements OnModuleInit, NestModule {
         BullBoardModule.forRoot({
           route: '/jobs',
           adapter: ExpressAdapter,
+          // No password set: no users, so every login is refused.
           middleware: basicAuth({
             challenge: true,
-            users: { admin: process.env.TOOLJET_QUEUE_DASH_PASSWORD },
+            users: process.env.TOOLJET_QUEUE_DASH_PASSWORD ? { admin: process.env.TOOLJET_QUEUE_DASH_PASSWORD } : {},
           }),
         })
       );

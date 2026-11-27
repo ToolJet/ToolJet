@@ -56,6 +56,7 @@ Controller wiring (`src/modules/folders/controller.ts`):
 - `IS_GET_CONTEXT: true` is for migrations only (switches `src`/`dist` resolution); normal server startup always passes it false.
 - `AppModule.configure()` applies `MigrationGateMiddleware` before `OtelMiddleware`, both on `'*'`. Health and probe endpoints must be GETs: reads always pass the gate (`MIGRATION_FLOW.md`, Upgrade gate).
 - Root features check abilities against `InstanceSettings` (`FeatureAbilityFactory` is an `AppModule` provider). Non-public root routes need both.
+- The `/jobs` queue dashboard (non-Cloud) accepts `admin` only when `TOOLJET_QUEUE_DASH_PASSWORD` is set; with it empty, every login is refused.
 - Workspace = `Organization` entity/`organizationId` fields (legacy naming) — user-facing term is Workspace.
 
 ## Related modules
