@@ -1115,7 +1115,16 @@
           "items": [
             "workflows/nodes/start-trigger",
             "workflows/nodes/agent",
-            "workflows/nodes/human-in-the-loop",
+            {
+              "type": "category",
+              "label": "Human-in-the-loop",
+              "items": [
+                "workflows/nodes/human-in-the-loop/overview",
+                "workflows/nodes/human-in-the-loop/configuration",
+                "workflows/nodes/human-in-the-loop/responding-to-approvals",
+                "workflows/nodes/human-in-the-loop/example-refund-approval"
+              ]
+            },
             {
               "type": "category",
               "label": "Logic Nodes",
