@@ -377,6 +377,12 @@ function createResilientLicenseTermsMock(plan: string) {
       }
       return Promise.resolve(getLicenseFieldValue(LICENSE_FIELD.ALL, mock._licenseInstance));
     },
+
+    // /license/access reads this to pick the free plan's limits. Test plans are written against the
+    // original free limits, as on CE.
+    usesNewFreeLimits() {
+      return Promise.resolve(false);
+    },
   };
   return mock;
 }
