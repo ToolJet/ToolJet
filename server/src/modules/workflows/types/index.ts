@@ -1,3 +1,4 @@
+import type { RunBudget } from '@modules/workflows/run-budget/run-budget';
 import { BadRequestException } from '@nestjs/common';
 import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
@@ -32,6 +33,8 @@ export interface ExecuteWorkflowOptions {
   startNodeId?: string; // Start execution from a specific node (for preview)
   injectedState?: object; // Inject state when starting from a specific node (for preview)
   calledFromWorkflow?: boolean; // Child workflow run; cannot pause
+  /** The run tree's budget; a child run gets its parent's (RunBudget.startChild). Roots make one. */
+  budget?: RunBudget;
 }
 
 // Feature configuration interfaces
