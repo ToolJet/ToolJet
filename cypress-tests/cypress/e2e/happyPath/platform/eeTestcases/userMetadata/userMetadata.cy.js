@@ -1,4 +1,4 @@
-import { commonSelectors, inspectorSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector, inspectorSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { usersText } from "Texts/platform/manageUsers";
 import { usersSelector } from "Selectors/platform/manageUsers";
@@ -154,6 +154,9 @@ describe("user invite flow cases", () => {
     cy.apiLogin(data.email, "password");
     cy.openApp(`${data.appName}-metadata-App`);
 
+    // The panel state saved by the first visit reopens the Inspector for a moment and then closes it; wait for that before opening it.
+    cy.get(commonWidgetSelector.sidebarinspector).should("be.visible");
+    cy.get('[data-cy="runtime-inspector"]').should("not.exist");
     navigateAndVerifyInspector(
       ["globals", "currentUser", "metadata"],
       [["updatedkey", `"updatedvalue"`]],

@@ -3,6 +3,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/platform/eeCommon";
 import { appVersionSelectors } from "Selectors/platform/exportImport";
 import { appEditorSelector } from "Selectors/platform/multiEnv";
+import { openInspector, openSubNode } from "Support/utils/appBuilder/inspectorTree";
 import { appVersionText } from "Texts/platform/exportImport";
 
 export const promoteApp = () => {
@@ -289,24 +290,16 @@ export const verifyGlobalSettingsDisabled = () => {
   cy.get(appEditorSelector.settings.appSlugInput).should("not.be.disabled");
 };
 
-export const verifyInspectorMenuHasNoDeleteOption = () => {
-  cy.get(appEditorSelector.editor.inspector.buttonAria).click({
-    timeout: 1000,
-  });
-  cy.get(appEditorSelector.editor.inspector.componentsNode)
+// A locked version's runtime Inspector shows a component's details without the Delete Component action.
+export const verifyInspectorMenuHasNoDeleteOption = (componentName = "constant_data") => {
+  openInspector();
+  cy.get(appEditorSelector.editor.inspector.componentsExpandButton).should("be.visible");
+  openSubNode(componentName, "components");
+  cy.get(appEditorSelector.editor.inspector.detailPath)
     .should("be.visible")
-    .click({ timeout: 1000 });
-  cy.get(appEditorSelector.editor.inspector.componentsNode)
-    .eq(2)
-    .should("be.visible")
-    .click({ timeout: 1000 });
-  cy.get(appEditorSelector.editor.inspector.menuIcon).click({ force: true });
-  cy.get(appEditorSelector.editor.inspector.popoverBody).should("be.visible");
-  cy.notVisible(appEditorSelector.editor.inspector.anyDeleteInPopover);
-  cy.get(appEditorSelector.editor.inspector.popoverBody).should(
-    "not.contain.text",
-    "Delete"
-  );
+    .and("contain.text", componentName);
+  cy.get(appEditorSelector.editor.inspector.deleteComponentAction).should("not.exist");
+  cy.get(appEditorSelector.editor.inspector.anyDeleteInDetailActions).should("not.exist");
   cy.forceClickOnCanvas();
 };
 

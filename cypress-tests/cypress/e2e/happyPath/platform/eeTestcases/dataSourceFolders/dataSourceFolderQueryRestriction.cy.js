@@ -12,6 +12,7 @@ import {
   uiEnsureFolderExpanded,
   uiOpenEditDataSourceFolderGrant,
   uiRunQueryInBuilder,
+  uiRunQueryInBuilderUntilBlocked,
   verifyQueryRunAllowed,
   verifyQueryRunBlocked,
 } from 'Support/utils/platform/dataSourceFolders';
@@ -150,7 +151,7 @@ describe('Data Source Folders — Restrict Query Run', () => {
 
         adminTogglesRestrict();
         cy.openApp('', workspaceId, appId);
-        uiRunQueryInBuilder(queryName).then(verifyQueryRunBlocked);
+        uiRunQueryInBuilderUntilBlocked(queryName).then(verifyQueryRunBlocked);
       });
     });
   });

@@ -6,7 +6,7 @@ import {
   uiEnsureFolderExpanded,
 } from 'Support/utils/platform/dataSourceFolders';
 import { getGroupPermissionInput } from 'Support/utils/userPermissions';
-import { expandFoldedQueryPanel } from 'Support/utils/appBuilder/querymanager/queryPanel';
+import { openQueriesPanel } from 'Support/utils/appBuilder/querymanager/queries';
 
 describe('Data Source Folders — Permission Tiers', () => {
   let workspaceId, wsName, wsSlug;
@@ -175,17 +175,18 @@ describe('Data Source Folders — Permission Tiers', () => {
         cy.apiLogin(userEmail, 'password');
         cy.apiCreateApp(`ds-tier-app-${Date.now()}`);
 
-        // On a NEW app the landing picker renders folders as COLLAPSED headers — the contents are not in the DOM at all until the header is clicked.
+        // A new app opens with no query selected, so the picker is the left panel's New query popover; folders render COLLAPSED until the header is clicked.
         cy.openApp();
-        expandFoldedQueryPanel();
+        openQueriesPanel();
+        cy.get(dsFolder.addQueryPopoverButton).click();
 
         cy.get(dsFolder.pickerFolderHeader(folderName)).should('be.visible');
-        cy.get(dsFolder.pickerDataSourceCard(insideName)).should('not.exist');
+        cy.get(dsFolder.selectDataSourceOption(insideName)).should('not.exist');
 
         cy.get(dsFolder.pickerFolderHeader(folderName)).click();
-        cy.get(dsFolder.pickerDataSourceCard(insideName)).should('be.visible');
+        cy.get(dsFolder.selectDataSourceOption(insideName)).should('be.visible');
 
-        cy.get(dsFolder.pickerDataSourceCard(outsideName)).should('not.exist');
+        cy.get(dsFolder.selectDataSourceOption(outsideName)).should('not.exist');
       });
     });
   });

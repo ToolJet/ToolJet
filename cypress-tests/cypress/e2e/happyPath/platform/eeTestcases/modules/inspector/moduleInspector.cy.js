@@ -64,7 +64,7 @@ describe('Modules — Inspector', () => {
       ['avatarId', `null`],
       ['groups', `[2]`],
       ['role', `"admin"`],
-      ['ssoUserInfo', `{0}`],
+      ['ssoUserInfo', `{}`],
     ];
 
     navigateAndVerifyInspector(['globals', 'currentUser'], currentUserDataList);
@@ -83,7 +83,7 @@ describe('Modules — Inspector', () => {
         ['avatarId', `null`],
         ['groups', `[2]`],
         ['role', `"admin"`],
-        ['ssoUserInfo', `{0}`],
+        ['ssoUserInfo', `{}`],
       ];
 
       navigateAndVerifyInspector(['globals', 'currentUser'], currentUserDataListAfter);

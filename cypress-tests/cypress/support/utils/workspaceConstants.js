@@ -3,6 +3,7 @@ import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { importSelectors } from "Selectors/platform/exportImport";
 import { workflowSelector } from "Selectors/platform/workflows";
 import { workspaceConstantsSelectors } from "Selectors/platform/workspaceConstants";
+import { openQueriesPanel } from "Support/utils/appBuilder/querymanager/queries";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText } from "Texts/common";
 import { workspaceConstantsText } from "Texts/platform/workspaceConstants";
@@ -426,6 +427,7 @@ export const verifySecretConstantNotResolved = (inputWidget) => {
 };
 
 export const verifyGlobalConstInStaticQuery = (selector, expected) => {
+  openQueriesPanel();
   cy.get(selector).click();
   cy.get(".rest-api-methods-select-element-container .codehinter-container")
     .eq(0)
@@ -435,6 +437,7 @@ export const verifyGlobalConstInStaticQuery = (selector, expected) => {
 };
 
 export const verifyStaticQueryPreview = (selector, expected) => {
+  openQueriesPanel();
   cy.get(selector).click();
   cy.get(dataSourceSelector.queryPreviewButton).click();
   cy.get(dataSourceSelector.previewJsonDataContainer).should(

@@ -194,11 +194,14 @@ export const navigateToInspectorNodes = ([node, subNode, label]) => {
   openInspector();
   cy.hideTooltip();
   openNode(node);
+  // The entry list scrolls inside the runtime panel, so lower entries sit below its fold.
   cy.get(inspectorSelectors.inspectorSubNode(subNode))
+    .scrollIntoView()
     .should("be.visible")
     .click();
   if (label) {
     cy.get(inspectorSelectors.inspectorNodeLabel(label))
+      .scrollIntoView()
       .should("be.visible")
       .click();
   } else {

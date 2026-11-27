@@ -1,6 +1,6 @@
 export const appEditorSelector = {
     settings: {
-        settingsSidebarIcon: '.sidebar-svg-icon .lucide-bolt',
+        settingsSidebarIcon: '[data-cy="left-sidebar-settings-button"]',
         maintenanceToggle: '[data-cy="toggle-maintenance-mode"]',
         maxCanvasWidthInput: '[data-cy="maximum-canvas-width-input-field"]',
         maxCanvasWidthTypeDropdown: '[data-cy="dropdown-max-canvas-width-type"]',
@@ -10,11 +10,10 @@ export const appEditorSelector = {
 
     editor: {
         inspector: {
-            buttonAria: 'button[aria-label="Inspector"]',
-            componentsNode: '[data-cy="inspector-components-node"]',
-            menuIcon: '[data-cy="inspector-menu-icon"]',
-            popoverBody: '.popover-body',
-            anyDeleteInPopover: '.popover-body [data-cy*="delete"]',
+            componentsExpandButton: '[data-cy="inspector-components-expand-button"]',
+            detailPath: '[data-cy="inspector-detail-path"]',
+            deleteComponentAction: '[data-cy="inspector-delete-component-action"]',
+            anyDeleteInDetailActions: '.runtime-inspector__actions [data-cy*="delete"]',
             fxButtonAny: '[data-cy*="fx-button"]',
             codeInputFieldAny: '[data-cy*="input-field"]',
             codeEditorContent: '.cm-content',
