@@ -8,12 +8,24 @@ import Popover from '@/_ui/Popover';
 // import { PageMenu } from './PageMenu';
 import GlobalSettings from './GlobalSettings';
 import DependencyViewer from './Dependencies/DependencyViewer';
+import VariablesPanel from './Variables/VariablesPanel';
 import '../../_styles/left-sidebar.scss';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { Blocks, DatabaseZap, Files, History, LockKeyhole, Network, ScanSearch, Search, Settings } from 'lucide-react';
+import {
+  Blocks,
+  DatabaseZap,
+  Files,
+  History,
+  LockKeyhole,
+  Network,
+  ScanSearch,
+  Search,
+  Settings,
+  Variable,
+} from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { EditorView } from '@codemirror/view';
 import CodeSearch from './CodeSearch/CodeSearch';
@@ -253,6 +265,10 @@ export const BaseLeftSidebar = ({
         return <SecurityPanel onClose={() => toggleLeftSidebar(false)} />;
       case 'access':
         return <AccessPanel onClose={() => toggleLeftSidebar(false)} />;
+      case 'variables':
+        // A selection kept from a visual app must not open the panel in a React builder app.
+        if (codeMode) return null;
+        return <VariablesPanel darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'dependencies':
         return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'apphistory':
@@ -320,6 +336,19 @@ export const BaseLeftSidebar = ({
         >
           <DatabaseZap size={16} strokeWidth={1.8} />
         </SidebarItem>
+        {/* Declared variables feed {{ }} bindings and RunJS; a React builder app keeps its state in React. */}
+        {!codeMode && (
+          <SidebarItem
+            panel="variables"
+            selectedSidebarItem={selectedSidebarItem}
+            darkMode={darkMode}
+            onClick={() => handleSelectedSidebarItem('variables')}
+            className="left-sidebar-item left-sidebar-layout"
+            ref={setSideBarBtnRefs('variables')}
+          >
+            <Variable size={16} strokeWidth={1.8} />
+          </SidebarItem>
+        )}
         {!codeMode && shouldShowLibraries(isModuleEditor, featureAccess?.appJsLibraries) && (
           <AppLibrariesIcon
             darkMode={darkMode}

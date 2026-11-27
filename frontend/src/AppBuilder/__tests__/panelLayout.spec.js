@@ -653,6 +653,7 @@ describe('AB-PANEL-NAMES panel and drawer names', () => {
       pages: 'pages',
       components: 'components',
       queries: 'queries',
+      variables: 'variables',
       libraries: 'libraries',
       search: 'code-search',
       dependencies: 'dependencies',

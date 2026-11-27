@@ -6,6 +6,7 @@ export const SIDEBAR_ITEMS = {
   pages: { name: 'Pages', label: 'Pages', cy: 'pages' },
   components: { name: 'Components', label: 'Add', cy: 'components' },
   queries: { name: 'Queries', label: 'Queries', cy: 'queries' },
+  variables: { name: 'Variables', label: 'Vars', cy: 'variables' },
   libraries: { name: 'Libraries', label: 'Libraries', cy: 'libraries' },
   search: { name: 'Code search', label: 'Search', cy: 'code-search' },
   dependencies: { name: 'Dependencies', label: 'Deps', cy: 'dependencies' },
@@ -20,6 +21,7 @@ export const RIGHT_PANEL_ITEMS = {
   query: { name: 'Query configuration' },
   component: { name: 'Component configuration' },
   page: { name: 'Page configuration' },
+  variable: { name: 'Variable configuration' },
 };
 
 // "Close app settings", "Close AI chat": the name's first word drops its capital unless it is an acronym.

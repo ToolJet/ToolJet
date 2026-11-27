@@ -24,6 +24,8 @@ React + Webpack. Edition composition (webpack aliases, registries, `fetchEdition
 
 ### App Builder (`src/AppBuilder/**`)
 
+- Dependencies root lists show entities with relationships; an explicit entity selection must retain its detail even without relationships, with an empty state and a return-to-all action. Resolve isolated selections from the full entity data, not the filtered root lists. Declared-variable expressions contribute Uses and reverse Read by relationships; keep app/page scope and module identity when resolving and navigating those variables.
+
 On top of the above:
 - Read `src/test/app-builder/README.md` for the test seams and the no-mock rule.
 - Run `npm run test:app-builder`, plus `:contracts` and `:parity -- --edition ce|ee` when a widget changes.
@@ -138,6 +140,16 @@ In a branching-enabled Git Sync workspace, the configured default branch disable
 
 ### App Builder store
 
+- Embedded module instances retain their own global settings under `appStore.modules[moduleId].globalSettings`; use `getGlobalSettings(moduleId)` / `setGlobalSettings(settings, moduleId)` for declared app variables. The canvas keeps its existing root settings and owns the parent's theme. Module loads must capture their declarations without falling back to the parent's names; resolved values and dependency graphs remain instance-scoped.
+
+- Modules support declared app variables only. Hide the entire Scope field in module variable create/details forms, always create them in app scope, and reject page-scoped declaration saves in the store.
+
+- Declared variables are identified by scope + name within their module (and page, for page variables): saved maps are `{ [name]: { value, fxActive } }` with no definition id, and a declaration is just an initial value for the same runtime variable `setVariable` writes. Read and write maps only through `_utils/variableDefinitions.js` (`readVariableDefinitionMap`, `definitionsOf`, `variableKey`) and the `variablesSlice` actions; all of create, edit, rename, delete, undo and redo go through `applyVariableDefinitionChange` with an explicit `{ versionId, moduleId, scope, pageId }` context; a change, late save or undo step for a version that is no longer open is refused, never applied to the open one. Saves for one context go one at a time and send the map as it is when the request goes out, so an older map never lands after a newer one. A save belongs to the version open when it was queued; if another version is open by the time it would be sent, it is dropped with an error, never sent to that version. A failed save returns the names it touched to the map the server last accepted, and only while it is still unsaved (no later successful save carried it), still in the store (no newer edit, rename, delete or same-name variable replaced it), and, for a rename, while the old name is still free; this bookkeeping is transient, never saved. Development maps saved under ids are read by name; duplicate names are logged to the Debugger, not dropped silently.
+
+- Variables mutations use the canonical `getShouldFreeze()` lock in both controls and store actions. App and page persistence must return a failure result when HTTP saving fails: do not show success, navigate to a created/renamed variable, or record an undo command for a rejected save. Restore the previous local definition without overwriting a newer edit. Keep the shared `savePageChanges` swallowing contract separate from Variables persistence.
+
+- The Variables panel's basic CodeHinter uses `onInputChange` to keep the initial-value draft current for previews, fx toggles and saving. The basic editor's `onChange` runs on blur; do not save the same variable through both callbacks, which duplicates saves and undo entries. Blank initial input deliberately means an empty string; preserve explicit `0`, `false`, `null` and expressions through the variable-definition parser.
+
 - AppBuilder store: `AppBuilder/_stores/store.js` (30+ slices), all namespaced by `moduleId` (default `'canvas'`)
 - Global stores (`appDataStore`, `currentStateStore`, `dataQueriesStore`, `resolverStore`) should not be used from AppBuilder code unless truly unavoidable — prefer the AppBuilder store
 
@@ -208,3 +220,7 @@ Widget-level CSS class (shipped 2026-06):
 - Legacy non-revamped widgets (~24, mostly deprecated V1 duplicates) render the field as a top-level control rather than grouped — accepted, no wiring on the sunsetting path
 - v1 is static + `{{}}`-bound class only; imperative runtime control (CSA `setCustomClass`) deferred to v2
 - Gated behind the `customStyling` license flag (same flag as app/workspace Custom CSS, which it depends on), read via `useStore((s) => s.license.featureAccess?.customStyling)`. Two gates: the Inspector hides the control, and `RenderWidget.jsx` skips appending the class. **The saved value is never erased** — re-enabling the license restores the classes, no migration or cleanup
+
+- Variables use a searchable left resource list (`VariablesPanel`) and an independent contextual right editor (`VariableConfigurationPanel`). Open it through `openVariablePanel`; create/rename completions must use `showSavedVariablePanel` so late responses cannot reopen a closed panel or replace another selection. Close page/create contexts on page changes and all contexts on version/module changes. Keep navigation and copy actions usable when the version is frozen; only mutation controls are locked. React builder (Code mode) apps have no Variables rail item or panel: their state lives in React, not in `{{ }}` bindings or RunJS.
+
+- Dependency-viewer initial-value relationships use `entityUsage/variableDefinitionRefs.ts` and the runtime AST parser with module-local component/query mappings. Include query/component sources in a variable's Uses and the scoped variable in the source's Used by, even before the query runs. Static text without expression braces must not create either link. Share the parsed definitions across section selectors rather than reparsing them per entity.

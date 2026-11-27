@@ -34,6 +34,7 @@ test('keeps the data-cy hook of every rail item', () => {
     'left-sidebar-pages-button',
     'left-sidebar-components-button',
     'left-sidebar-queries-button',
+    'left-sidebar-variables-button',
     'left-sidebar-code-search-button',
     'left-sidebar-dependencies-button',
     // Shown on every plan (LP-M08).
@@ -46,6 +47,7 @@ const RAIL = [
   ['pages', 'Pages', 'Pages'],
   ['components', 'Add', 'Components'],
   ['queries', 'Queries', 'Queries'],
+  ['variables', 'Vars', 'Variables'],
   ['code-search', 'Search', 'Code search'],
   ['dependencies', 'Deps', 'Dependencies'],
   ['settings', 'Settings', 'App settings'],

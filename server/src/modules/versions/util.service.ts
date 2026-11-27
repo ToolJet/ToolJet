@@ -8,6 +8,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { IVersionUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { assertVariableDefinitionMap } from '@helpers/variable-definition-map.helper';
 import { App } from '@entities/app.entity';
 import { Component } from '@entities/component.entity';
 import { User } from '@entities/user.entity';
@@ -20,7 +21,6 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { VersionCreateDto } from './dto';
 import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
-import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { v4 as uuid } from 'uuid';
@@ -37,6 +37,7 @@ import { AppsUtilService } from '@modules/apps/util.service';
 import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 import { AppValidationService } from '@modules/app-validation/service';
 import { VersionSettingsWrite } from '@modules/app-validation/types';
+import { decamelizeKeysKeepingVariableMaps } from '@helpers/variable-map-keys.helper';
 
 /** A table that resolves in the target environment but hasn't caught up on all its migrations yet. */
 export type TableBehindWarning = { tableId: string; tableName: string; missingCount: number };
@@ -90,6 +91,8 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto, manager?: EntityManager) {
+    // Every route that writes globalSettings (general version update, settings update) lands here.
+    assertVariableDefinitionMap(appVersionUpdateDto?.globalSettings?.variables, 'globalSettings.variables');
     const touched = ['homePageId', 'globalSettings', 'pageSettings'].filter(
       (field) => appVersionUpdateDto?.[field] !== undefined
     );
@@ -580,7 +583,7 @@ export class VersionUtilService implements IVersionUtilService {
       },
     });
 
-    return decamelizeKeys(appVersion);
+    return decamelizeKeysKeepingVariableMaps(appVersion);
   }
 
   /**
@@ -668,7 +671,7 @@ export class VersionUtilService implements IVersionUtilService {
         },
       });
 
-      return decamelizeKeys(appVersion);
+      return decamelizeKeysKeepingVariableMaps(appVersion);
     });
     return result;
   }

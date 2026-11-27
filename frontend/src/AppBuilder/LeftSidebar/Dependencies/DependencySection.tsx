@@ -20,6 +20,10 @@ export type DependencySectionProps = {
   forceExpanded?: boolean;
   children?: React.ReactNode;
   dataCy?: string;
+  /** Trailing control in the header (e.g. an add button). Clicks on it don't toggle the section. */
+  action?: React.ReactNode;
+  /** Render even when `count` is 0, so `children` can show an empty state. */
+  showWhenEmpty?: boolean;
 };
 
 export const DependencySection = ({
@@ -29,22 +33,27 @@ export const DependencySection = ({
   forceExpanded = false,
   children,
   dataCy,
+  action,
+  showWhenEmpty = false,
 }: DependencySectionProps) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
-  if (!count) return null;
+  if (!count && !showWhenEmpty) return null;
 
   const isOpen = forceExpanded || expanded;
 
   return (
     <div className="dependency-section">
-      <PanelSectionHeader
-        className="dependency-section-header"
-        title={title}
-        count={count}
-        open={isOpen}
-        onToggle={() => setExpanded((prev) => !prev)}
-        dataCy={dataCy ?? `dependency-section-${title.toLowerCase().replace(/\s+/g, '-')}`}
-      />
+      <div className="dependency-section-heading tw-flex tw-items-center">
+        <PanelSectionHeader
+          className="dependency-section-header tw-flex-1 tw-min-w-0"
+          title={title}
+          count={count}
+          open={isOpen}
+          onToggle={() => setExpanded((prev) => !prev)}
+          dataCy={dataCy ?? `dependency-section-${title.toLowerCase().replace(/\s+/g, '-')}`}
+        />
+        {action && <span className="dependency-section-action tw-pr-3">{action}</span>}
+      </div>
       {isOpen && <div className="dependency-section-body">{children}</div>}
     </div>
   );

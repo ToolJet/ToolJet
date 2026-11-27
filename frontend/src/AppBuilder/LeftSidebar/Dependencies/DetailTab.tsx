@@ -1,9 +1,19 @@
 import React from 'react';
-import { ArrowRightIcon, ChevronRightIcon, MousePointerClickIcon, SquareDashedMousePointerIcon } from 'lucide-react';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { Button as RawButton } from '@/components/ui/Button/Button';
+import '@/ToolJetUI/List/list.scss';
+import {
+  ArrowRightIcon,
+  ChevronRightIcon,
+  MousePointerClickIcon,
+  SquareDashedMousePointerIcon,
+  WaypointsIcon,
+} from 'lucide-react';
 import { decodeEntities } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import DependencySubSection from './DependencySubSection';
 import DependencyEntityRow from './DependencyEntityRow';
+import EmptyState from './EmptyState';
 import { DatabaseArrowDownIcon, DatabaseArrowUpIcon, EntityIcon } from './entityIcons';
 import {
   formatActionLabel,
@@ -35,7 +45,7 @@ const KIND_SUBTITLES: Partial<Record<DependencyEntryKind, string>> = {
   unknown: 'unknown',
 };
 
-const NAVIGABLE = new Set<string>(['query', 'component']);
+const NAVIGABLE = new Set<string>(['query', 'component', 'variable', 'pageVariable']);
 
 export type DetailHeaderProps = {
   subject: DetailSubject;
@@ -107,6 +117,7 @@ const VariableValue = ({ moduleId, scope, name }: VariableValueProps) => {
 };
 
 export type DetailTabProps = {
+  onNavigateRoot: () => void;
   subject: DetailSubject;
   groups: DetailGroup[];
   moduleId: string;
@@ -119,7 +130,7 @@ export type DetailTabProps = {
  * Detail view for a single entity: who triggers it, what it uses, who uses it,
  * and the events it owns. Rows drill into the entity they point at.
  */
-export const DetailTab = ({ subject, groups, moduleId, onSelect, darkMode }: DetailTabProps) => {
+export const DetailTab = ({ subject, groups, moduleId, onSelect, onNavigateRoot, darkMode }: DetailTabProps) => {
   const renderEntry = (entry: DependencyEntry, group: DetailGroup) => {
     const componentType = entry.kind === 'component' ? group.componentTypeOf?.(entry.id) : undefined;
     const subtitle =
@@ -170,7 +181,14 @@ export const DetailTab = ({ subject, groups, moduleId, onSelect, darkMode }: Det
         }}
         onClick={
           NAVIGABLE.has(entry.kind) && entry.id
-            ? () => onSelect({ kind: entry.kind as DependencySelection['kind'], id: entry.id as string })
+            ? () =>
+                onSelect({
+                  kind:
+                    entry.kind === 'variable' || entry.kind === 'pageVariable'
+                      ? 'variable'
+                      : (entry.kind as DependencySelection['kind']),
+                  id: entry.id as string,
+                })
             : undefined
         }
         darkMode={darkMode}
@@ -182,17 +200,26 @@ export const DetailTab = ({ subject, groups, moduleId, onSelect, darkMode }: Det
   return (
     <div className="dependency-detail-body">
       {subject.variableScope && <VariableValue moduleId={moduleId} scope={subject.variableScope} name={subject.name} />}
-      {groups.map((group) => (
-        <DependencySubSection
-          key={group.title}
-          title={group.title}
-          count={group.showCount === false ? undefined : group.entries.length}
-          icon={group.icon}
-          indent
-        >
-          {group.entries.map((entry) => renderEntry(entry, group))}
-        </DependencySubSection>
-      ))}
+      {groups.every((group) => group.entries.length === 0) ? (
+        <EmptyState
+          icon={<WaypointsIcon size={20} className="dependency-empty-state-icon" />}
+          title="No dependencies"
+          description={`${subject.name} has no dependencies or dependents.`}
+          actions={[{ label: 'View all dependencies', onClick: onNavigateRoot, dataCy: 'dependency-view-all-button' }]}
+        />
+      ) : (
+        groups.map((group) => (
+          <DependencySubSection
+            key={group.title}
+            title={group.title}
+            count={group.showCount === false ? undefined : group.entries.length}
+            icon={group.icon}
+            indent
+          >
+            {group.entries.map((entry) => renderEntry(entry, group))}
+          </DependencySubSection>
+        ))
+      )}
     </div>
   );
 };
@@ -202,56 +229,64 @@ type DetailMenuProps = {
   darkMode?: boolean;
 };
 
-const DetailMenu = ({ items, darkMode }: DetailMenuProps) => {
+const MenuButton = RawButton as React.ComponentType<any>;
+
+export const DetailMenu = ({ items, darkMode }: DetailMenuProps) => {
   const [open, setOpen] = React.useState(false);
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (!open) return undefined;
-    const close = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [open]);
-
+  const menuId = React.useId();
   if (!items?.length) return null;
 
   return (
-    <div className="dependency-detail-menu-wrapper" ref={ref}>
-      <button
-        type="button"
-        className="dependency-detail-menu-trigger"
-        onClick={() => setOpen((prev) => !prev)}
-        data-cy="dependency-detail-menu-button"
-        aria-label="Entity actions"
+    <div className="dependency-detail-menu-wrapper">
+      <OverlayTrigger
+        trigger="click"
+        placement="bottom-end"
+        rootClose
+        show={open}
+        onToggle={setOpen}
+        overlay={
+          <Popover
+            id={`dependency-detail-menu-${menuId}`}
+            className={`inspector-header-actions-menu ${darkMode ? 'dark-theme' : ''}`}
+          >
+            <Popover.Body bsPrefix="list-item-popover-body">
+              {items.map((item) => (
+                <div
+                  key={item.label}
+                  className="list-item-popover-option"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setOpen(false);
+                    item.onClick();
+                  }}
+                  onKeyDown={activateOnEnterOrSpace(() => {
+                    setOpen(false);
+                    item.onClick();
+                  })}
+                  data-cy={`dependency-detail-menu-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  <div className="list-item-popover-menu-option-icon">{item.icon}</div>
+                  <div className={`list-item-option-menu-label ${item.destructive ? 'color-tomato9' : ''}`}>
+                    {item.label}
+                  </div>
+                </div>
+              ))}
+            </Popover.Body>
+          </Popover>
+        }
       >
-        <span className="dependency-kebab" />
-      </button>
-      {open && (
-        <div className={`dependency-detail-menu ${darkMode ? 'dark-theme' : ''}`}>
-          {items.map((item) => (
-            <div
-              key={item.label}
-              className="dependency-detail-menu-item"
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                setOpen(false);
-                item.onClick();
-              }}
-              onKeyDown={activateOnEnterOrSpace(() => {
-                setOpen(false);
-                item.onClick();
-              })}
-              data-cy={`dependency-detail-menu-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-            >
-              <span className="dependency-detail-menu-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
+        <MenuButton
+          iconOnly
+          leadingIcon="ellipsis-vertical"
+          variant="ghost"
+          size="medium"
+          isLucid
+          data-cy="dependency-detail-menu-button"
+          aria-label="Entity actions"
+          aria-expanded={open}
+        />
+      </OverlayTrigger>
     </div>
   );
 };

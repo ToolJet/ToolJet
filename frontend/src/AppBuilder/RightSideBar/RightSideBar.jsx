@@ -12,12 +12,13 @@ import QueryKeyHooks from '@/AppBuilder/QueryPanel/QueryKeyHooks';
 import { getLeftPanelState, getRightPanelClassName, getRightPanelStyle, PANEL_MOTION } from '@/AppBuilder/panelLayout';
 import { AddEditPagePopup } from './PageSettingsTab/PageMenu/AddNewPagePopup';
 import { QueryPanelResizeHandle } from './QueryPanelResizeHandle';
+import VariableConfigurationPanel from '@/AppBuilder/LeftSidebar/Variables/VariableConfigurationPanel';
 import { LEFT_SIDEBAR_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './rightSidebar.scss';
 import { useCodeMode, useCodeModePin, CodeInspectorSidebar } from '@/AppBuilder/_helpers/codeModeHooks';
 
 export const RightSideBar = ({ darkMode }) => {
-  const { isModuleEditor } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const activeTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
@@ -63,7 +64,12 @@ export const RightSideBar = ({ darkMode }) => {
           { 'dark-theme theme-dark': darkMode },
           // The query panel freezes its own controls; Run, Preview and close stay usable on a frozen version.
           // Code mode never freezes the right panel.
-          { 'tw-pointer-events-none': shouldFreeze && !codeMode && displayedTab !== RIGHT_SIDE_BAR_TAB.QUERY }
+          {
+            'tw-pointer-events-none':
+              shouldFreeze &&
+              !codeMode &&
+              ![RIGHT_SIDE_BAR_TAB.QUERY, RIGHT_SIDE_BAR_TAB.VARIABLES].includes(displayedTab),
+          }
         )}
         data-state={isRightSidebarOpen ? 'open' : 'closed'}
       >
@@ -105,6 +111,11 @@ export const RightSideBar = ({ darkMode }) => {
                     }}
                   />
                 </div>
+              </FallbackBoundary>
+            )}
+            {displayedTab === RIGHT_SIDE_BAR_TAB.VARIABLES && (
+              <FallbackBoundary label="Variable configuration" location="Variable Configuration" darkMode={darkMode}>
+                <VariableConfigurationPanel moduleId={moduleId} darkMode={darkMode} exiting={!isRightSidebarOpen} />
               </FallbackBoundary>
             )}
             {/* Add component lives only in the left panel; the right side never shows it. */}

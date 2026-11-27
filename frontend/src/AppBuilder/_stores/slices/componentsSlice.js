@@ -45,6 +45,7 @@ import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { packSlotRestrictionType, restrictedTypeOf } from '@/AppBuilder/_helpers/packDropRestrictions';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
+import { VARIABLE_DEFINITION_NODE_SUFFIX } from './variablesSlice';
 import { isCompareFrame, withoutCompareNavigation } from '@/AppBuilder/_utils/compareFrame';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
 import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
@@ -1241,8 +1242,13 @@ export const createComponentsSlice = (set, get) => ({
       startDependencyBatch,
       flushDependencyBatch,
       registerQueryDependencies,
+      initVariableDefinitions,
+      refreshExpressionVariables,
     } = get();
     const components = getCurrentPageComponents(moduleId);
+
+    // Declared variables first, so components resolve against their values.
+    const seededVariableKeys = initVariableDefinitions(moduleId);
 
     // Pre-populate default exposed values for all components in a single store write.
     // This prevents 600+ individual set() calls during component mount in RenderWidget
@@ -1292,6 +1298,7 @@ export const createComponentsSlice = (set, get) => ({
 
     setResolvedComponents(resolvedComponentValues, moduleId);
     resolveOthers(moduleId);
+    refreshExpressionVariables(seededVariableKeys, moduleId);
 
     // Register query option dependencies for queries with runOnDependencyChange enabled
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
@@ -2655,29 +2662,25 @@ export const createComponentsSlice = (set, get) => ({
       { type: 'setFocusedParentId', payload: { parentId } });
   },
   saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
-    set(
-      (state) => {
-        state.appStore.modules[moduleId].app.isSaving = true;
-      },
-      false,
-      'setAppSavingChanges'
-    );
-    const { getAppId, currentVersionId, getCurrentPageId } = get();
+    const { getAppId, currentVersionId, getCurrentPageId, trackAppSave } = get();
     const appId = getAppId(moduleId);
     const currentPageId = getCurrentPageId(moduleId);
 
     return new Promise((resolve) => {
-      appVersionService
-        .autoSaveApp(
-          appId,
-          currentVersionId,
-          diff,
-          type,
-          currentPageId,
-          operation,
-          false, // isUserSwitchedVersion
-          false // isComponentCutProcess
-        )
+      trackAppSave(
+        () =>
+          appVersionService.autoSaveApp(
+            appId,
+            currentVersionId,
+            diff,
+            type,
+            currentPageId,
+            operation,
+            false, // isUserSwitchedVersion
+            false // isComponentCutProcess
+          ),
+        moduleId
+      )
         .then((response) => {
           resolve(response);
         })
@@ -2705,15 +2708,6 @@ export const createComponentsSlice = (set, get) => ({
           }
           console.error('Error saving component changes:', error);
           resolve(null);
-        })
-        .finally(() => {
-          set(
-            (state) => {
-              state.appStore.modules[moduleId].app.isSaving = false;
-            },
-            false,
-            'setAppSavingChanges'
-          );
         });
     });
   },
@@ -2731,9 +2725,17 @@ export const createComponentsSlice = (set, get) => ({
       'turnOffAutoComputeLayout'
     );
 
-    await savePageChanges(app.appId, currentVersionId, currentPageId, {
-      autoComputeLayout: false,
-    });
+    await savePageChanges(
+      app.appId,
+      currentVersionId,
+      currentPageId,
+      {
+        autoComputeLayout: false,
+      },
+      'update',
+      'pages',
+      get().trackAppSave
+    );
   },
   turnOnAutoComputeLayout: async (moduleId = 'canvas') => {
     const { appStore, getCurrentPageId, currentVersionId, getCurrentPageComponents, withUndoRedo, setComponentLayout } =
@@ -2757,9 +2759,17 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'turnOnAutoComputeLayout'
     );
-    await savePageChanges(app.appId, currentVersionId, currentPageId, {
-      autoComputeLayout: true,
-    });
+    await savePageChanges(
+      app.appId,
+      currentVersionId,
+      currentPageId,
+      {
+        autoComputeLayout: true,
+      },
+      'update',
+      'pages',
+      get().trackAppSave
+    );
     setComponentLayout(updatedBoxes, undefined, moduleId, {
       skipUndoRedo: true,
     });
@@ -2778,9 +2788,17 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'setAutoComputeLayout'
     );
-    await savePageChanges(app.appId, currentVersionId, currentPageId, {
-      autoComputeLayout: value,
-    });
+    await savePageChanges(
+      app.appId,
+      currentVersionId,
+      currentPageId,
+      {
+        autoComputeLayout: value,
+      },
+      'update',
+      'pages',
+      get().trackAppSave
+    );
   },
   setWidgetDeleteConfirmation: (value, second = null) => {
     if (value) {
@@ -2945,6 +2963,13 @@ export const createComponentsSlice = (set, get) => ({
         'updateDependencyValues'
       );
     };
+
+    // Declared variable sentinel - recompute the variable's value from its definition
+    if (dependency.endsWith(VARIABLE_DEFINITION_NODE_SUFFIX)) {
+      const nodeData = getNodeData(dependency, moduleId);
+      if (nodeData?.scope && nodeData?.name) get().recomputeVariableDefinition(nodeData.scope, nodeData.name, moduleId);
+      return;
+    }
 
     // Handle query options sentinel - trigger re-run instead of resolution
     if (dependency.endsWith('.__options__')) {

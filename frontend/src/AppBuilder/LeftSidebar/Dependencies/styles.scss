@@ -39,6 +39,32 @@
   }
 }
 
+.dependency-section-action {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dependency-section-chevron-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.dependency-section-chevron {
+  color: var(--icon-strong);
+}
+
+.dependency-section-title {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-default);
+}
+
 .dependency-section-body {
   padding: 0 16px 8px 32px;
 }
@@ -134,6 +160,13 @@
     color: var(--text-default);
   }
 
+  .dependency-row-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
   .dependency-row-subtitle {
     font-size: 12px;
     line-height: 18px;
@@ -145,6 +178,13 @@
     border-radius: 2px;
     background: var(--yellow4);
     color: inherit;
+  }
+
+  .dependency-row-trailing {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
   }
 
   .dependency-row-tag {
@@ -253,87 +293,6 @@
   flex-shrink: 0;
 }
 
-.dependency-detail-menu-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 7px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-
-  &:hover {
-    background: var(--interactive-hover);
-  }
-}
-
-// Three stacked dots — matches the 14px more-vertical glyph in the design.
-.dependency-kebab {
-  position: relative;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: var(--icon-strong);
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    width: 2px;
-    height: 2px;
-    border-radius: 50%;
-    background: var(--icon-strong);
-  }
-
-  &::before {
-    top: -4px;
-  }
-
-  &::after {
-    top: 4px;
-  }
-}
-
-.dependency-detail-menu {
-  position: absolute;
-  top: 30px;
-  right: 0;
-  z-index: 10;
-  min-width: 196px;
-  padding: 8px;
-  border-radius: 10px;
-  background: var(--surfaces-surface-01);
-  border: 1px solid var(--border-weak);
-  box-shadow: var(--elevation-300-box-shadow);
-
-  .dependency-detail-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 32px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    line-height: 18px;
-    color: var(--text-default);
-    cursor: pointer;
-
-    &:hover {
-      background: var(--interactive-hover);
-    }
-  }
-
-  .dependency-detail-menu-icon {
-    display: inline-flex;
-    align-items: center;
-    flex-shrink: 0;
-    color: var(--icon-strong);
-  }
-}
-
 /* ---------- binding tooltip ---------- */
 
 .dependency-binding-tooltip {
@@ -401,4 +360,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+// Supports both the intent-aware tooltip root and Bootstrap's inner content.
+.dependency-row-full-text,
+.dependency-row-full-text .tooltip-inner {
+  max-width: min(320px, calc(100vw - 32px));
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

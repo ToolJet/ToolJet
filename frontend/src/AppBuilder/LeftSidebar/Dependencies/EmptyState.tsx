@@ -33,3 +33,5 @@ export const NoSearchMatchesEmptyState = ({ term, onClearSearch }: NoSearchMatch
     clearDataCy="dependency-clear-search-button"
   />
 );
+
+export default PanelEmptyState;

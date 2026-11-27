@@ -681,17 +681,18 @@ const useAppData = (
         if (!moduleMode) {
           setIsEditorFreezed(appData.should_freeze_editor);
         }
-        // Skip overriding global settings so an embedded module's own settings never overwrite the app's.
-        if (!isEmbeddedModuleInstance(mode, moduleMode)) {
-          const global_settings = mapKeys(
-            appData.editing_version?.global_settings || appData.global_settings,
-            (value, key) => camelCase(key)
-          );
-          if (!global_settings?.theme) {
-            global_settings.theme = baseTheme;
-          }
-          setGlobalSettings(global_settings);
+        // Retain each instance's declarations without replacing the parent app's theme/settings.
+        const global_settings = mapKeys(
+          appData.editing_version?.global_settings ||
+            appData.editing_version?.globalSettings ||
+            appData.global_settings ||
+            appData.globalSettings,
+          (value, key) => camelCase(key)
+        );
+        if (!global_settings?.theme) {
+          global_settings.theme = baseTheme;
         }
+        setGlobalSettings(global_settings, isEmbeddedModuleInstance(mode, moduleMode) ? moduleId : 'canvas');
 
         setPages(pages, moduleId);
         if (!moduleMode || moduleId === 'canvas') {
@@ -1156,7 +1157,8 @@ const useAppData = (
         });
 
         setGlobalSettings(
-          mapKeys(appData.editing_version?.globalSettings || appData.globalSettings, (value, key) => camelCase(key))
+          mapKeys(appData.editing_version?.globalSettings || appData.globalSettings, (value, key) => camelCase(key)),
+          moduleId
         );
 
         setPages(pages, moduleId);
