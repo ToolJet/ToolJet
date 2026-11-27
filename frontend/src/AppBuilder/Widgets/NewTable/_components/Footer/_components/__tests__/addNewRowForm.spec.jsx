@@ -85,7 +85,8 @@ function renderForm({ columns = COLUMNS, properties = {}, fireEvent = jest.fn(),
   const store = useTableStore.getState();
   store.initializeComponent(TABLE_ID);
   // these scenarios are about the single-row form; a missing setting means "on" for saved apps (see 001)
-  store.setTableProperties(TABLE_ID, { allowAddingMultipleRows: false, ...properties });
+  // most scenarios are written against the in-table popover; dialog ones pass their own placement
+  store.setTableProperties(TABLE_ID, { addNewRowIn: 'table', allowAddingMultipleRows: false, ...properties });
   store.setColumnDetails(TABLE_ID, columns, false, [], {}, false, [], false);
   const allColumns = columns.map((column) => ({
     columnDef: { accessorKey: column.key, meta: { columnType: column.columnType } },
@@ -917,6 +918,22 @@ describe('Table-ADDROWFORM-028 dialog placement', () => {
     const content = document.querySelector('[data-slot="dialog-content"]');
     expect(content).toHaveClass('tw-max-w-[500px]');
     expect(content).toHaveClass('tw-max-h-[min(80vh,720px)]');
+  });
+
+  test('Table-ADDROWFORM-028 the dialog and its backdrop cover the editor right sidebar', () => {
+    // Break this catches: the properties panel (.editor-sidebar, z-index 1041) left bright above Rocket's z-50 backdrop.
+    renderForm({ properties: dialogProps });
+
+    expect(document.querySelector('[data-slot="dialog-overlay"]')).toHaveClass('tw-z-[1050]');
+    expect(document.querySelector('[data-slot="dialog-content"]')).toHaveClass('tw-z-[1050]');
+  });
+
+  test('Table-ADDROWFORM-028 a Table with no saved placement opens the dialog', () => {
+    // Break this catches: an older Table (no addNewRowIn saved) opening the form inside the table.
+    renderForm({ properties: { addNewRowIn: undefined } });
+
+    expect(screen.getByRole('dialog', { name: 'Add row' })).toBeInTheDocument();
+    expect(document.querySelector('[data-slot="dialog-overlay"]')).not.toBeNull();
   });
 
   test('Table-ADDROWFORM-028 select and multiselect menus open above the dialog', async () => {
