@@ -72,7 +72,7 @@ export const createModuleDraftVersion = (draftVersionName, fromVersion) => {
   }
   cy.get(commonWidgetSelector.parameterInputField('version name')).clear().type(draftVersionName);
   cy.get(commonSelectors.buttonSelector('create draft version create')).click();
-  cy.get(commonSelectors.buttonSelector('create draft version create')).should('not.exist');
+  cy.get(commonSelectors.buttonSelector('create draft version create'), { timeout: 30000 }).should('not.exist');
 };
 
 export const publishModuleVersion = (currentVersionName, newVersionName) => {

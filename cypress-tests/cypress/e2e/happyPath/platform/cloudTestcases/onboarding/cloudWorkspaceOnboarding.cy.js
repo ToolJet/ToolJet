@@ -87,7 +87,10 @@ describe("Cloud Onboarding — Workspace Signup and Invites", { retries: 0 }, ()
     cy.clearCookies();
 
     [knownEmail, uniqueEmail("cloud-forgot-unknown")].forEach((email) => {
+      cy.intercept("GET", "/api/config*").as("forgotConfig");
+      cy.intercept("GET", "/api/metadata*").as("forgotMetadata");
       cy.visit("/forgot-password");
+      cy.wait(["@forgotConfig", "@forgotMetadata"]);
       cy.clearAndType(onboardingSelectors.forgotEmailInput, email);
       cy.get(commonSelectors.resetPasswordLinkButton).click();
       cy.get(onboardingSelectors.checkYourMailHeader).verifyVisibleElement(

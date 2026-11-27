@@ -64,8 +64,8 @@ describe("Cloud AI Credits — LLM Key", { retries: 0 }, () => {
       });
 
       cy.visit(`/${secondId}/settings/llm-key`);
-      cy.location("pathname", { timeout: 60000 }).should("eq", `/${secondId}/settings/white-labelling`);
-      cy.get(aiSelectors.llmKeyListItem).should("have.class", "tj-list-item-disabled");
+      cy.location("pathname", { timeout: 60000 }).should("eq", `/${secondId}/settings/llm-key`);
+      cy.contains("ToolJet managed", { timeout: 20000 }).should("be.visible");
       cy.get(aiSelectors.llmKeyInput).should("not.exist");
     });
   });

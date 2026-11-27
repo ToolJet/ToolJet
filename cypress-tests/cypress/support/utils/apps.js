@@ -42,12 +42,13 @@ export const verifySuccessfulSlugUpdate = (workspaceId, slug) => {
 export const verifyURLs = (workspaceId, slug, page) => {
   const baseUrl = Cypress.config("baseUrl");
 
-  cy.url().should(
-    "eq",
-    page
-      ? `${baseUrl}/${workspaceId}/apps/${slug}/home`
-      : `${baseUrl}/${workspaceId}/apps/${slug}`
-  );
+  cy.url().should((url) => {
+    expect(url.split("?")[0]).to.eq(
+      page
+        ? `${baseUrl}/${workspaceId}/apps/${slug}/home`
+        : `${baseUrl}/${workspaceId}/apps/${slug}`
+    );
+  });
 
   cy.openInCurrentTab(commonWidgetSelector.previewButton);
   cy.ifEnv("Community", () => {

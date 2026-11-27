@@ -807,12 +807,35 @@ Cypress.Commands.add("apiCreateAppVersion", (appId, versionName, versionFromId, 
       .then((res) => {
         expect(res.status, `Create version '${versionName}'`).to.be.oneOf([200, 201]);
         const version = res.body?.version || res.body;
+        if (res.body?.enqueued) {
+          return waitForQueuedVersion(appId, versionName, reqHeaders);
+        }
         expect(version?.id, "new version id").to.be.a("string");
         Cypress.log({ message: `[gitSync] Version '${versionName}' created (id: ${version.id})` });
         return version;
       });
   });
 });
+
+// EE queues version creation (#18243) and a WORKER=true process creates it later.
+const waitForQueuedVersion = (appId, versionName, headers, attempt = 0) => {
+  return cy
+    .request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/apps/${appId}/versions`,
+      headers,
+    })
+    .then((res) => {
+      const version = (res.body?.versions || []).find((v) => v.name === versionName);
+      if (version) {
+        Cypress.log({ message: `[gitSync] Queued version '${versionName}' created (id: ${version.id})` });
+        return version;
+      }
+      expect(attempt, `queued version '${versionName}' created within 60s (needs WORKER=true)`).to.be.lessThan(60);
+      cy.wait(1000);
+      return waitForQueuedVersion(appId, versionName, headers, attempt + 1);
+    });
+};
 
 Cypress.Commands.add("apiCreateGitTag", (appId, versionId, message = null) => {
   return cy.getAuthHeaders().then((headers) => {
