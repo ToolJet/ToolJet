@@ -36,7 +36,7 @@ When a run reaches the Human-in-the-loop node:
 <img className="screenshot-full img-full" src="/img/workflows/nodes/human-in-the-loop/run-waiting.png" alt="Logs panel showing a run waiting for human input" />
 
 :::info
-Approval emails need SMTP to be configured for the instance.
+Approval emails need SMTP to be configured for the instance. See [Setting Up Outgoing Emails (SMTP)](/docs/tj-setup/smtp-setup/configuration).
 :::
 
 ### Effect on Triggers
