@@ -38,6 +38,32 @@ const getTableDefinitionInitialValue = (
   }
 };
 
+// A Table saved before "Show record count" existed shows the count only with pagination, so its toggle mirrors pagination
+export const getMissingShowRecordCountValue = (component) => {
+  if (component?.component?.component !== 'Table') return undefined;
+  const properties = component.component.definition?.properties;
+  const resolve = (key, fallback) => (properties?.[key] ? resolveReferences(properties[key].value) : fallback);
+  // A hidden footer shows no count; same visibility rule and defaults as the table store
+  const paginationOn = properties?.enablePagination
+    ? resolve('enablePagination')
+    : resolve('clientSidePagination') || resolve('serverSidePagination');
+  const footerVisible =
+    paginationOn ||
+    resolve('showAddNewRowButton', true) ||
+    resolve('showDownloadButton', true) ||
+    resolve('showRefreshButton', false) ||
+    !resolve('hideColumnSelectorButton', false);
+  if (!footerVisible) return '{{false}}';
+  // Same order as the old count rule, which reads the old keys without checking enablePagination
+  if (resolve('serverSidePagination')) {
+    const totalRecords = resolve('totalRecords');
+    // missing falls back to 10 in the store; an expression cannot resolve here and is usually set
+    return `{{${totalRecords === undefined || !!totalRecords}}}`;
+  }
+  if (resolve('clientSidePagination')) return '{{true}}';
+  return properties?.enablePagination?.value ?? '{{false}}';
+};
+
 const ensureLegacyTextComponentCompatibility = (param, definition) => {
   if (param !== 'textFormat') return;
 
