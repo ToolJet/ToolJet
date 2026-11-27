@@ -16,6 +16,7 @@ import {
 } from '../src/modules/instance-settings/constants';
 import { getEnvVars } from './database-config-utils';
 import { dbTransactionWrap } from '../src/helpers/database.helper';
+import { LEGACY_SAMPLE_LOCKBOX_KEY } from '../src/helpers/sample-secrets.helper';
 
 // Load environment variables from .env file
 const ENV_VARS = getEnvVars();
@@ -226,6 +227,8 @@ function validateEnvironment(): void {
 }
 
 function validateKeyFormat(key: string, label: string): void {
+  // Earlier preview and try images encrypted with this literal; accept it so they can rotate away from it.
+  if (key === LEGACY_SAMPLE_LOCKBOX_KEY) return;
   const hexRegex = /^[0-9a-fA-F]{64}$/;
   if (!hexRegex.test(key)) {
     throw new Error(`${label} must be exactly 64 hexadecimal characters (0-9, a-f, A-F)`);

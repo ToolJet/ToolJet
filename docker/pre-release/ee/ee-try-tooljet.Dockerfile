@@ -53,8 +53,6 @@ ENV TOOLJET_HOST=http://localhost \
     TOOLJET_SERVER_URL=http://localhost \
     PORT=80 \
     NODE_ENV=production \
-    LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
-    SECRET_KEY_BASE=replace_with_secret_key_base \
     PG_DB=tooljet_production \
     PG_USER=tooljet \
     PG_PASS=postgres \
@@ -81,6 +79,7 @@ ENV TOOLJET_HOST=http://localhost \
     ENABLE_AI_FEATURES=true
 
 # Set the entrypoint
+COPY ./server/scripts/ensure-secret-keys.sh /app/server/scripts/ensure-secret-keys.sh
 COPY ./docker/pre-release/ee/ee-try-entrypoint.sh /ee-try-entrypoint.sh
 RUN chmod +x /ee-try-entrypoint.sh
 ENTRYPOINT ["/ee-try-entrypoint.sh"]

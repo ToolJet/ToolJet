@@ -1,5 +1,6 @@
 import * as hkdf from 'futoin-hkdf';
 import * as crypto from 'crypto';
+import { LEGACY_SAMPLE_LOCKBOX_KEY } from '../../src/helpers/sample-secrets.helper';
 
 /**
  * DualKeyEncryptionService
@@ -16,7 +17,8 @@ export class DualKeyEncryptionService {
 
   constructor(oldMasterKey: string, newMasterKey: string) {
     // Validate key formats
-    this.validateKeyFormat(oldMasterKey, 'OLD');
+    // Earlier preview and try images encrypted with this literal (it hex-decodes to an empty key).
+    if (oldMasterKey !== LEGACY_SAMPLE_LOCKBOX_KEY) this.validateKeyFormat(oldMasterKey, 'OLD');
     this.validateKeyFormat(newMasterKey, 'NEW');
 
     // Store keys as buffers
