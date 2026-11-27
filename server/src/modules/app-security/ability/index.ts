@@ -65,12 +65,12 @@ export class ScanPolicySubject {}
 type PolicySubjects = InferSubjects<typeof ScanPolicySubject> | 'all';
 export type ScanPolicyAbility = Ability<[POLICY_FEATURE_KEY, PolicySubjects]>;
 
-/** Every member may read the policy their apps are gated by; only admins change it, grant exceptions or see the center. */
+/** Every member may read the policy and review settings their apps are gated by; only admins change them, grant exceptions or see the center. */
 export function defineScanPolicyAbility(
   can: AbilityBuilder<ScanPolicyAbility>['can'],
   permissions: UserAllPermissions
 ): void {
-  can(POLICY_FEATURE_KEY.GET_POLICY, ScanPolicySubject);
+  can([POLICY_FEATURE_KEY.GET_POLICY, POLICY_FEATURE_KEY.GET_REVIEW_SETTINGS], ScanPolicySubject);
   if (permissions.superAdmin || permissions.isAdmin) {
     can(
       [
@@ -80,6 +80,7 @@ export function defineScanPolicyAbility(
         POLICY_FEATURE_KEY.REVOKE_EXCEPTION,
         POLICY_FEATURE_KEY.SECURITY_CENTER,
         POLICY_FEATURE_KEY.RECHECK,
+        POLICY_FEATURE_KEY.UPDATE_REVIEW_SETTINGS,
       ],
       ScanPolicySubject
     );

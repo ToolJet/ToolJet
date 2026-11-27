@@ -7,7 +7,7 @@ export enum FEATURE_KEY {
   OVERRIDE_GATE = 'OVERRIDE_GATE',
 }
 
-/** Workspace features (module MODULES.APP_SECURITY_POLICY): policy, exceptions and the Security Center. */
+/** Workspace features (module MODULES.APP_SECURITY_POLICY): policy, exceptions, the Security Center and app review. */
 export enum POLICY_FEATURE_KEY {
   GET_POLICY = 'GET_SCAN_POLICY',
   UPDATE_POLICY = 'UPDATE_SCAN_POLICY',
@@ -16,6 +16,8 @@ export enum POLICY_FEATURE_KEY {
   REVOKE_EXCEPTION = 'REVOKE_SCAN_EXCEPTION',
   SECURITY_CENTER = 'GET_SECURITY_CENTER',
   RECHECK = 'RECHECK_RELEASED_VERSIONS',
+  GET_REVIEW_SETTINGS = 'GET_REVIEW_SETTINGS',
+  UPDATE_REVIEW_SETTINGS = 'UPDATE_REVIEW_SETTINGS',
 }
 
 /** Upper bounds on what an upload may carry, so one request cannot fill the database. */

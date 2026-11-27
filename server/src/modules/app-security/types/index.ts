@@ -18,6 +18,8 @@ interface PolicyFeatures {
   [POLICY_FEATURE_KEY.REVOKE_EXCEPTION]: FeatureConfig;
   [POLICY_FEATURE_KEY.SECURITY_CENTER]: FeatureConfig;
   [POLICY_FEATURE_KEY.RECHECK]: FeatureConfig;
+  [POLICY_FEATURE_KEY.GET_REVIEW_SETTINGS]: FeatureConfig;
+  [POLICY_FEATURE_KEY.UPDATE_REVIEW_SETTINGS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

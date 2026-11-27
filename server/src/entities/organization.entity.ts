@@ -56,6 +56,10 @@ export class Organization extends BaseEntity {
   @Column({ name: 'automatic_sso_login' })
   automaticSsoLogin: boolean;
 
+  // Approvals a version needs before it is saved, released or promoted to production; 0 turns reviews off.
+  @Column({ name: 'review_approvals', type: 'integer', default: 0 })
+  reviewApprovals: number;
+
   @Column({
     type: 'enum',
     enumName: 'workspace_status',
