@@ -43,6 +43,7 @@ shared import pipeline (`import-export-resources`), then has its tables seeded f
   failure must surface as `Failed to process CSV file` instead of a false success. The app is already created by then.
 - CSV headers must be a subset of the table's columns. Blank cells take the column default or NULL, so required text
   columns that may be blank in sample data must not be `NOT NULL` without a default.
+- `POST /library_apps` creates on `user.branchId` (the JWT strategy's resolved branch: `branch_id` param, else the default branch), never a body field. With git sync and multi-branching on, `perform` rejects the default branch with 403 (`assertGitSyncCreateAllowedForOrg`), so a client that has not loaded its branch yet cannot create on the locked default branch.
 - Every route that takes a template identifier checks it against the loaded manifests (`findManifest`) before any file
   read; unknown ids return 400 `App definition not found`.
 - `default-name` mirrors the `app_versions` name-uniqueness trigger: same branch, same app type, case-sensitive, and it

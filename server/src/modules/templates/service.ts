@@ -17,6 +17,8 @@ import { ImportExportResourcesService } from '@modules/import-export-resources/s
 import { PluginsService } from '@modules/plugins/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { assertGitSyncCreateAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 import { defaultThemeName, TJDefaultTheme } from '@modules/organization-themes/constants';
 import { TemplateAppManifests } from 'src/../templates';
 import { AppVersion } from '@entities/app_version.entity';
@@ -36,7 +38,8 @@ export class TemplatesService {
     protected tooljetDbBulkUploadService: TooljetDbBulkUploadService,
     protected pluginsService: PluginsService,
     protected logger: Logger,
-    protected licenseTermsService: LicenseTermsService
+    protected licenseTermsService: LicenseTermsService,
+    protected gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   async perform(
@@ -44,15 +47,23 @@ export class TemplatesService {
     identifier: string,
     appName: string,
     dependentPlugins: Array<string>,
-    shouldAutoImportPlugin: boolean,
-    branchId?: string
+    shouldAutoImportPlugin: boolean
   ) {
+    // user.branchId is resolved server-side (explicit branch_id param, else the default branch) and checked against
+    // the workspace, so a request that arrives before the client knows its branch still lands on the default branch
+    // and is rejected here rather than creating an app on it.
+    await assertGitSyncCreateAllowedForOrg(
+      this.gitSyncConfigsUtilService,
+      currentUser.organizationId,
+      currentUser.branchId,
+      'template app'
+    );
     let templateDefinition = this.findTemplateDefinition(identifier);
     if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.CUSTOM_THEMES, currentUser.organizationId)))
       templateDefinition = this.withThemeColours(templateDefinition);
     if (dependentPlugins.length)
       await this.pluginsService.autoInstallPluginsForTemplates(dependentPlugins, shouldAutoImportPlugin);
-    return this.importTemplate(currentUser, templateDefinition, appName, identifier, branchId);
+    return this.importTemplate(currentUser, templateDefinition, appName, identifier, currentUser.branchId);
   }
 
   // Free plans ignore app themes: write in their light colours (icons use placeholder text), keep the default theme

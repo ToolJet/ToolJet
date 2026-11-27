@@ -17,6 +17,7 @@ import { FilesRepository } from '@modules/files/repository';
 import { RolesRepository } from '@modules/roles/repository';
 import { FeatureAbilityFactory } from './ability';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 
 export class TemplatesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -57,6 +58,7 @@ export class TemplatesModule extends SubModule {
         await AppsModule.register(configs),
         await DataSourcesModule.register(configs),
         await AppHistoryModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
       ],
       providers: [
         AppsRepository,

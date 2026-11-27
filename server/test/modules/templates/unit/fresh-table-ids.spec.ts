@@ -20,6 +20,7 @@ class TestableTemplatesService extends TemplatesService {
       null as unknown as never,
       null as unknown as never,
       null as unknown as never,
+      null as unknown as never,
       null as unknown as never
     );
   }
