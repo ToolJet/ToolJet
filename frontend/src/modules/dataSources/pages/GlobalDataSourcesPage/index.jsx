@@ -43,7 +43,17 @@ export const GlobalDataSourcesPage = (props) => {
   const [isLoading, setLoading] = useState(true);
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
-  const [environmentLoading, setEnvironmentLoading] = useState(false);
+  const [pendingEnvironmentRequest, setPendingEnvironmentRequest] = useState(null);
+  const latestEnvironmentRequestRef = useRef(0);
+  // Read by request callbacks, which outlive the render that started them; set during render so it never lags the screen.
+  const openDataSourceRef = useRef(null);
+  openDataSourceRef.current = { dataSourceId: selectedDataSource?.id, environmentId: currentEnvironment?.id };
+  // The environment whose data the form shows; the tab returns here if loading another one fails.
+  const shownEnvironmentRef = useRef(null);
+  const environmentLoading =
+    !!pendingEnvironmentRequest &&
+    pendingEnvironmentRequest.dataSourceId === selectedDataSource?.id &&
+    pendingEnvironmentRequest.environmentId === currentEnvironment?.id;
   const [activeDatasourceList, setActiveDatasourceList] = useState('#commonlyused');
   const navigate = useNavigate();
   const { selectedId: selectedIdFromUrl } = useParams();
@@ -109,6 +119,10 @@ export const GlobalDataSourcesPage = (props) => {
     fetchFeatureAccess();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!environmentLoading) shownEnvironmentRef.current = currentEnvironment;
+  }, [environmentLoading, currentEnvironment]);
 
   useEffect(() => {
     selectedDataSource
@@ -425,17 +439,37 @@ export const GlobalDataSourcesPage = (props) => {
   };
 
   const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
-    setEnvironmentLoading(true);
-    globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
-      // Preserve isSynced flags: the environment endpoint doesn't include them, but we need them
-      // to correctly gate credential editing on the default branch (synced DSes must stay locked).
-      setSelectedDataSource((prev) => ({
-        ...data,
-        isSynced: prev?.isSynced,
-        is_synced: prev?.is_synced,
-      }));
-      setEnvironmentLoading(false);
-    });
+    const request = ++latestEnvironmentRequestRef.current;
+    setPendingEnvironmentRequest({ request, dataSourceId, environmentId: envId });
+    // Answers can arrive late or out of click order; only the last request, for the open data source and tab, counts.
+    const isForOpenTab = () =>
+      request === latestEnvironmentRequestRef.current &&
+      openDataSourceRef.current.dataSourceId === dataSourceId &&
+      openDataSourceRef.current.environmentId === envId;
+    const finish = () => setPendingEnvironmentRequest((pending) => (pending?.request === request ? null : pending));
+    globalDatasourceService
+      .getDataSourceByEnvironmentId(dataSourceId, envId)
+      .then((data) => {
+        if (isForOpenTab()) {
+          // Preserve isSynced flags: the environment endpoint doesn't include them, but we need them
+          // to correctly gate credential editing on the default branch (synced DSes must stay locked).
+          setSelectedDataSource((prev) => ({
+            ...data,
+            isSynced: prev?.isSynced,
+            is_synced: prev?.is_synced,
+          }));
+        }
+        finish();
+      })
+      .catch(() => {
+        if (isForOpenTab()) {
+          const failedEnvironment = environments.find((env) => env.id === envId);
+          toast.error(`Could not load the ${failedEnvironment?.name ?? 'selected'} configuration. Please try again.`);
+          // The form still holds the previous tab's data, so the tab goes back to match it.
+          setCurrentEnvironment(shownEnvironmentRef.current);
+        }
+        finish();
+      });
   };
 
   const value = useMemo(

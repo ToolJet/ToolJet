@@ -164,6 +164,7 @@ A user-authored className (or space-separated classNames) applied to a single wi
 
 Feature-specific invariants live in the closest `AGENTS.md`; read it before editing that subtree. Enterprise modules may carry their guide inside the `frontend/ee` submodule.
 
+- Data sources page, per-Environment configuration form, and Environment switching: `src/modules/dataSources/AGENTS.md`
 - Workflow dashboard, editor, stores, schedules, webhooks, inputs, approvals, and executions: `ee/modules/Workflows/AGENTS.md`
 - Workflow graph and node authoring: `ee/modules/Workflows/pages/WorkflowEditorPage/components/FlowBuilder/AGENTS.md`
 
@@ -178,6 +179,7 @@ Update the closest guide in the same PR when a feature gains a new invariant, co
 - `console.log` or debug leftovers
 - Unused imports
 - Missing `key` props in `.map()`
+- Text inputs whose `value` can be `undefined` (use `?? ''`): React then stops controlling the input and keeps the old text
 - Missing `shallow` in `useStore` selectors
 - Direct DOM manipulation (canvas drop calculations excepted)
 
