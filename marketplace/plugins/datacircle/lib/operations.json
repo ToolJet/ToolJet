@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Datacircle Datasource",
+  "description": "A schema defining Datacircle datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "datacircle_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "spec_url": "@spec/datacircle/datacircle"
+    }
+  }
+}
