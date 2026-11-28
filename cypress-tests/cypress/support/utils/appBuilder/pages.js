@@ -14,6 +14,9 @@
 //   addEventHandler                  -                    → pages
 //   disableOrEnablePage              -                    → pages
 //   hideOrUnhidePageMenu             -                    → pages
+//   renamePage                       -                    → pages
+//   duplicatePage                    -                    → pages
+//   goToPage                         -                    → pages
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/pages: multipage RightSideBar "Page settings" helpers.
@@ -265,4 +268,78 @@ export const disableOrEnablePage = (pageName, option = "disable") => {
 // stale import resolves; real coverage is quarantined in the spec.
 export const hideOrUnhidePageMenu = () => {
   openPagesPanel();
+};
+
+/**
+ * @tjBlock  pages
+ * @tjUsage  renamePage('Page 2', 'Reports')
+ * @tjDom    pageNameInput inside addEditPagePopup → selectall+type+blur → asserts pageRow(new handle)
+ */
+// Rename an existing page from its AddEditPagePopup. The name input commits on
+// blur only when non-empty and changed (AddNewPagePopup.jsx name input onBlur
+// -> updatePageName). The page row's data-cy is derived from the NAME, so the
+// row selector changes after a successful rename.
+export const renamePage = (pageName, newName) => {
+  openPageEditor(pageName);
+  // Late app-data syncs re-run the popup's state-sync effect (AddNewPagePopup.jsx
+  // useEffect on [pages, editingPage]) and clobber text typed too early — wait
+  // for the input value to be populated AND stable (same guard as addNewPage).
+  cy.get(multipageSelector.pageNameInput)
+    .first()
+    .should("have.value", pageName);
+  cy.wait(1000);
+  cy.get(multipageSelector.pageNameInput)
+    .first()
+    .should("have.value", pageName);
+  cy.get(multipageSelector.pageNameInput)
+    .first()
+    .focus()
+    .type("{selectall}{backspace}")
+    .type(newName)
+    .should("have.value", newName)
+    .blur();
+  cy.wait(500);
+  closePageEditor();
+  cy.get(multipageSelector.pageRow(pageHandleCy(newName))).should(
+    "be.visible"
+  );
+};
+
+/**
+ * @tjBlock  pages
+ * @tjUsage  duplicatePage('Home', 'Home (copy)')
+ * @tjDom    addEditPagePopup duplicate action (2nd header button) → asserts pageRow(copy handle)
+ */
+// Duplicate a page via the popup header's duplicate action. For default pages the
+// actions-container renders [go-to-page, duplicate, delete] (AddNewPagePopup.jsx
+// Popover.Header), so duplicate is index 1. The server names the clone
+// `${name} (copy)` / `${name} (copy N)` with handle `${handle}-copy[-N]`
+// (server page.service.ts clonePage) and the store switches the canvas to it
+// (pageMenuSlice.js clonePage -> switchPage). Pass the expected copy name.
+export const duplicatePage = (pageName, copyName) => {
+  openPageEditor(pageName);
+  cy.get(`${multipageSelector.addEditPagePopup} .actions-container button`)
+    .eq(1)
+    .click();
+  cy.get(multipageSelector.pageRow(pageHandleCy(copyName)), {
+    timeout: 15000,
+  }).should("be.visible");
+  closePageEditor();
+};
+
+/**
+ * @tjBlock  pages
+ * @tjUsage  goToPage('Home')
+ * @tjDom    addEditPagePopup go-to-page action (1st header button) → switches canvas page
+ */
+// Switch the canvas to a page via the popup header's go-to-page action
+// (AddNewPagePopup.jsx handlePageSwitch -> switchPage). The editor URL ends with
+// the page HANDLE after the switch (not the name).
+export const goToPage = (pageName) => {
+  openPageEditor(pageName);
+  cy.get(`${multipageSelector.addEditPagePopup} .actions-container button`)
+    .first()
+    .click();
+  cy.wait(500);
+  closePageEditor();
 };
