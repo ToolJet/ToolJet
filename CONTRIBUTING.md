@@ -24,6 +24,12 @@ Do **not** open a public issue for security vulnerabilities. See [SECURITY.md](S
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js 20+ and npm 10+ (check with \`node -v\` and \`npm -v\`)
+- Docker and Docker Compose (for containerized setup)
+- Git
+
 ### 1. Set up your environment
 
 | [macOS](https://docs.tooljet.io/docs/contributing-guide/setup/macos) | [Docker](https://docs.tooljet.io/docs/contributing-guide/setup/docker) | [Ubuntu](https://docs.tooljet.io/docs/contributing-guide/setup/ubuntu) |
