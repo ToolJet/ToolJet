@@ -1,5 +1,5 @@
-import { commonWidgetSelector, inspectorSelectors } from 'Selectors/common';
-import { navigateAndVerifyInspector } from 'Support/utils/appBuilder/inspector';
+import { inspectorSelectors } from 'Selectors/common';
+import { navigateAndVerifyInspector, openInspector, openNode } from 'Support/utils/appBuilder/inspector';
 import { defineModuleContract, dropModuleComponent } from 'Support/utils/platform/modules';
 
 describe('Modules — Inspector', () => {
@@ -64,7 +64,7 @@ describe('Modules — Inspector', () => {
       ['avatarId', `null`],
       ['groups', `[2]`],
       ['role', `"admin"`],
-      ['ssoUserInfo', `{0}`],
+      ['ssoUserInfo', `{}`],
     ];
 
     navigateAndVerifyInspector(['globals', 'currentUser'], currentUserDataList);
@@ -83,7 +83,7 @@ describe('Modules — Inspector', () => {
         ['avatarId', `null`],
         ['groups', `[2]`],
         ['role', `"admin"`],
-        ['ssoUserInfo', `{0}`],
+        ['ssoUserInfo', `{}`],
       ];
 
       navigateAndVerifyInspector(['globals', 'currentUser'], currentUserDataListAfter);
@@ -148,12 +148,13 @@ describe('Modules — Inspector', () => {
     dropModuleComponent();
     defineModuleContract();
 
-    cy.get(commonWidgetSelector.sidebarinspector).should('be.visible').click();
-    cy.get('.tooltip-inner').invoke('hide');
+    // The Inspector tab toggles the runtime panel, so open it only if it is closed.
+    openInspector();
+    cy.hideTooltip();
 
-    cy.get(inspectorSelectors.inspectorSubNode('input')).should('be.visible').and('have.text', 'Input');
-
-    cy.get('[data-cy="inspector-undefined-expand-button"]').should('be.visible').click();
+    // The module input is its own Inspector group now, not a node under Globals.
+    cy.get('[data-cy="inspector-input-expand-button"]').should('be.visible').and('contain.text', 'Input');
+    openNode('input');
 
     // The defined Input contract item ("input1") shows up as real, resolved
     // data under the Input node — proof the module-only `input` global

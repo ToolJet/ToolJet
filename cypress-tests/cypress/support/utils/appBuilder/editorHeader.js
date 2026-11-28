@@ -17,14 +17,14 @@
 /**
  * @tjBlock  editor
  * @tjUsage  renameApp('My App')
- * @tjDom    editor-app-name-input → app-name-input field → rename-app confirm
+ * @tjDom    edit-app-name-button → inline app-name-input → rename-app-button confirm
  */
 export const renameApp = (name) => {
-  cy.get('[data-cy="editor-app-name-input"]').click();
+  cy.get('[data-cy="edit-app-name-button"]').click();
   cy.get("[data-cy='app-name-input']").type(`{selectAll}{backspace}${name}`, {
     force: true,
   });
-  cy.get("[data-cy='rename-app']").click();
+  cy.get("[data-cy='rename-app-button']").should("be.enabled").click();
 };
 
 /**

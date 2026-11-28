@@ -24,7 +24,7 @@ describe("Globals - Inspector", () => {
       ["avatarId", `null`],
       ["groups", `[2]`],
       ["role", `"admin"`],
-      ["ssoUserInfo", `{0}`],
+      ["ssoUserInfo", `{}`],
     ];
 
     navigateAndVerifyInspector(["globals", "currentUser"], dataList);
@@ -43,7 +43,7 @@ describe("Globals - Inspector", () => {
         ["avatarId", `null`],
         ["groups", `[2]`],
         ["role", `"admin"`],
-        ["ssoUserInfo", `{0}`],
+        ["ssoUserInfo", `{}`],
       ];
 
       navigateAndVerifyInspector(["globals", "currentUser"], dataListAfter);

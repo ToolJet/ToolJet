@@ -1,9 +1,11 @@
-import { commonSelectors, cyParamName } from "Selectors/common";
+import { commonQuerySelectors, commonSelectors, cyParamName } from "Selectors/common";
+import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import {
   dataSourceFolderPermissionSelectors as dsFolderPerm,
   dataSourceFolderSelectors as dsFolder,
 } from "Selectors/platform/dataSourceFolders";
 import { groupsSelector } from "Selectors/platform/manageGroups";
+import { openQueriesPanel } from "Support/utils/appBuilder/querymanager/queries";
 
 export const openDataSourcesList = () => {
   cy.intercept("GET", "/api/folder-data-sources*").as("dataSourceFolders");
@@ -205,9 +207,48 @@ export const apiCreateReleasedAppWithQuery = (appName, slug, dataSourceId, query
 
 export const uiRunQueryInBuilder = (queryName) => {
   cy.intercept("POST", "/api/data-queries/*/versions/*/run/*").as("builderQueryRun");
+  openQueriesPanel();
   cy.get(dsFolder.listQuery(queryName)).click();
   cy.get(dsFolder.queryRunButton).click();
   return cy.wait("@builderQueryRun").its("response.body");
+};
+
+/**
+ * Re-run the query from the builder until the restriction refuses it, then yield that run's body.
+ * A restriction the admin has just re-applied can reach a Cypress-speed run one run late.
+ *
+ * @tjType platform.dataSourceFolders.queryRun
+ * @tjBlock dataSourceFolders
+ * @tjUsage uiRunQueryInBuilderUntilBlocked("folderquery").then(verifyQueryRunBlocked)
+ * @tjDom query-run-button, list-query-<name>
+ */
+export const uiRunQueryInBuilderUntilBlocked = (queryName, tries = 5) => {
+  const attempt = (left) =>
+    uiRunQueryInBuilder(queryName).then((body) => {
+      const blocked = body.data?.responseObject?.responseBody === QUERY_RUN_BLOCKED_MESSAGE;
+      return blocked || left <= 1 ? cy.wrap(body, { log: false }) : attempt(left - 1);
+    });
+  return attempt(tries);
+};
+
+/**
+ * Select a query, then delete it from its row menu. With the selected query gone, the right Query tab shows the
+ * data source landing picker, which an app opened with no query selected never shows.
+ *
+ * @tjType platform.dataSourceFolders.queryPanel
+ * @tjBlock dataSourceFolders
+ * @tjUsage uiDeleteSelectedQuery("seedquery")
+ * @tjDom list-query-<name> → query-handler-menu-<name> → query-card-delete-button → entity-delete-confirm
+ */
+export const uiDeleteSelectedQuery = (queryName) => {
+  openQueriesPanel();
+  cy.get(dsFolder.listQuery(queryName)).click();
+  cy.get(dsFolder.queryRunButton).should("be.visible");
+  cy.get(dataSourceSelector.queryHandlerMenu(queryName)).click();
+  cy.get(commonQuerySelectors.queryActionButton("delete")).click();
+  cy.get('[data-cy="entity-delete-title"]').should("have.text", `Delete "${queryName}"?`);
+  cy.get(commonSelectors.entityDeleteConfirm).click();
+  cy.get(dsFolder.listQuery(queryName)).should("not.exist");
 };
 
 let releasedAppVisits = 0;

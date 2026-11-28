@@ -16,6 +16,7 @@ import {
     updateRole,
     verifyUserPrivileges,
 } from "Support/utils/manageGroups";
+import { openQueriesPanel } from "Support/utils/appBuilder/querymanager/queries";
 import { getGroupPermissionInput } from "Support/utils/userPermissions";
 import { importText } from "Texts/platform/exportImport";
 import { groupsText } from "Texts/platform/manageGroups";
@@ -266,6 +267,7 @@ describe("Manage Groups", () => {
                 navigateToAppEditor("permission-export");
                 cy.wait(3000);
 
+                openQueriesPanel();
                 cy.get(dataSourceSelector.listQuery("user1-datasource"))
                     .should("be.visible")
                     .click();

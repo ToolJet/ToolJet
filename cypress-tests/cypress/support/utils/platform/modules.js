@@ -125,7 +125,8 @@ export const attemptDeleteModuleVersion = (versionName) => {
   cy.get(commonSelectors.yesButton).click();
 };
 
-export const dragModuleIntoCanvas = (moduleName, positionX = 100, positionY = 100) => {
+// The left Components panel overlays the canvas's left ~290px, so drop right of it (as dragAndDropWidget does).
+export const dragModuleIntoCanvas = (moduleName, positionX = 350, positionY = 100) => {
   cy.get('body').then(($body) => {
     if ($body.find('[role="tab"]:contains("Modules")').length === 0) {
       cy.get(commonSelectors.rightSidebarPlusButton).click();

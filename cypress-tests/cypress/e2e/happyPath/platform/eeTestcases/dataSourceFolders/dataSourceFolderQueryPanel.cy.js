@@ -1,8 +1,10 @@
-import { expandFoldedQueryPanel } from 'Support/utils/appBuilder/querymanager/queryPanel';
 import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
+import { openQueriesPanel } from 'Support/utils/appBuilder/querymanager/queries';
+import { apiCreateAppWithQuery, uiDeleteSelectedQuery } from 'Support/utils/platform/dataSourceFolders';
 
 describe('Data Source Folders — Query Panel Grouping', () => {
   let workspaceId, wsName, wsSlug, testId, names;
+  const seedQuery = 'seedquery';
 
   beforeEach(() => {
     testId = Date.now();
@@ -34,8 +36,11 @@ describe('Data Source Folders — Query Panel Grouping', () => {
       cy.apiCreateGlobalDataSource(names.b1).then((id) => cy.apiAddDataSourceToFolder(id, folderB.id));
       cy.apiCreateGlobalDataSource(names.b2).then((id) => cy.apiAddDataSourceToFolder(id, folderB.id));
     });
-    cy.apiCreateGlobalDataSource(names.stray).then((id) => Cypress.env('strayId', id));
-    cy.apiCreateApp(`picker-app-${testId}`);
+    cy.apiCreateGlobalDataSource(names.stray).then((id) => {
+      Cypress.env('strayId', id);
+      // The landing picker only shows once the selected query is deleted, so the app starts with one query to delete.
+      apiCreateAppWithQuery(`picker-app-${testId}`, id, seedQuery);
+    });
   });
 
   afterEach(() => {
@@ -76,22 +81,26 @@ describe('Data Source Folders — Query Panel Grouping', () => {
 
   it('both data source pickers group by folder, search across folders, and reflect a folder change after reload', () => {
     cy.openApp('', workspaceId, Cypress.env('appId'));
-    expandFoldedQueryPanel();
-
-    verifyFolderGrouping(dsFolder.pickerDataSourceCard, dsFolder.emptyPickerSearch, landingHeader);
+    openQueriesPanel();
 
     cy.get(dsFolder.addQueryPopoverButton).click();
     verifyFolderGrouping(dsFolder.selectDataSourceOption, dsFolder.addQueryPopoverSearch, popoverHeader);
-    cy.get('body').type('{esc}');
+    cy.get(dsFolder.addQueryPopoverButton).click();
+    cy.get(dsFolder.addQueryPopoverSearch).should('not.exist');
+
+    uiDeleteSelectedQuery(seedQuery);
+    verifyFolderGrouping(dsFolder.pickerDataSourceCard, dsFolder.emptyPickerSearch, landingHeader);
 
     // A folder change made outside the builder shows up after a reload, and the data source moves rather than duplicates.
     cy.get(dsFolder.pickerDataSourceCard(names.stray)).should('be.visible');
     cy.then(() => cy.apiAddDataSourceToFolder(Cypress.env('strayId'), Cypress.env('folderAId')));
     cy.reload();
-    expandFoldedQueryPanel();
 
-    cy.get(dsFolder.pickerFolderHeader(names.folderA)).click();
-    cy.get(dsFolder.pickerDataSourceCard(names.stray)).should('have.length', 1).and('be.visible');
-    cy.get(dsFolder.pickerDataSourceCard(names.a1)).should('be.visible');
+    // After a reload no query is selected, so only the New query popover lists data sources.
+    openQueriesPanel();
+    cy.get(dsFolder.addQueryPopoverButton).click();
+    cy.get(popoverHeader(names.folderA)).click();
+    cy.get(dsFolder.selectDataSourceOption(names.stray)).should('have.length', 1).and('be.visible');
+    cy.get(dsFolder.selectDataSourceOption(names.a1)).should('be.visible');
   });
 });
