@@ -190,13 +190,13 @@ export const verifyEnvironmentAccess = (environments, options = {}) => {
   verifyPreviewAccess(environments, opts);
   verifyPreviewURLAccess(environments, opts);
 };
+// In the editor the tooltip is the Radix app-builder tooltip, opened by a real pointer on the button's wrapper.
 const assertRestrictedTooltip = (selector, env) => {
-  cy.get(selector).should("be.disabled").trigger("mouseover", { force: true });
-  cy.get("div.tooltip-inner")
-    .should("be.visible")
-    .and("contain", `Access to ${env} environment is restricted. Contact admin to know more.`);
-  cy.get(selector).trigger("mouseout", { force: true });
-  cy.get("div.tooltip-inner").should("not.exist");
+  const message = `Access to ${env} environment is restricted. Contact admin to know more.`;
+  cy.get(selector).should("be.disabled").parent().realHover();
+  cy.get(".app-builder-tooltip").should("be.visible").and("contain", message);
+  cy.get("body").realMouseMove(-10000, -10000, { position: "topLeft" });
+  cy.contains(".app-builder-tooltip", message).should("not.exist");
 };
 
 

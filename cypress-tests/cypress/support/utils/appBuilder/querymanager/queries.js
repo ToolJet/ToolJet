@@ -75,6 +75,19 @@ export const openQueriesPanel = () => {
 
 /**
  * @tjBlock  common
+ * @tjUsage  closeQueriesPanel()
+ * @tjDom    close-query-panel, clicked only while it is present
+ */
+export const closeQueriesPanel = () => {
+  cy.get("body").then(($body) => {
+    if ($body.find('[data-cy="close-query-panel"]').length) {
+      cy.get('[data-cy="close-query-panel"]').click();
+    }
+  });
+};
+
+/**
+ * @tjBlock  common
  * @tjUsage  deleteQuery('restapi1')
  * @tjDom    list-query-<name> → delete-query-<name> → component-inspector-delete-button
  */
