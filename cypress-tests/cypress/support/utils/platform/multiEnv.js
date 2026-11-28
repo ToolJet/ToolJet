@@ -228,7 +228,9 @@ export const createAppWithComponents = (
   });
 };
 
+// An open query editor narrows the editor canvas, which then scrolls the Text component out of view.
 export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
+  cy.get(commonWidgetSelector.draggableWidget("constant_data")).scrollIntoView();
   cy.get(commonWidgetSelector.draggableWidget("constant_data"))
     .should("be.visible")
     .should("contain.text", expectedDbValue);

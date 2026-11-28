@@ -191,9 +191,12 @@ export const verifyEnvironmentAccess = (environments, options = {}) => {
   verifyPreviewURLAccess(environments, opts);
 };
 // In the editor the tooltip is the Radix app-builder tooltip, opened by a real pointer on the button's wrapper.
+// Hover twice: a Radix tooltip that just closed ignores the first move onto the next trigger.
 const assertRestrictedTooltip = (selector, env) => {
   const message = `Access to ${env} environment is restricted. Contact admin to know more.`;
-  cy.get(selector).should("be.disabled").parent().realHover();
+  cy.get(selector).should("be.disabled");
+  cy.get(selector).parent().realHover({ position: "center" });
+  cy.get(selector).parent().realHover({ position: "left" });
   cy.get(".app-builder-tooltip").should("be.visible").and("contain", message);
   cy.get("body").realMouseMove(-10000, -10000, { position: "topLeft" });
   cy.contains(".app-builder-tooltip", message).should("not.exist");

@@ -70,18 +70,22 @@ export const openNode = (node, index = 0, time = 15000) => {
 };
 
 // The Inspector tab toggles the runtime panel, and the panel's open state persists in
-// localStorage, so click it only when the Inspector is not already showing.
+// localStorage, so click it only when the panel is not open on the Inspector. The inspector
+// stays mounted through the close animation, so read the panel's data-state, not its presence.
 /**
  * @tjBlock  inspector
  * @tjUsage  openInspector()
- * @tjDom    runtime-panel-tab-inspect, clicked only while runtime-inspector is absent
+ * @tjDom    runtime-panel-tab-inspect, clicked unless .runtime-panel-content is open with runtime-inspector
  */
 export const openInspector = () => {
+  const openPanel = '.runtime-panel-content[data-state="open"]';
+  cy.get(commonWidgetSelector.sidebarinspector).should("be.visible");
   cy.get("body").then(($body) => {
-    if (!$body.find('[data-cy="runtime-inspector"]').length) {
+    if (!$body.find(`${openPanel} [data-cy="runtime-inspector"]`).length) {
       cy.get(commonWidgetSelector.sidebarinspector).click();
     }
   });
+  cy.get(`${openPanel} [data-cy="runtime-inspector"]`).should("be.visible");
 };
 
 // --- list + detail inspector navigation helpers ----------------------------
