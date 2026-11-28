@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "lib",
+    "types": ["node", "jest"],
+    "lib": ["es2017"]
+  },
+  "exclude": ["node_modules", "dist", "__tests__"]
+}
