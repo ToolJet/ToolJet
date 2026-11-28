@@ -1,27 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
-import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { toast } from 'react-hot-toast';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import Tick from '../../Icons/Tick.svg';
-import './styles.scss';
+import { CircleAlert, CircleCheck, CloudUpload, FileUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function FileDropzone({
-  handleClick,
-  hiddenFileInput,
-  errors,
-  handleFileChange,
-  onButtonClick,
-  setProgress,
-  progress,
-}) {
-  const divRef = useRef(null);
-  const [divWidth, setDivWidth] = useState(0);
+const duration = 1000;
+
+export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileChange, setProgress, progress }) {
   const [fileData, setFileData] = useState();
-  const duration = 1000;
 
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { parsedFileType: ['text/csv'] },
     onDrop: (acceptedFiles) => {
       if (acceptedFiles.length > 0) {
@@ -45,117 +34,113 @@ export function FileDropzone({
     noKeyboard: true,
   });
 
+  // A new file restarts the fake "reading the file" progress.
   useEffect(() => {
-    if (divRef.current) {
-      const width = divRef.current.getBoundingClientRect().width;
-      setDivWidth(width);
-      handleProgressAnimation();
-    }
-  }, [fileData]);
-
-  const handleProgressAnimation = () => {
+    if (!fileData) return;
     const startTime = Date.now();
     const updateProgress = () => {
-      const runningTime = Date.now() - startTime;
-      const progressPercentage = Math.min(1, runningTime / duration);
+      const progressPercentage = Math.min(1, (Date.now() - startTime) / duration);
       setProgress(progressPercentage * 100);
-
-      if (progressPercentage < 1) {
-        requestAnimationFrame(updateProgress);
-      }
+      if (progressPercentage < 1) requestAnimationFrame(updateProgress);
     };
     requestAnimationFrame(updateProgress);
-  };
+  }, [fileData]);
+
+  const errorMessages = [errors.client, errors.server].filter((error) => error.length > 0);
+
+  if (fileData?.name) {
+    return (
+      <div className="tw-flex tw-flex-col tw-gap-2" data-cy="bulk-upload-file">
+        <div className="tw-flex tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-solid tw-border-border-weak tw-px-3 tw-py-2">
+          <FileUp aria-hidden className="tw-size-4 tw-shrink-0 tw-text-icon-weak" />
+          <span
+            className="tw-min-w-0 tw-truncate tw-font-body-default tw-text-text-default"
+            data-cy="uploaded-file-data"
+          >
+            {`${fileData.name} - ${fileData.size} bytes`}
+          </span>
+        </div>
+
+        {progress < 100 && (
+          <div
+            role="progressbar"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="tw-h-1 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-background-surface-layer-03"
+          >
+            <div className="tw-h-full tw-bg-button-primary" style={{ width: `${progress}%` }} />
+          </div>
+        )}
+
+        {progress === 100 && errorMessages.length === 0 && (
+          <div className="tw-flex tw-items-center tw-gap-1.5 tw-text-text-success">
+            <CircleCheck aria-hidden className="tw-size-4" />
+            <span className="tw-font-body-default">Ready for upload</span>
+          </div>
+        )}
+
+        {errorMessages.length > 0 && (
+          <div className="tw-flex tw-flex-col tw-gap-1 tw-text-text-danger" data-cy="bulk-upload-error">
+            <div className="tw-flex tw-items-center tw-gap-1.5">
+              <CircleAlert aria-hidden className="tw-size-4 tw-shrink-0" />
+              <span className="tw-font-title-default">Kindly check the file and try again!</span>
+            </div>
+            {errorMessages.map((message) => (
+              <span key={message} className="tw-break-words tw-font-body-default">
+                {message}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <>
-      {fileData?.name ? (
-        <div className="bulkUpload-file">
-          <div className="fileName mt-3" ref={divRef}>
-            {fileData?.name && (
-              <ul className="m-0 p-0" data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>
-            )}
-          </div>
-
-          <div style={{ width: '486px' }}>
-            {progress < 100 && (
-              <progress style={{ width: divWidth }} className="progress progress-sm mt-3" value={progress} max="100" />
-            )}
-            {progress === 100 && !errors.client.length > 0 && !errors.server.length > 0 && (
-              <div className="d-flex align-items-center justify-content-between readyForUpload-container">
-                <Tick />
-                <p className="m-0 readyForUpload">Ready for upload</p>
-              </div>
-            )}
-            {errors.client.length > 0 && (
-              <>
-                <div className="error-1">
-                  <SolidIcon name="reloaderror" width="16" height="17" />
-                  <span className="file-upload-error">Kindly check the file and try again!</span>
-                </div>
-                <div className="error-2">
-                  <span className="file-upload-error">{errors.client}</span>
-                </div>
-              </>
-            )}
-            {errors.server.length > 0 && (
-              <>
-                <div className="error-1">
-                  <SolidIcon name="reloaderror" width="16" height="17" />
-                  <span className="file-upload-error">Kindly check the file and try again!</span>
-                </div>
-                <div className="error-2">
-                  <span className="file-upload-error">{errors.server}</span>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      ) : (
-        <form
-          {...getRootProps({ className: 'dropzone' })}
-          onSubmit={onButtonClick}
-          noValidate
-          className="upload-user-form"
-          id="onButtonClick"
-          style={{ cursor: 'pointer' }}
-          onClick={handleClick}
+    <div className="tw-flex tw-flex-col tw-gap-1.5">
+      <div
+        {...getRootProps({
+          className: cn(
+            'tw-flex tw-h-[140px] tw-cursor-pointer tw-flex-col tw-items-center tw-justify-center tw-gap-2 tw-rounded-lg tw-border tw-border-dashed tw-border-border-default tw-px-4 tw-text-center',
+            'hover:tw-bg-interactive-hover',
+            isDragActive && 'tw-border-border-accent-strong tw-bg-background-accent-weak'
+          ),
+        })}
+        onClick={handleClick}
+        data-cy="bulk-upload-dropzone"
+      >
+        <CloudUpload aria-hidden className="tw-size-6 tw-text-icon-weak" data-cy="icon-bulk-upload" />
+        <p
+          className="tw-m-0 tw-max-w-[160px] tw-font-body-default tw-text-text-default"
+          data-cy="helper-text-select-file"
         >
-          <div className="form-group">
-            <div>
-              <div className="csv-upload-icon-wrap" data-cy="icon-bulk-upload">
-                <BulkIcon name="fileupload" width="27" fill="#3E63DD" />
-              </div>
-              <p className="tj-text tj-text-md font-weight-500 select-csv-text" data-cy="helper-text-select-file">
-                Select a CSV file to upload
-              </p>
-              <span className="tj-text tj-text-sm drag-and-drop-text" data-cy="helper-text-drop-file">
-                {!isDragActive ? 'Or drag and drop it here' : ''}
-              </span>
-              <input
-                {...getInputProps()}
-                style={{ display: 'none' }}
-                ref={hiddenFileInput}
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  setFileData(file);
-                  handleFileChange(file);
-                }}
-                accept=".csv"
-                type="file"
-                className="form-control"
-                data-cy="input-field-bulk-upload"
-              />
-              <ul>
-                {acceptedFiles.map((file) => (
-                  <li key={file.path}>{file.path}</li>
-                ))}
-              </ul>
-              {fileData?.name && <ul data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
-            </div>
-          </div>
-        </form>
-      )}
-    </>
+          {isDragActive ? (
+            'Drop the file here'
+          ) : (
+            <>
+              Drag and drop your files here or <span className="tw-text-text-accent">browse</span>
+            </>
+          )}
+        </p>
+        <input
+          {...getInputProps()}
+          style={{ display: 'none' }}
+          ref={hiddenFileInput}
+          onChange={(e) => {
+            const file = e.target.files[0];
+            setFileData(file);
+            handleFileChange(file);
+          }}
+          accept=".csv"
+          type="file"
+          data-cy="input-field-bulk-upload"
+        />
+      </div>
+      <div className="tw-flex tw-items-center tw-justify-between tw-font-body-small tw-text-text-placeholder">
+        <span>Supported formats: CSV</span>
+        <span>Max: 2 MB</span>
+      </div>
+    </div>
   );
 }

@@ -172,6 +172,7 @@ Context is layered — the closest file to the code you're changing wins:
 | `server/ee/AGENTS.md`                   | EE-extends-CE rules (in EE submodule)                                                  |
 | `server/ee/ai/AGENTS.md`                | AI app-builder backend context (in EE submodule)                                       |
 | `frontend/AGENTS.md`                    | Frontend conventions, App Builder architecture, glossary                               |
+| `frontend/src/TooljetDatabase/AGENTS.md`| ToolJet Database page: open-table tabs, tables panel, persistence invariants           |
 | `marketplace/AGENTS.md`                 | Marketplace plugin layout, registration, build                                         |
 | `tools/tj/README.md`                    | Dev toolkit: worktrees, env files, DBs, dev servers, output contract                   |
 | `server/docs/testing.md`                | Backend testing — what to test, then how to write it                                   |

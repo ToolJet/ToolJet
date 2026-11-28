@@ -1,72 +1,39 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Drawer from '@/_ui/Drawer';
-import { toast } from 'react-hot-toast';
-import CreateRowForm from '../../Forms/RowForm';
+import { CreateRowForm } from '../RowDrawer/CreateRowForm';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
-import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
-import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
-import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
+import { useTjdbActions } from '../../_stores/tjdbStore';
+import { useGuardedClose } from '../../_stores/unsavedChanges';
 
-const CreateRowDrawer = ({
-  isCreateRowDrawerOpen,
-  setIsCreateRowDrawerOpen,
-  referencedColumnDetails,
-  setReferencedColumnDetails,
-}) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } = useTooljetDatabaseContext();
-  const pageSize = useTjdbStore((state) => state.pageSize);
+const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
+  const { handleRefetchQuery, selectedTable } = useTooljetDatabaseContext();
   const { setSortFilters, setQueryFilters } = useTjdbActions();
-  const [shouldResetRowForm, setShouldResetRowForm] = useState(0);
+  // Backdrop, Cancel and Escape ask about unsaved input; creating the row closes through `onCreate`, unasked.
+  const requestClose = useGuardedClose('createRow', () => setIsCreateRowDrawerOpen(false));
 
   return (
-    <>
-      <Drawer
-        isOpen={isCreateRowDrawerOpen}
-        onClose={() => setIsCreateRowDrawerOpen(false)}
-        position="right"
-        className="tj-db-drawer"
-      >
-        <CreateRowForm
-          onCreate={(shouldKeepDrawerOpen) => {
-            const limit = pageSize;
-            setSortFilters({});
-            setQueryFilters({});
+    <Drawer
+      isOpen={isCreateRowDrawerOpen}
+      onClose={requestClose}
+      position="right"
+      drawerStyle={{ width: '480px' }}
+      className="tj-db-drawer"
+    >
+      <CreateRowForm
+        // The form reads the table's columns once, so a different table is a new form.
+        key={selectedTable?.id}
+        onCreate={(shouldKeepDrawerOpen) => {
+          setSortFilters({});
+          setQueryFilters({});
+          handleRefetchQuery();
 
-            const primaryKeyColumns = listAllPrimaryKeyColumns(columns);
-            const sortQuery = new PostgrestQueryBuilder();
-            primaryKeyColumns.map((primaryKeyColumnName) => {
-              sortQuery.order(primaryKeyColumnName, 'desc');
-            });
-
-            tooljetDatabaseService
-              .findOne(selectedTable.id, `${sortQuery.url.toString()}&limit=${limit}`)
-              .then(({ headers, data = [], error }) => {
-                if (error) {
-                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-                  return;
-                }
-
-                if (Array.isArray(data) && data?.length > 0) {
-                  const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-                  setTotalRecords(totalContentRangeRecords);
-                  setSelectedTableData(data);
-                }
-              });
-
-            const tableElement = document.querySelector('.tj-db-table');
-            if (tableElement) tableElement.scrollTop = 0;
-            if (!shouldKeepDrawerOpen) setIsCreateRowDrawerOpen(false);
-            setShouldResetRowForm((prev) => prev + 1);
-          }}
-          onClose={() => setIsCreateRowDrawerOpen(false)}
-          referencedColumnDetails={referencedColumnDetails}
-          setReferencedColumnDetails={setReferencedColumnDetails}
-          initiator="CreateRowForm"
-          shouldResetRowForm={shouldResetRowForm}
-        />
-      </Drawer>
-    </>
+          const tableElement = document.querySelector('[data-cy="tjdb-table-grid"]');
+          if (tableElement) tableElement.scrollTop = 0;
+          if (!shouldKeepDrawerOpen) setIsCreateRowDrawerOpen(false);
+        }}
+        onClose={requestClose}
+      />
+    </Drawer>
   );
 };
 

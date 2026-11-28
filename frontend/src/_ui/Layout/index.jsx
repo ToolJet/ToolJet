@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+
+import { cn } from '@/lib/utils';
 import useRouter from '@/_hooks/use-router';
 import Logo from '@assets/images/tj-logo.svg';
 import Header from '../Header';
@@ -22,9 +24,10 @@ function Layout({
   children,
   switchDarkMode,
   darkMode,
-  enableCollapsibleSidebar = false,
   collapseSidebar = false,
-  toggleCollapsibleSidebar = () => {},
+  classes = null,
+  showNewHeader = false,
+  shouldWrapContentBody = true,
 }) {
   const [licenseValid, setLicenseValid] = useState(false);
   const logo = useWhiteLabellingStore((state) => state.whiteLabelLogo);
@@ -142,14 +145,16 @@ function Layout({
             <div className="application-brand" data-cy={`home-page-logo`}>
               <Link
                 to={isEndUser ? getPrivateRoute('dashboard') : getPrivateRoute('home')}
+                aria-label={isEndUser ? 'Apps' : 'Home'}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
                 {isWhiteLabellingDataLoading ? (
                   ''
                 ) : logo ? (
                   <img
-                    width="26px"
-                    height="26px"
+                    width="18"
+                    height="18"
+                    alt=""
                     src={logo}
                     onError={(e) => {
                       e.currentTarget.onerror = null; // prevent infinite loop
@@ -157,7 +162,7 @@ function Layout({
                     }}
                   />
                 ) : (
-                  <Logo />
+                  <Logo width="18" height="18" />
                 )}
               </Link>
             </div>
@@ -176,15 +181,20 @@ function Layout({
           </div>
         </aside>
       </div>
-      <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
+      <div className={cn('col tw-pl-12 tw-pr-0', classes?.contentContainer)}>
         <Header
           featureAccess={featureAccess}
-          enableCollapsibleSidebar={enableCollapsibleSidebar}
           collapseSidebar={collapseSidebar}
-          toggleCollapsibleSidebar={toggleCollapsibleSidebar}
           licenseStatus={licenseStatus}
+          showNewHeader={showNewHeader}
         />
-        <div style={{ paddingTop: 48 }}>{children}</div>
+
+        {shouldWrapContentBody ? (
+          // The old header is fixed and needs this padding to clear it; the new header sits in normal flow.
+          <main className={cn(!showNewHeader && 'tw-pt-12', classes?.contentBody)}>{children}</main>
+        ) : (
+          children
+        )}
       </div>
 
       <UnsavedChangesDialog />

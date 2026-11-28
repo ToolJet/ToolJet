@@ -48,7 +48,7 @@ graph TD
 | Visual app building | Create multi-page apps, arrange components, configure properties/styles, bind dynamic values, and connect events to actions. | `frontend/src/AppBuilder/AppCanvas/`; `frontend/src/AppBuilder/WidgetManager/`; `server/src/modules/apps/services/{page,component,event}.service.ts` |
 | Components and runtime state | Use built-in UI components whose values can reference queries, components, globals, variables, constants, and secrets through `{{ }}` expressions. | `frontend/src/AppBuilder/_stores/`; `frontend/AGENTS.md` resolution pipeline; `server/src/modules/apps/services/widget-config/` |
 | Data sources and queries | Configure workspace- or app-level connectors, create parameterized queries, preview/run them, and bind results into apps. | `plugins/packages/`; `server/src/modules/data-sources/`; `server/src/modules/data-queries/`; `frontend/src/AppBuilder/QueryManager/` |
-| Built-in database | Create and alter tables, manage columns/foreign keys, upload CSV data, query and mutate rows, and join tables. | `server/src/modules/tooljet-db/controller.ts::TooljetDbController`; `frontend/src/TooljetDatabase/` |
+| Built-in database | Create and alter tables, manage columns/foreign keys, upload CSV data, query and mutate rows, and join tables. Several tables can be open at once as tabs; tabs are kept per browser across reloads, and `?table=<id>` links to one. | `server/src/modules/tooljet-db/controller.ts::TooljetDbController`; `frontend/src/TooljetDatabase/` |
 | App lifecycle | Create versions, edit in an environment, release a selected version, roll back by releasing an earlier version, and import/export app definitions. | `server/src/modules/versions/`; `server/src/modules/apps/service.ts::release`; `server/src/modules/apps/services/app-import-export.service.ts` |
 | Sharing and consumption | Access released apps by slug, make an app public, embed it, or require authenticated app access. | `frontend/src/ViewerApp.jsx`; `server/src/modules/apps/controller.ts::{validateReleasedAppAccess,appFromSlug}` |
 | Workspace administration | Authenticate users, switch workspace, manage membership, roles/groups, folders, constants, environments, and settings. | `server/src/modules/auth/`; `server/src/modules/session/`; `server/src/modules/group-permissions/`; `frontend/src/modules/WorkspaceSettings/` |
@@ -89,6 +89,7 @@ graph TD
 1. An authorized user creates a workspace table through `TooljetDbController.createTable`.
 2. `TooljetDbTableOperationsService` applies schema operations to the ToolJet DB PostgreSQL connection and records table metadata through `InternalTable`.
 3. App queries use table IDs; `PostgrestProxyService` maps them to workspace-scoped tables, issues a scoped JWT, and forwards row operations to PostgREST.
+4. On the database page the user opens tables from the tables panel or the `+` picker into tabs. The open tabs and the active one are saved in the browser (`frontend/src/TooljetDatabase/TablesPanel/useOpenTabs.ts`); with no tab open the page shows "No table open".
 
 ## Confirmed business rules
 

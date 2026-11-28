@@ -24,6 +24,26 @@ export class OrganizationConstantRepository extends Repository<OrganizationConst
     });
   }
 
+  // Loads constants with every environment value and the creating/updating users in one query. Only the
+  // user columns the list needs are selected, so no credentials come along. Values are still encrypted.
+  async findWithValuesAndUsers(organizationId: string, constantId?: string): Promise<OrganizationConstant[]> {
+    const userColumns = { id: true, firstName: true, lastName: true };
+    return this.find({
+      where: { organizationId, ...(constantId && { id: constantId }) },
+      relations: { orgEnvironmentConstantValues: true, createdByUser: true, updatedByUser: true },
+      select: {
+        id: true,
+        constantName: true,
+        type: true,
+        createdAt: true,
+        updatedAt: true,
+        orgEnvironmentConstantValues: { environmentId: true, value: true },
+        createdByUser: userColumns,
+        updatedByUser: userColumns,
+      },
+    });
+  }
+
   async findOneByIdAndOrganizationId(constantId: string, organizationId: string) {
     return this.findOne({
       where: { id: constantId, organizationId },

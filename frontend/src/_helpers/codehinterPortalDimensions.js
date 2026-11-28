@@ -38,6 +38,9 @@ function readStoredDimensions() {
   try {
     const parsed = JSON.parse(localStorage.getItem(CODEHINTER_POPUP_EDITOR_DIMENSIONS_KEY));
     if (!parsed || typeof parsed !== 'object') return null;
+    // A negative x or y is a rect saved by the old centre-anchored popup. Clamped it would pin the popup to the top-left
+    // corner, so it counts as nothing saved and the popup opens centred.
+    if (Number(parsed.x) < 0 || Number(parsed.y) < 0) return null;
     const defaults = getDefaultCodehinterPopupEditorDimensions();
     return {
       width: safeNum(parsed.width, defaults.width),

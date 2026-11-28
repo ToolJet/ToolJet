@@ -43,7 +43,7 @@ export class UpdateOrganizationConstantDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  @MaxLength(32, { message: 'Constant name must be less than 32 characters' })
+  @MaxLength(50, { message: 'Constant name must be less than 50 characters' })
   @MinLength(1, { message: 'Constant name must be at least 1 character' })
   constant_name?: string;
 }

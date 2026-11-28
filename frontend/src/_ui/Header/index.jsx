@@ -2,95 +2,24 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
-import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
-import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
-import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-import { authenticationService } from '@/_services';
-import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
-import { TJDB_HEADER_SLOT_ID } from '@/TooljetDatabase/HeaderSlotPortal';
 
-function Header({
-  featureAccess,
-  enableCollapsibleSidebar = false,
-  collapseSidebar = false,
-  toggleCollapsibleSidebar = () => {},
-}) {
+import NewLayoutHeader from './NewLayoutHeader';
+import BranchingActionButtons from './BranchingActionButtons';
+
+import { routes, routesWithTags } from './helper';
+
+function Header({ featureAccess, collapseSidebar = false, showNewHeader = false }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const isBranchStoreInitialized = useWorkspaceBranchesStore((s) => s.isInitialized);
-  const isGitSyncConfigured = useWorkspaceBranchesStore((s) => s.isGitSyncConfigured);
-  // Git set up but the license is expired/invalid → keep the git-sync UI visible but frozen.
-  const gitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(featureAccess);
-  const currentSession = authenticationService.currentSessionValue;
-  const isAdmin = !!currentSession?.admin;
-  const isBuilder = !!currentSession?.user_permissions?.is_builder;
-  const canAccessGitControls = isAdmin || isBuilder;
-
-  const routes = (pathEnd, path) => {
-    const pathParts = path.split('/');
-    if (pathParts.length > 1) {
-      const parentPath = pathParts[pathParts.length - 2];
-      if (['workspace-settings', 'settings'].includes(parentPath)) {
-        return parentPath === 'workspace-settings' ? 'Workspace settings' : 'Settings';
-      }
-      // A selected data source's page ends in its id (/:workspaceId/data-sources/:selectedId).
-      if (parentPath === 'data-sources') return 'Data sources';
-    }
-    switch (pathEnd) {
-      case 'workspaceId':
-        return 'Applications';
-      case 'database':
-        return 'Database';
-      case 'workspace-settings':
-      case 'users':
-      case 'workspace-variables':
-      case 'groups':
-      case 'workspace-login':
-        return 'Workspace settings';
-      case 'data-sources':
-        return 'Data sources';
-      case 'profile-settings':
-        return 'Profile settings';
-      case 'installed':
-      case 'marketplace':
-        return 'Integrations';
-      case 'settings':
-        return 'Settings';
-      case 'audit-logs':
-        return 'Audit logs';
-      case 'workflows':
-      case 'approvals':
-      case 'executions':
-        return 'Workflows';
-      case 'workspace-constants':
-        return 'Workspace constants';
-      case 'modules':
-        return 'Modules';
-      default:
-        return 'Applications';
-    }
-  };
-
-  const routesWithTags = (pathEnd) => {
-    switch (pathEnd) {
-      case 'Audit logs':
-        return 'auditLogs';
-      default:
-        return null;
-    }
-  };
 
   const location = useLocation();
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
-  const isWorkspaceGitPage = (pathname) => {
-    const parts = pathname.split('/').filter(Boolean);
-    return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules', 'workflows'].includes(parts[1]));
-  };
-  const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
-  const isDatabasePage = location.pathname.split('/').filter(Boolean).includes('database');
+
+  if (showNewHeader) {
+    return <NewLayoutHeader featureAccess={featureAccess} />;
+  }
+
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -112,63 +41,11 @@ function Header({
                   />
                 )}
               </div>
-              {enableCollapsibleSidebar && !collapseSidebar && (
-                <ToolTip message="Collapse sidebar" placement="bottom" delay={{ show: 0, hide: 100 }}>
-                  <div className="col-3 px-3">
-                    <ButtonSolid
-                      variant="primary"
-                      className="tj-text-xsm"
-                      style={{
-                        minWidth: '28px',
-                        width: '28px',
-                        height: '23px',
-                        borderRadius: '6px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        background: `${darkMode ? '#273E89' : 'var(--indigo3)'}`,
-                        borderColor: `${darkMode ? 'rgba(62, 99, 221, 0.2)' : '#AEC0F5'} `,
-                      }}
-                      leftIcon="cheveronleftdouble"
-                      fill="#3E63DD"
-                      iconWidth="14"
-                      size="md"
-                      onClick={toggleCollapsibleSidebar}
-                    />
-                  </div>
-                </ToolTip>
-              )}
             </div>
           </div>
         )}
         <div className="col tj-dashboard-header-wrap">
           <div className="d-flex justify-content-sm-between tw-w-full">
-            {enableCollapsibleSidebar && collapseSidebar && (
-              <ToolTip message="Open sidebar" placement="bottom" delay={{ show: 0, hide: 100 }}>
-                <div className="pe-3">
-                  <ButtonSolid
-                    variant="primary"
-                    className="tj-text-xsm"
-                    style={{
-                      minWidth: '28px',
-                      width: '28px',
-                      height: '23px',
-                      borderRadius: '6px',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      background: `${darkMode ? '#273E89' : 'var(--indigo3)'}`,
-                      borderColor: `${darkMode ? 'rgba(62, 99, 221, 0.2)' : '#AEC0F5'} `,
-                    }}
-                    leftIcon="cheveronrightdouble"
-                    fill="#3E63DD"
-                    iconWidth="14"
-                    size="md"
-                    onClick={toggleCollapsibleSidebar}
-                  />
-                </div>
-              </ToolTip>
-            )}
             <div
               className="app-header-label tw-flex tw-items-center "
               data-cy={generateCypressDataCy(`breadcrumb-header-${pathname}`)}
@@ -181,31 +58,11 @@ function Header({
                 'color-disabled': !darkMode,
               })}
             >
-              {(featureAccess?.gitSync || isGitSyncConfigured) &&
-                canAccessGitControls &&
-                isBranchStoreInitialized &&
-                pathname !== 'Workspace constants' &&
-                isGitSupportedPage && (
-                  // When configured-but-unlicensed the controls stay visible but frozen (the whole
-                  // workspace is read-only until git is turned off).
-                  <div
-                    className={cx('tw-flex tw-items-center tw-gap-3', {
-                      'tw-pointer-events-none tw-opacity-50': gitLicenseLocked,
-                    })}
-                    aria-disabled={gitLicenseLocked || undefined}
-                  >
-                    <WorkspaceBranchDropdown />
-                    {/* Single "Pull commit" button. WorkspaceGitCTA decides whether the modal
-                        offers push based on the page + branch state (push only on the data-sources
-                        page, and never on the multi-branch default branch). */}
-                    <WorkspaceGitCTA isDataSourcesPage={location.pathname.split('/').includes('data-sources')} />
-                  </div>
-                )}
+              <BranchingActionButtons />
+
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
-              {/* The TJDB page portals its environment switcher in here: it needs the page's context, which this Header sits above. */}
-              {isDatabasePage && <div id={TJDB_HEADER_SLOT_ID} className="tw-contents" />}
             </div>
           </div>
         </div>

@@ -26,5 +26,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.ADD_RAW_SQL_MIGRATION]: {},
     [FEATURE_KEY.REVERT_MIGRATION]: {},
     [FEATURE_KEY.SQL_EXECUTION]: {},
+    [FEATURE_KEY.SET_ROW_DEFAULT]: {},
   },
 };

@@ -1,12 +1,12 @@
 import React, { forwardRef, createContext, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { cva } from 'class-variance-authority';
+import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import {
   Combobox as ShadcnCombobox,
   ComboboxInput as ShadcnComboboxInput,
-  ComboboxContent as ShadcnComboboxContent,
   ComboboxList as ShadcnComboboxList,
   ComboboxItem as ShadcnComboboxItem,
   ComboboxEmpty as ShadcnComboboxEmpty,
@@ -150,22 +150,52 @@ ComboboxInput.propTypes = {
 
 // ── ComboboxContent ───────────────────────────────────────────────────────
 
-const ComboboxContent = forwardRef(function ComboboxContent({ anchor, className, ...props }, ref) {
+// Renders Portal/Positioner/Popup directly (instead of ShadcnComboboxContent) so `positionerClassName`
+// can raise the z-index: the Positioner is `isolate`, so a z-index on the Popup never leaves it.
+// `pointer-events-auto` because a modal Radix dialog sets `pointer-events: none` on the body, where this portals.
+const ComboboxContent = forwardRef(function ComboboxContent(
+  {
+    anchor,
+    className,
+    positionerClassName,
+    side = 'bottom',
+    sideOffset = 6,
+    align = 'start',
+    alignOffset = 0,
+    collisionPadding,
+    ...props
+  },
+  ref
+) {
   const anchorRef = useContext(ComboboxAnchorContext);
   // Use custom anchor prop if provided. Default to the context ref (full-width input wrapper).
   // Pass `anchor={false}` to skip the custom anchor and let Base UI anchor to the trigger element
   // (useful when using ComboboxTrigger with a custom render button).
   const resolvedAnchor = anchor !== undefined ? anchor || undefined : anchorRef;
   return (
-    <ShadcnComboboxContent
-      ref={ref}
-      anchor={resolvedAnchor}
-      className={cn(
-        'tw-ring-interactive-weak tw-bg-background-surface-layer-01 tw-rounded-lg tw-shadow-elevation-300 tw-p-2',
-        className
-      )}
-      {...props}
-    />
+    <ComboboxPrimitive.Portal>
+      <ComboboxPrimitive.Positioner
+        side={side}
+        sideOffset={sideOffset}
+        align={align}
+        alignOffset={alignOffset}
+        collisionPadding={collisionPadding}
+        anchor={resolvedAnchor}
+        className={cn('tw-isolate tw-z-50 tw-pointer-events-auto', positionerClassName)}
+      >
+        <ComboboxPrimitive.Popup
+          ref={ref}
+          data-slot="combobox-content"
+          data-chips={!!resolvedAnchor}
+          className={cn(
+            'tw-group/combobox-content tw-relative tw-max-h-96 tw-w-[var(--anchor-width)] tw-max-w-[var(--available-width)] tw-min-w-[calc(var(--anchor-width)+1.75rem)] tw-origin-[var(--transform-origin)] tw-overflow-hidden tw-rounded-md tw-bg-popover tw-text-popover-foreground tw-shadow-md tw-ring-1 tw-ring-foreground/10 tw-duration-100 data-[chips=true]:tw-min-w-[var(--anchor-width)] data-[side=bottom]:tw-slide-in-from-top-2 data-[side=left]:tw-slide-in-from-right-2 data-[side=right]:tw-slide-in-from-left-2 data-[side=top]:tw-slide-in-from-bottom-2 *:data-[slot=input-group]:tw-m-1 *:data-[slot=input-group]:tw-mb-0 *:data-[slot=input-group]:tw-h-8 *:data-[slot=input-group]:tw-border-input/30 *:data-[slot=input-group]:tw-bg-input/30 *:data-[slot=input-group]:tw-shadow-none data-[open]:tw-animate-in data-[open]:tw-fade-in-0 data-[open]:tw-zoom-in-95 data-[closed]:tw-animate-out data-[closed]:tw-fade-out-0 data-[closed]:tw-zoom-out-95',
+            'tw-ring-interactive-weak tw-bg-background-surface-layer-01 tw-rounded-lg tw-shadow-elevation-300 tw-p-2',
+            className
+          )}
+          {...props}
+        />
+      </ComboboxPrimitive.Positioner>
+    </ComboboxPrimitive.Portal>
   );
 });
 ComboboxContent.displayName = 'ComboboxContent';

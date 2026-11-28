@@ -26,6 +26,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 | `services/tooljet-db-environment-assignment.service.ts` | Rollout migration B: re-points a migration-A relation to the highest-priority environment and clones a development twin. Also owns the two org-scoped read routes. |
 | `services/tooljet-db-promote.service.ts` (CE stub, real logic in `server/ee/tooljet-db/services/`) | `POST .../table/:tableId/promote` — computes and replays the missing migration set into the next-priority environment. |
 | `helpers/table-schema-snapshot.ts` | Introspects a relation's current shape; shared byte-identical between the recorder and baseline synthesis. |
+| `helpers/row-default.ts` | Pure checks and SQL for `POST table/:tableId/rows/default` (`setCellToDefault`): `UPDATE … SET col = DEFAULT` for one row, because a PostgREST PATCH cannot say `DEFAULT`. The column must have a default and `where` must be exactly the primary key (never a partial key). Runs on `tooljetDbManager` against the physical table of the workspace's own relation (like bulk upload); ability `SET_ROW_DEFAULT` = who may use the proxy as a builder (never a data query). |
 | `helpers/reconcile-columns.ts` | Mints a uuid for a raw-SQL-introduced column after DDL runs. Kept out of both callers' files — an inter-file import between them previously broke NestJS DI non-deterministically. |
 | `controller.ts` | `/proxy/*` (PostgREST passthrough) plus the DDL/DML REST endpoints. |
 
@@ -100,6 +101,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   The resolver's raw joins add `deleted_at IS NULL` by hand since raw SQL skips TypeORM's automatic
   filter. The `(organization_id, table_name)` unique index is partial, so a dropped name is
   immediately reusable.
+- `viewTables` (the table list, `GET .../tables`) returns `migrationSync` per table, for the dots in the frontend list: `pending_in_development` when development holds migrations the next environment lacks, `pending_in_staging` when it does not but production lacks what development or staging hold, else `null` (also `null` with fewer than two licensed environments). The rule is `computeMigrationSync` (`helpers/migration-sync.ts`, pure, unit-tested): sets of confirmed migration ids per environment in priority order, never counts, and an environment with no relation counts as having applied nothing, so a table never promoted is `pending_in_development`. The ids come from one query over `internal_table_migration_applications` for every relation (not `computeMissingMigrations` per table and environment), counted only for the table the migration belongs to.
 - `findDependents` (the drop blocker and `/dependents` warning) scans every non-stub version of every app
   type, drafts included - `apps.current_version_id` is the *released* version and `released_at` is never
   written, so filtering on either hid drafts. Matches `options.table_id`, join tables (incl.

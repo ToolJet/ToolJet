@@ -25,7 +25,7 @@ describe('ToolJet Database - column management', () => {
   const openColumnMenu = (columnName) => {
     cy.get(tooljetDatabaseSelectors.columnHeader(columnName))
       .closest('[role="columnheader"]')
-      .find('.tjdb-menu-icon')
+      .find(tooljetDatabaseSelectors.columnMenuIcon)
       .click({ force: true });
   };
 

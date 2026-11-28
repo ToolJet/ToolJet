@@ -2,10 +2,13 @@ import React, { useState, useCallback, useRef } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { Download } from 'lucide-react';
+import { Button } from '@/components/ui/Rocket/Button/Button';
+import { linkButtonVariants } from '@/components/ui/Rocket/LinkButton/LinkButton';
+import { DrawerShell } from '../TableDrawer/DrawerShell';
 import { FileDropzone } from './FileDropzone';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
+
+const DOCS = 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#bulk-upload-data';
 
 function BulkUploadDrawer({
   isBulkUploadDrawerOpen,
@@ -61,87 +64,73 @@ function BulkUploadDrawer({
     hiddenFileInput.current.click();
   };
 
-  return (
-    <>
-      {/* <button
-        onClick={() => setIsBulkUploadDrawerOpen(!isBulkUploadDrawerOpen)}
-        className={`ghost-black-operation ${isBulkUploadDrawerOpen ? 'open' : ''}`}
-        data-cy={`bulk-upload-data-button`}
-      >
-        <SolidIcon name="fileupload" width="14" fill={isBulkUploadDrawerOpen ? '#3E63DD' : '#889096'} />
-        <span className=" tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }} data-cy="bulk-upload-button-text">
-          Bulk upload data
-        </span>
-      </button> */}
+  const close = () => setIsBulkUploadDrawerOpen(false);
 
-      <Drawer
-        isOpen={isBulkUploadDrawerOpen}
-        onClose={() => setIsBulkUploadDrawerOpen(false)}
-        position="right"
-        drawerStyle={{ 'overflow-y': 'hidden' }}
-        className="tj-db-drawer"
+  return (
+    <Drawer
+      isOpen={isBulkUploadDrawerOpen}
+      onClose={close}
+      position="right"
+      drawerStyle={{ width: '480px' }}
+      className="tj-db-drawer"
+    >
+      <DrawerShell
+        title="Bulk upload data"
+        data-cy="bulk-upload-data-header"
+        onClose={close}
+        footerStart={
+          <a
+            href={DOCS}
+            target="_blank"
+            rel="noreferrer"
+            className={linkButtonVariants()}
+            data-cy="bulk-upload-docs-link"
+          >
+            Read docs
+          </a>
+        }
+        submitLabel="Upload data"
+        submitDataCy="upload-data-button"
+        submitDisabled={
+          !isBulkUploading &&
+          (!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0 || progress <= 99)
+        }
+        isSubmitting={isBulkUploading}
+        onSubmit={handleBulkUpload}
       >
-        <div className="drawer-card-wrapper">
-          <div className="drawer-card-title ">
-            <h3 className="" data-cy="bulk-upload-data-header">
-              Bulk upload data
-            </h3>
+        <section className="tw-flex tw-flex-col tw-gap-2">
+          <h3 className="tw-m-0 tw-font-title-default tw-text-text-default">Download CSV template</h3>
+          <p className="tw-m-0 tw-font-body-small tw-text-text-placeholder" data-cy="helper-text-bulk-upload">
+            Start with a blank template to add new rows, or export the current table data, pre-filled, to edit and
+            re-upload for updates.
+          </p>
+          <div>
+            <Button
+              variant="outline"
+              size="medium"
+              leadingVisual={<Download />}
+              loading={isDownloadingTemplate}
+              onClick={handleTemplateDownload}
+              data-cy="button-download-template"
+            >
+              Download template
+            </Button>
           </div>
-          <div className="card-body tjdb-bulkupload-drawer">
-            <div className="manage-users-drawer-content-bulk d-flex flex-column align-items-center m-0">
-              <div
-                className="manage-users-drawer-content-bulk-download-prompt"
-                style={{ justifyContent: 'flex-start' }}
-              >
-                <div className="user-csv-template-wrap" style={{ marginTop: '0px' }}>
-                  <div>
-                    <SolidIcon name="information" fill="#F76808" width="26" />
-                  </div>
-                  <div>
-                    <p className="tj-text tj-text-sm" data-cy="helper-text-bulk-upload">
-                      Download the template to add your data or format your file in the same as the template. ToolJet
-                      won’t be able to recognise files in any other format.
-                    </p>
-                    <ButtonSolid
-                      variant="tertiary"
-                      className="download-template-btn"
-                      leftIcon="file01"
-                      iconWidth="13"
-                      data-cy="button-download-template"
-                      isLoading={isDownloadingTemplate}
-                      onClick={handleTemplateDownload}
-                    >
-                      Download Template
-                    </ButtonSolid>
-                  </div>
-                </div>
-              </div>
-              <FileDropzone
-                handleClick={handleClick}
-                hiddenFileInput={hiddenFileInput}
-                errors={errors}
-                handleFileChange={handleBulkUploadFileChange}
-                onButtonClick={handleBulkUpload}
-                onDrop={onDrop}
-                progress={progress}
-                setProgress={setProgress}
-              />
-            </div>
-          </div>
-        </div>
-        <DrawerFooter
-          onClose={() => setIsBulkUploadDrawerOpen(false)}
-          onCreate={handleBulkUpload}
-          initiator={'UploadDataForm'}
-          shouldDisableCreateBtn={
-            !isBulkUploading &&
-            (!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0 || progress <= 99)
-          }
-          isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
-          isBulkUploading={isBulkUploading}
-        />
-      </Drawer>
-    </>
+        </section>
+        <section className="tw-flex tw-flex-col tw-gap-2">
+          <h3 className="tw-m-0 tw-font-title-default tw-text-text-default">Upload CSV</h3>
+          <FileDropzone
+            handleClick={handleClick}
+            hiddenFileInput={hiddenFileInput}
+            errors={errors}
+            handleFileChange={handleBulkUploadFileChange}
+            onDrop={onDrop}
+            progress={progress}
+            setProgress={setProgress}
+          />
+        </section>
+      </DrawerShell>
+    </Drawer>
   );
 }
 export default BulkUploadDrawer;

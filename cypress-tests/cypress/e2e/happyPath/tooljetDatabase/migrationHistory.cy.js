@@ -112,7 +112,7 @@ describe('ToolJet Database - migration history and environment views', () => {
 
       cy.get(tooljetDatabaseSelectors.columnHeader('age'))
         .closest('[role="columnheader"]')
-        .find('.tjdb-menu-icon')
+        .find(tooljetDatabaseSelectors.columnMenuIcon)
         .click({ force: true });
       cy.get(tooljetDatabaseSelectors.deleteColumnOption).click();
 

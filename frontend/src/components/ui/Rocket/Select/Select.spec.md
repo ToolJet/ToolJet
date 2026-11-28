@@ -64,10 +64,10 @@ Wraps shadcn Select (Radix `@radix-ui/react-select`).
 | Element | Token | Tailwind class |
 |---|---|---|
 | background | `--background-surface-layer-01` | `tw-bg-background-surface-layer-01` |
-| border | `--border-weak` | `tw-border-border-weak` |
+| border | `--border-weak`, 1px | `tw-border tw-border-solid tw-border-border-weak` (preflight is off: width alone draws nothing, the style is needed; the `tw-border` width comes from shadcn) |
 | border radius | 10px | `tw-rounded-[10px]` |
 | shadow | elevation-300 | `tw-shadow-elevation-300` |
-| padding | 8px | `tw-p-2` |
+| padding | 8px | `tw-p-1` here + the shadcn viewport's `tw-p-1` (shadcn is not edited, so the two add up) |
 
 ## Token Mapping — Item
 

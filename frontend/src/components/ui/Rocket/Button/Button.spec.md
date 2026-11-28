@@ -29,10 +29,16 @@
 Horizontal padding per size:
 - large: tw-px-4 (16px)
 - default: tw-px-3 (12px)
-- medium: tw-px-3 (12px)
+- medium: tw-px-2.5 (10px)
 - small: tw-px-2 (8px)
 
-Icon gap: tw-gap-1.5 for large/default, tw-gap-1 for medium/small
+Icon gap: tw-gap-1.5 for large/default/medium, tw-gap-1 for small
+
+Label type is `tw-font-title-{large|default|small}` (Inter Medium with the Figma letter spacing).
+
+Icon size per size: large 20px (`[&_svg]:tw-size-5`), default 16px (shadcn base), medium 14px (`[&_svg]:tw-size-3.5`), small 12px (`[&_svg]:tw-size-3`), from the Figma component notes.
+
+Medium padding and gap follow the Dashboards file (Text button, 28px: px 10, gap 6); default follows the same file (32px: px 12, gap 6).
 
 ## Token Mapping
 
@@ -57,6 +63,8 @@ Icon gap: tw-gap-1.5 for large/default, tw-gap-1 for medium/small
 | secondary | shadow | default | Elevations/100 | tw-shadow-elevation-100 |
 | secondary+danger | border | default | border/danger-weak | tw-border-border-danger-weak |
 | secondary+danger | text + icon | default | icon/danger | tw-text-text-danger |
+| ghost (iconOnly) | icon | default | icon/strong | tw-text-icon-strong |
+| ghost (iconOnly) | icon | disabled | icon/disabled | disabled:tw-text-icon-disabled (full opacity) |
 | ghost | background | hover | — | hover:tw-bg-interactive-hover |
 | ghost | background | pressed | — | active:tw-bg-interactive-selected |
 | ghost | text + icon | default | icon/strong | tw-text-text-medium |

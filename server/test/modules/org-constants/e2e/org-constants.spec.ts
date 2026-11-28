@@ -13,9 +13,12 @@ import {
   findEntity,
   updateEntity,
   countEntities,
+  getDefaultDataSource,
 } from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
+import { OrganizationConstant } from 'src/entities/organization_constants.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
+import { SECRET_VALUE_MASK } from '@modules/organization-constants/constants';
 
 const createConstant = async (app: INestApplication, adminUserData: any, body: any) => {
   return await request(app.getHttpServer())
@@ -142,6 +145,47 @@ describe('OrgConstantsController', () => {
       });
     });
 
+    it('should never return the plaintext of a Secret constant', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['admin', 'all_users'],
+      });
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
+      const loggedUser = await login(app);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      const createResponse = await createConstant(app, adminUserData, {
+        constant_name: 'api_key',
+        value: 'plaintext-secret',
+        type: 'Secret',
+        environments: appEnvironments.map((env) => env.id),
+      });
+      const [unsetEnvironment, ...setEnvironments] = appEnvironments;
+      const unsetValue = await findEntityOrFail(OrgEnvironmentConstantValue, {
+        organizationConstantId: createResponse.body.constant.id,
+        environmentId: unsetEnvironment.id,
+      });
+      await updateEntity(OrgEnvironmentConstantValue, unsetValue.id, { value: '' });
+
+      const listResponse = await request(app.getHttpServer())
+        .get('/api/organization-constants/decrypted')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
+        .expect(200);
+
+      expect(JSON.stringify(listResponse.body)).not.toContain('plaintext-secret');
+      expect(listResponse.body.constants).toEqual([
+        expect.objectContaining({
+          name: 'api_key',
+          type: 'Secret',
+          values: [
+            { environmentName: unsetEnvironment.name, value: '' },
+            ...setEnvironments.map((env) => ({ environmentName: env.name, value: SECRET_VALUE_MASK })),
+          ],
+        }),
+      ]);
+    });
+
     it("should not list another workspace's constants", async () => {
       const adminUserData = await createUser(app, {
         email: 'admin@tooljet.io',
@@ -256,6 +300,24 @@ describe('OrgConstantsController', () => {
         })
         .expect(403);
     });
+
+    it('should record the creator as both created_by and updated_by', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
+      const { tokenCookie } = await login(app);
+      adminUserData['tokenCookie'] = tokenCookie;
+
+      const response = await createConstant(app, adminUserData, {
+        constant_name: 'owned_constant',
+        value: 'v1',
+        type: 'Global',
+        environments: [appEnvironments[0].id],
+      });
+      expect(response.status).toBe(201);
+
+      const stored = await findEntityOrFail(OrganizationConstant, { id: response.body.constant.id });
+      expect(stored).toMatchObject({ createdBy: adminUserData.user.id, updatedBy: adminUserData.user.id });
+    });
   });
 
   describe('PATCH /api/organization-constants/:id | Update constant', () => {
@@ -337,6 +399,67 @@ describe('OrgConstantsController', () => {
           environment_id: appEnvironments[0].id,
         })
         .expect(403);
+    });
+
+    it('should record the updating user as updated_by and bump updated_at without changing created_by', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+      const developerUserData = await createUser(app, {
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
+      });
+      const developerGroup = await findEntityOrFail(GroupPermissions, { name: 'developer' });
+      await updateEntity(GroupPermissions, developerGroup.id, { orgConstantCRUD: true });
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
+      adminUserData['tokenCookie'] = (await login(app)).tokenCookie;
+      developerUserData['tokenCookie'] = (await login(app, 'dev@tooljet.io')).tokenCookie;
+
+      const createResponse = await createConstant(app, adminUserData, {
+        constant_name: 'tracked_constant',
+        value: 'before',
+        type: 'Global',
+        environments: appEnvironments.map((env) => env.id),
+      });
+      const constantId = createResponse.body.constant.id;
+
+      // The suite runs in one transaction, so now() never advances; start from a past timestamp.
+      const staleUpdatedAt = new Date('2000-01-01T00:00:00Z');
+      await getDefaultDataSource().query(`UPDATE organization_constants SET updated_at = $1 WHERE id = $2`, [
+        staleUpdatedAt,
+        constantId,
+      ]);
+
+      await request(app.getHttpServer())
+        .patch(`/api/organization-constants/${constantId}`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+        .set('Cookie', developerUserData['tokenCookie'])
+        .send({ value: 'after', environment_id: appEnvironments[0].id })
+        .expect(200);
+
+      const stored = await findEntityOrFail(OrganizationConstant, { id: constantId });
+      expect(stored).toMatchObject({ createdBy: adminUserData.user.id, updatedBy: developerUserData.user.id });
+      expect(stored.updatedAt.getTime()).toBeGreaterThan(staleUpdatedAt.getTime());
+    });
+
+    it('should accept a new name of up to 50 characters, as create does', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
+      adminUserData['tokenCookie'] = (await login(app)).tokenCookie;
+      const createResponse = await createConstant(app, adminUserData, {
+        constant_name: 'short_name',
+        value: 'v',
+        type: 'Global',
+        environments: appEnvironments.map((env) => env.id),
+      });
+      const patch = (name: string) =>
+        request(app.getHttpServer())
+          .patch(`/api/organization-constants/${createResponse.body.constant.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ constant_name: name, value: 'v', environment_id: appEnvironments[0].id });
+
+      await patch('n'.repeat(50)).expect(200);
+      await patch('n'.repeat(51)).expect(400);
     });
   });
 

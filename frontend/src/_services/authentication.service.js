@@ -10,6 +10,7 @@ import {
 import config from 'config';
 import { getRedirectTo } from '@/_helpers/routes';
 
+/** @type {BehaviorSubject<import('./types/authentication.types').CurrentSession>} */
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
   current_organization_name: null,
@@ -50,6 +51,7 @@ export const authenticationService = {
   get currentSessionValue() {
     return currentSessionSubject.value;
   },
+  /** @param {import('./types/authentication.types').CurrentSession} data */
   updateCurrentSession(data) {
     currentSessionSubject.next(data);
   },

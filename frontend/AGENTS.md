@@ -67,6 +67,12 @@ On top of the above:
 - Tabler Icons (`@tabler/icons-react`) or Lucide React (`lucide-react`) only — do not add new icon packages
 - Static assets live in `frontend/assets/images/`
 
+### Design to code (Figma MCP)
+
+- Call `create_session` first. The Skill tool does not carry the Figma guidance; read it with `ReadMcpResourceTool` (`skill://figma/figma-design-to-code/SKILL.md`) before `get_design_context`
+- One `get_design_context` per node returns code, screenshot and variable defs. Never `get_metadata` on a page or canvas frame: it returns megabytes
+- Build from the node the user linked. A page-level mock that adds elements the component frame lacks is not the spec: follow the component frame and ask
+
 ## App Builder architecture
 
 ### Backward compatibility (CRITICAL)

@@ -1,15 +1,15 @@
 // Seeding with SQL: a failure always reaches the user as readable text, and a successful run
 // refreshes the grid the way every other TJDB mutation does - same filters, sort and page.
 import '@/test/setupMsw';
-import React, { useState } from 'react';
+import React from 'react';
 import { http, HttpResponse } from 'msw';
 import { toast } from 'react-hot-toast';
 import { server } from '@/test/msw/server';
 import { render, screen, waitFor, act } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
-import { useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
+import { DEFAULT_VIEW, useTjdbStore } from '@/TooljetDatabase/_stores/tjdbStore';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
-import { usePostgrestQueryBuilder } from '@/TooljetDatabase/usePostgrestQueryBuilder';
+import { useTableRows, useInvalidateTableRows } from '@/TooljetDatabase/rows/useTableRows';
 import SeedDataDrawer from '@/TooljetDatabase/Drawers/SeedDataDrawer';
 
 jest.mock('react-hot-toast', () => {
@@ -34,17 +34,10 @@ jest.mock('@/TooljetDatabase/_components/SqlEditor', () => ({ value, onChange })
 
 const SELECTED_TABLE = { id: 'table-1', table_name: 'orders' };
 
-// The real row-fetching hook, wired exactly as TooljetDatabase/index.jsx wires it.
+// The real rows query, wired exactly as TooljetDatabase/index.jsx wires it.
 function Harness() {
-  const [selectedTableData, setSelectedTableData] = useState([{ id: 1 }, { id: 2 }]);
-  const [, setTotalRecords] = useState(0);
-  const { handleRefetchQuery } = usePostgrestQueryBuilder({
-    organizationId: 'org-1',
-    selectedTable: SELECTED_TABLE,
-    setSelectedTableData,
-    setTotalRecords,
-    setLoadingState: () => {},
-  });
+  const { rows: selectedTableData } = useTableRows(SELECTED_TABLE.id);
+  const handleRefetchQuery = useInvalidateTableRows();
 
   return (
     <TooljetDatabaseContext.Provider
@@ -52,8 +45,6 @@ function Harness() {
         organizationId: 'org-1',
         selectedTable: SELECTED_TABLE,
         columns: [],
-        setSelectedTableData,
-        setTotalRecords,
         handleRefetchQuery,
       }}
     >
@@ -65,7 +56,7 @@ function Harness() {
 
 async function runSeedSql() {
   await userEvent.type(await screen.findByLabelText('sql'), 'INSERT INTO {{self}} VALUES (1)');
-  await userEvent.click(screen.getByRole('button', { name: 'Seed' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Run SQL' }));
 }
 
 function serveSql(result) {
@@ -77,7 +68,10 @@ function serveSql(result) {
 describe('SeedDataDrawer', () => {
   beforeEach(() => {
     act(() =>
-      useTjdbStore.setState({ selectedEnvironment: { id: 'env-development', name: 'development', priority: 1 } })
+      useTjdbStore.setState({
+        selectedEnvironment: { id: 'env-development', name: 'development', priority: 1 },
+        viewTableId: SELECTED_TABLE.id,
+      })
     );
   });
 
@@ -92,12 +86,16 @@ describe('SeedDataDrawer', () => {
 
   test('should empty the grid when the seed run leaves the table with no rows', async () => {
     serveSql({ status: 'ok' });
+    let rows = [{ id: 1 }, { id: 2 }];
     server.use(
-      http.get('*/tooljet-db/proxy/:tableId', () => HttpResponse.json([], { headers: { 'content-range': '*/0' } }))
+      http.get('*/tooljet-db/proxy/:tableId', () =>
+        HttpResponse.json(rows, { headers: { 'content-range': `*/${rows.length}` } })
+      )
     );
 
     render(<Harness />);
-    expect(screen.getByTestId('row-count')).toHaveTextContent('2');
+    await waitFor(() => expect(screen.getByTestId('row-count')).toHaveTextContent('2'));
+    rows = [];
     await runSeedSql();
 
     await waitFor(() => expect(screen.getByTestId('row-count')).toHaveTextContent('0'));
@@ -114,18 +112,25 @@ describe('SeedDataDrawer', () => {
     );
     act(() =>
       useTjdbStore.setState({
-        queryFilters: { 0: { column: 'status', operator: 'eq', value: 'open' } },
-        pageSize: 10,
-        pageCount: 2,
+        views: {
+          [SELECTED_TABLE.id]: {
+            ...DEFAULT_VIEW,
+            queryFilters: { 0: { column: 'status', operator: 'eq', value: 'open' } },
+            pageSize: 10,
+            pageCount: 2,
+          },
+        },
       })
     );
 
     render(<Harness />);
+    await waitFor(() => expect(proxyRequests).toHaveLength(1));
     await runSeedSql();
 
-    await waitFor(() => expect(proxyRequests).toHaveLength(1));
-    expect(proxyRequests[0].get('status')).toBe('eq.open');
-    expect(proxyRequests[0].get('limit')).toBe('10');
-    expect(proxyRequests[0].get('offset')).toBe('10');
+    // The first read is the grid opening; the second is the refresh after the seed run.
+    await waitFor(() => expect(proxyRequests).toHaveLength(2));
+    expect(proxyRequests[1].get('status')).toBe('eq.open');
+    expect(proxyRequests[1].get('limit')).toBe('10');
+    expect(proxyRequests[1].get('offset')).toBe('10');
   });
 });

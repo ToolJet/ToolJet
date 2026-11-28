@@ -111,7 +111,7 @@ describe('ToolJet Database - foreign keys', () => {
     cy.visit('/my-workspace/database');
     cy.get(tooljetDatabaseSelectors.tableItem(child.name), { timeout: 20000 }).click();
     cy.get(tooljetDatabaseSelectors.tableItem(child.name)).trigger('mouseover');
-    cy.get(tooljetDatabaseSelectors.tableItem(child.name)).find(tooljetDatabaseSelectors.tableKebabIcon).click();
+    cy.get(tooljetDatabaseSelectors.tableItem(child.name)).find(tooljetDatabaseSelectors.tableKebabIcon).click({ force: true });
     cy.get(tooljetDatabaseSelectors.renameTableOption).click();
 
     cy.contains('Foreign key relation').should('be.visible');

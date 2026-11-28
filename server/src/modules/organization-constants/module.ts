@@ -16,11 +16,13 @@ export class OrganizationConstantModule extends SubModule {
 
     const {
       OrganizationConstantController,
+      OrganizationConstantControllerV2,
       OrganizationConstantsService,
       OrganizationConstantsUtilService,
       EnvironmentConstantsService,
     } = await this.getProviders(configs, 'organization-constants', [
       'controller',
+      'controller.v2',
       'service',
       'util.service',
       'services/environment-constants.service',
@@ -29,7 +31,7 @@ export class OrganizationConstantModule extends SubModule {
     return this.cacheModule(cacheKey, {
       module: OrganizationConstantModule,
       imports: [await AppEnvironmentsModule.register(configs), await EncryptionModule.register(configs)],
-      controllers: isMainImport ? [OrganizationConstantController] : [],
+      controllers: isMainImport ? [OrganizationConstantController, OrganizationConstantControllerV2] : [],
       providers: [
         EnvironmentConstantsService,
         OrganizationConstantsUtilService,

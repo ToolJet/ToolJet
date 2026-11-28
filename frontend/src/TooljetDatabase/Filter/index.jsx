@@ -1,188 +1,73 @@
 import React, { useState } from 'react';
-import cx from 'classnames';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
-import { FilterForm } from '../Forms/FilterForm';
-import { isEmpty } from 'lodash';
-import { pluralize } from '@/_helpers/utils';
-import { useMounted } from '@/_hooks/use-mount';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
-import ClearIndicator from '@/_ui/Icon/bulkIcons/ClearIndicator';
-import InfoIcon from '@assets/images/icons/info.svg';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import './styles.scss';
+import { isEmpty, omit } from 'lodash';
 import { toast } from 'react-hot-toast';
+import { Funnel } from 'lucide-react';
+import { useMounted } from '@/_hooks/use-mount';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { Button } from '@/components/ui/Rocket/Button/Button';
+import { Popover, PopoverTrigger } from '@/components/ui/Rocket/Popover/Popover';
+import Tooltip from '@/components/ui/Rocket/Tooltip';
+import { ConditionPopover } from '../Conditions/ConditionPopover';
+import { FilterConditionRow } from '../Forms/FilterConditionRow';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 
-const Filter = ({
-  filters,
-  setFilters,
-  handleBuildFilterQuery,
-  resetFilterQuery,
-  setFilterEnable,
-  filterEnable,
-  setActiveFilters,
-}) => {
-  const [tempFilters, setTempFilters] = useState(deepClone(filters));
+const hasAnyValue = ({ column, operator, value }) => !isEmpty(column) || !isEmpty(operator) || !isEmpty(value);
+const isComplete = ({ column, operator, value }) => !isEmpty(column) && !isEmpty(operator) && !isEmpty(value);
+
+// What the popover opens on when nothing is applied: one starter row.
+const blankDraft = () => ({ 0: {} });
+
+const generateMessage = (operator) => {
+  const operatorMessage = {
+    gte: 'Greater than or equal',
+    lt: 'Less than',
+    gt: 'Greater than',
+    eq: 'Equals',
+    lte: 'Less than or equal',
+    neq: 'Not equal',
+  };
+  return operatorMessage[operator];
+};
+
+const Filter = ({ filters, setFilters, setFilterEnable }) => {
+  const { columns } = useTooljetDatabaseContext();
+  // The popover edits a draft; Apply is what writes it to the store.
+  const [draft, setDraft] = useState(() => deepClone(filters));
   const [show, setShow] = useState(false);
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  const filterKeys = Object.keys(tempFilters);
-  const tempFilterCount = Object.keys(tempFilters).length;
-  const filterCount = Object.values(filters).filter(
-    (filter) => !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value)
-  ).length;
-  const validFilterCountRef = React.useRef(0);
   const isMounted = useMounted();
 
-  const reset = () => {
-    setFilters({});
+  const appliedCount = Object.values(filters).filter(isComplete).length;
+  const draftRows = Object.entries(draft);
+  const filledRows = Object.values(draft).filter(hasAnyValue);
+  const canApply = filledRows.length > 0 ? filledRows.every(isComplete) : appliedCount > 0;
+
+  const openWith = () => {
+    // A fresh row when nothing is applied, else only the rows that have something in them.
+    const rows = Object.fromEntries(Object.entries(filters).filter(([, filter]) => hasAnyValue(filter)));
+    setDraft(isEmpty(rows) ? blankDraft() : deepClone(rows));
+  };
+
+  const handleOpenChange = (open) => {
+    if (open) openWith();
+    setShow(open);
+  };
+
+  const updateRow = (key, patch) => setDraft((previous) => ({ ...previous, [key]: { ...previous[key], ...patch } }));
+  const addRow = () => setDraft((previous) => ({ ...previous, [+Object.keys(previous).pop() + 1 || 0]: {} }));
+
+  const apply = () => {
+    setFilters(Object.fromEntries(Object.entries(draft).filter(([, filter]) => hasAnyValue(filter))));
     setShow(false);
   };
 
-  const generateMessage = (operator) => {
-    const operatorMessage = {
-      gte: 'Greater than or equal',
-      lt: 'Less than',
-      gt: 'Greater than',
-      eq: 'Equals',
-      lte: 'Less than or equal',
-      neq: 'Not equal',
-    };
-    return operatorMessage[operator];
-  };
-
   React.useEffect(() => {
-    setActiveFilters(filterCount);
-  }, [filterCount, setActiveFilters]);
+    setFilterEnable(appliedCount > 0);
+  }, [appliedCount, setFilterEnable]);
 
-  const allValidFilters = React.useMemo(() => {
-    const filteredFilters = Object.values(tempFilters).filter(
-      ({ column, operator, value }) => column || operator || value
-    );
-    if (filteredFilters.length === 0 && filterCount === 0) {
-      validFilterCountRef.current = 0;
-      return false;
-    }
-    if (filteredFilters.length === 0 && filterCount !== 0 && tempFilterCount !== 0) {
-      validFilterCountRef.current = 0;
-      return false;
-    }
-    validFilterCountRef.current = filteredFilters.length;
-    return filteredFilters.every(({ column, operator, value }) => column && operator && value);
-  }, [tempFilters]);
-
-  const popover = (
-    <Popover
-      id="storage-filter-popover"
-      className={cx('filter-popup', { 'dark-theme': darkMode })}
-      data-cy="filter-section"
-    >
-      <Popover.Body bsPrefix="storage-filter-popover" style={{ height: '100%' }}>
-        <div className="filter-header">
-          <span className="filter-heading">Filters</span>
-          <span
-            className="cursor-pointer"
-            onClick={() => {
-              setShow(false);
-              setTempFilters(deepClone(filters));
-            }}
-          >
-            <SolidIcon name="remove" fill={darkMode ? '#C1C8CD' : '#6A727C'} />
-          </span>
-        </div>
-        <div className="card-body filter-body" data-cy="filter-card-body">
-          {tempFilterCount === 0 && (
-            <div className="empty-filters-value">
-              <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
-              <span>There are no filters added</span>
-            </div>
-          )}
-          {tempFilterCount > 0 && (
-            <>
-              <div className="filter-title">
-                <span className="width-lg">Column</span>
-                <span className="width-lg">Operation</span>
-                <span className="width-lg">Value</span>
-              </div>
-              {Object.values(tempFilters).map((filter, index) => {
-                return (
-                  <div key={index} className="tw-pb-1 filter-content">
-                    <FilterForm
-                      {...filter}
-                      filters={tempFilters}
-                      index={filterKeys[index]}
-                      setFilters={setTempFilters}
-                      generateMessage={generateMessage}
-                    />
-                  </div>
-                );
-              })}
-            </>
-          )}
-          <div className="tw-mt-1 tw-pl-2">
-            <ButtonSolid
-              variant="ghostBlue"
-              size="sm"
-              onClick={() =>
-                setTempFilters((prevFilters) => ({ ...prevFilters, [+Object.keys(prevFilters).pop() + 1 || 0]: {} }))
-              }
-            >
-              <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-              Add filter
-            </ButtonSolid>
-          </div>
-        </div>
-        <div className="card-footer filter-footer" data-cy="filter-card-footer">
-          {filterCount > 0 && tempFilterCount > 0 && (
-            <ButtonSolid
-              variant="ghostBlue"
-              size="sm"
-              onClick={() => {
-                setTempFilters({});
-              }}
-            >
-              <ClearIndicator width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-              Clear all
-            </ButtonSolid>
-          )}
-          <ButtonSolid
-            variant="tertiary"
-            size="sm"
-            onClick={() => {
-              setTempFilters(deepClone(filters));
-              document.activeElement.blur();
-            }}
-          >
-            Cancel
-          </ButtonSolid>
-          <ButtonSolid
-            variant="primary"
-            size="sm"
-            onClick={() => {
-              setFilters(tempFilters);
-              setShow(false);
-            }}
-            disabled={!allValidFilters || (filterCount === 0 && tempFilterCount === 0)}
-          >
-            Apply
-          </ButtonSolid>
-        </div>
-      </Popover.Body>
-    </Popover>
-  );
-
-  const checkIsFilterObjectEmpty = (filter) =>
-    !isEmpty(filter.column) && !isEmpty(filter.operator) && !isEmpty(filter.value);
-  const areFiltersApplied = !show && Object.values(filters).some(checkIsFilterObjectEmpty);
-  const filtersApplied = Object.values(filters).some(checkIsFilterObjectEmpty) ? true : false;
-
-  filtersApplied === true ? setFilterEnable(true) : setFilterEnable(false);
-
+  // The rows query already skips a NULL value with a non-`is` operator; this tells the user and drops it.
   React.useEffect(() => {
     if (Object.keys(filters).length === 0 && isMounted) {
-      reset();
-      resetFilterQuery();
+      setShow(false);
     } else {
       let validFilters = { ...filters };
       let hasInvalidFilter = false;
@@ -208,81 +93,49 @@ const Filter = ({
       if (hasInvalidFilter) {
         setFilters(validFilters);
       }
-
-      if (Object.keys(validFilters).length > 0) {
-        handleBuildFilterQuery(validFilters);
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
 
   return (
-    <>
-      <OverlayTrigger
-        rootClose
-        trigger="click"
-        show={show}
-        onToggle={(show) => {
-          if (show && isEmpty(filters)) setTempFilters({ 0: {} });
-          if (show && !isEmpty(filters)) {
-            // Remove empty filters before setting tempFilters
-            const nonEmptyFilters = Object.keys(filters).reduce((acc, key) => {
-              const filter = filters[key];
-              if (!isEmpty(filter.column) || !isEmpty(filter.operator) || !isEmpty(filter.value)) {
-                acc[key] = filter;
-              }
-              return acc;
-            }, {});
-            setTempFilters(deepClone(nonEmptyFilters));
-          }
-          setShow(show);
-        }}
-        placement="bottom-start"
-        overlay={popover}
+    <Popover open={show} onOpenChange={handleOpenChange}>
+      {/* The tooltip sits on the span: PopoverTrigger does not forward a ref, so it cannot be the tooltip's trigger. */}
+      <Tooltip content="Filter">
+        <span className="tw-inline-flex">
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="medium" iconOnly aria-label="Filter" data-cy="filter-button">
+              <Funnel />
+            </Button>
+          </PopoverTrigger>
+        </span>
+      </Tooltip>
+      <ConditionPopover
+        dataCy="filter"
+        className="tw-w-[620px]"
+        title="Filter"
+        description="Records must match every condition."
+        emptyTitle="No filters applied"
+        emptyDescription="Add a filter to narrow down the records."
+        addLabel="Add filter"
+        onAdd={addRow}
+        clearDisabled={filledRows.length === 0}
+        onClearAll={() => setDraft({})}
+        onCancel={() => setShow(false)}
+        applyDisabled={!canApply}
+        onApply={apply}
       >
-        <div className={cx('tw-flex', 'tw-relative')}>
-          <button
-            data-cy="filter-button"
-            className={cx('tj-db-filter-btn tj-text-xsm font-weight-500 ghost-black-operation', {
-              'tj-db-filter-btn-applied': areFiltersApplied,
-              'tj-db-filter-btn-active-filter': show && filterCount > 0,
-              'tj-db-filter-btn-active': show && filterCount === 0,
-            })}
-          >
-            <SolidIcon
-              name="filter"
-              width="14px"
-              fill={
-                areFiltersApplied
-                  ? '#3E63DD'
-                  : show && filterCount === 0
-                    ? '#ACB2B9'
-                    : show && filterCount > 0
-                      ? '#4368E3'
-                      : '#889096'
-              }
-            />
-            <div className="tw-flex items-center tw-ml-[3px]">
-              {filterCount > 0 ? <span>{pluralize(filterCount, 'filter')}</span> : <div>&nbsp;&nbsp;Filter</div>}
-            </div>
-            {/* {areFiltersApplied && (
-              <span>ed by {pluralize(Object.values(filters).filter(checkIsFilterObjectEmpty).length, 'column')}</span>
-            )} */}
-          </button>
-          {filterCount > 0 && (
-            <div
-              className="tw-absolute tw-right-[-20px] tw-z-50 tw-w-7 tw-h-7 tw-flex tw-items-center tw-justify-center tw-p-[7px] cursor-pointer tj-db-filter-clear-icon"
-              onClick={() => {
-                setFilters({});
-                setTempFilters({});
-              }}
-            >
-              <SolidIcon name="remove" width="14px" fill="#3E63DD" />
-            </div>
-          )}
-        </div>
-      </OverlayTrigger>
-    </>
+        {draftRows.map(([key, condition]) => (
+          <FilterConditionRow
+            key={key}
+            condition={condition}
+            columns={columns}
+            onChange={(patch) => updateRow(key, patch)}
+            onRemove={() => setDraft((previous) => omit(previous, key))}
+            data-cy={`filter-row-${key}`}
+          />
+        ))}
+      </ConditionPopover>
+    </Popover>
   );
 };
 

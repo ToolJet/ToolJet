@@ -198,6 +198,8 @@ export {
 } from './Table/Table';
 export { Skeleton, skeletonClasses } from './Skeleton/Skeleton';
 export { TruncatingText } from './TruncatingText/TruncatingText';
+export { StatusDot, statusDotVariants } from './StatusDot/StatusDot';
+export { EnvironmentSwitcher } from './EnvironmentSwitcher/EnvironmentSwitcher';
 export { Checkbox, checkboxVariants } from './Checkbox/Checkbox';
 export { RadioGroup, RadioGroupItem, radioGroupItemVariants } from './RadioGroup/RadioGroup';
 export { Textarea, textareaVariants } from './Textarea/Textarea';
@@ -210,3 +212,16 @@ export {
   PopoverDescription,
   PopoverTrigger,
 } from './Popover/Popover';
+export { SearchInput } from './SearchInput/SearchInput';
+export { Tag, tagVariants } from './Tag/Tag';
+export { LinkButton, linkButtonVariants } from './LinkButton/LinkButton';
+export { ClosableTabs } from './ClosableTabs/ClosableTabs';
+export { SidePanel, SidePanelHeader, SidePanelSection, SidePanelBody } from './SidePanel/SidePanel';
+export { EmptyAndNoResultsState } from './EmptyAndNoResultsState/EmptyAndNoResultsState';
+export {
+  DateTimePicker,
+  DatePickerPanel,
+  DatePickerCalendar,
+  DatePickerTimeList,
+  DatePickerCell,
+} from './DateTimePicker';

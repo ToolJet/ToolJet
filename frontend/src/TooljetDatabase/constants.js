@@ -1,51 +1,49 @@
 import React from 'react';
 import config from 'config';
-import BigInt from './Icons/Biginteger.svg';
-import Float from './Icons/Float.svg';
-import Integer from './Icons/Integer.svg';
-import CharacterVar from './Icons/Text.svg';
-import Boolean from './Icons/Toggle.svg';
-import Serial from './Icons/Serial.svg';
-import Datetime from './Icons/Datetime.svg';
-import Jsonb from './Icons/Jsonb.svg';
+import { dataTypeIcon, hasDataTypeIcon } from './dataTypeIcons';
+
+const typeIcon = (type) => {
+  const Icon = dataTypeIcon(type);
+  return <Icon size={16} aria-hidden />;
+};
 
 export const dataTypes = [
   {
     name: 'Varying character strings',
     label: 'varchar',
-    icon: <CharacterVar width="16" height="16" />,
+    icon: typeIcon('character varying'),
     value: 'character varying',
   },
   {
     name: 'JSON data type',
     label: 'jsonb',
-    icon: <Jsonb width="16" height="16" />,
+    icon: typeIcon('jsonb'),
     value: 'jsonb',
   },
-  { name: 'Integers up to 4 bytes', label: 'int', icon: <Integer width="16" height="16" />, value: 'integer' },
-  { name: 'Integers up to 8 bytes', label: 'bigint', icon: <BigInt width="16" height="16" />, value: 'bigint' },
-  { name: 'Decimal numbers', label: 'float', icon: <Float width="16" height="16" />, value: 'double precision' },
-  { name: 'Boolean True/False', label: 'boolean', icon: <Boolean width="16" height="16" />, value: 'boolean' },
+  { name: 'Integers up to 4 bytes', label: 'int', icon: typeIcon('integer'), value: 'integer' },
+  { name: 'Integers up to 8 bytes', label: 'bigint', icon: typeIcon('bigint'), value: 'bigint' },
+  { name: 'Decimal numbers', label: 'float', icon: typeIcon('double precision'), value: 'double precision' },
+  { name: 'Boolean True/False', label: 'boolean', icon: typeIcon('boolean'), value: 'boolean' },
   {
     name: 'Auto-incrementing integers',
     label: 'serial',
-    icon: <Serial width="16" height="16" />,
+    icon: typeIcon('serial'),
     value: 'serial',
   },
   {
     name: 'Timestamp in ISO8601 format',
     label: 'Date with time',
-    icon: <Datetime width="16" height="16" />,
+    icon: typeIcon('timestamp with time zone'),
     value: 'timestamp with time zone',
   },
-  // { name: 'Binary JSON data', label: 'jsonb', icon: <Jsonb width="16" height="16" />, value: 'jsonb' },
+  // { name: 'Binary JSON data', label: 'jsonb', icon: typeIcon('jsonb'), value: 'jsonb' },
 ];
 
 export const serialDataType = [
   {
     name: 'Auto-incrementing integers',
     label: 'serial',
-    icon: <Serial width="16" height="16" />,
+    icon: typeIcon('serial'),
     value: 'serial',
   },
 ];
@@ -176,26 +174,9 @@ export default function tjdbDropdownStyles(
 }
 
 export const renderDatatypeIcon = (type) => {
-  switch (type) {
-    case 'integer':
-      return <Integer width="18" height="18" className="tjdb-column-header-name" />;
-    case 'bigint':
-      return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
-    case 'character varying':
-      return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
-    case 'boolean':
-      return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
-    case 'double precision':
-      return <Float width="18" height="18" className="tjdb-column-header-name" />;
-    case 'serial':
-      return <Serial width="18" height="14" className="tjdb-column-header-name" />;
-    case 'timestamp with time zone':
-      return <Datetime width="18" height="18" className="tjdb-column-header-name" />;
-    case 'jsonb':
-      return <Jsonb width="18" height="18" className="tjdb-column-header-name" />;
-    default:
-      return type;
-  }
+  if (!hasDataTypeIcon(type)) return type;
+  const Icon = dataTypeIcon(type);
+  return <Icon size={18} aria-hidden className="tjdb-column-header-name" />;
 };
 
 // The last of `appliedMigrationIds` (an environment's applied set) that is still present in the
@@ -221,6 +202,14 @@ export const headMigrationLabel = (migrations = [], appliedMigrationIds = []) =>
 
 export const envHasRelation = (relationsByEnvironment = [], environmentId) =>
   relationsByEnvironment.find((r) => r.environment_id === environmentId)?.has_relation ?? false;
+
+// Development holds every table. Elsewhere, unknown (tables not loaded yet) counts as present: only a table
+// the list says is missing counts as missing.
+export const isTableMissingFromEnvironment = (tables, tableId, environment) => {
+  if (!environment || environment.priority === 1) return false;
+  const relations = tables?.find((table) => table.id === tableId)?.environments;
+  return !!relations && !envHasRelation(relations, environment.id);
+};
 
 // After a multi-environment licence lapse the server still lists every environment but flags the
 // unlicensed ones `enabled: false`. `multiEnvLocked` is the live licence verdict, for a list loaded

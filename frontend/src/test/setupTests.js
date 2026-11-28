@@ -48,6 +48,15 @@ if (typeof window !== 'undefined') {
       }),
     };
   }
+  // jsdom implements no ResizeObserver; useTextOverflow (Rocket TruncatedText) creates one when a cell mounts.
+  // Same class of gap as the stubs below: a missing browser API, so the stub lives in the environment.
+  if (!window.ResizeObserver) {
+    window.ResizeObserver = class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  }
   Object.defineProperty(window, 'scrollTo', {
     writable: true,
     configurable: true,

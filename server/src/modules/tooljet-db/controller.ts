@@ -40,6 +40,7 @@ import { PromoteTableDto } from './dto/promote.dto';
 import { RawSqlMigrationDto } from './dto/raw-sql-migration.dto';
 import { RevertMigrationDto } from './dto/revert-migration.dto';
 import { SqlExecutionDto } from './dto/sql-execution.dto';
+import { SetRowDefaultDto } from './dto/set-row-default.dto';
 import { TooljetDbPromoteService } from './services/tooljet-db-promote.service';
 import { TooljetDbEnvironmentAssignmentService } from './services/tooljet-db-environment-assignment.service';
 import { TooljetDbRawSqlMigrationService } from './services/tooljet-db-raw-sql-migration.service';
@@ -413,6 +414,19 @@ export class TooljetDbController {
       sqlExecutionDto.environment_id,
       sqlExecutionDto.sql
     );
+    return decamelizeKeys({ result });
+  }
+
+  // PostgREST has no DEFAULT keyword in a PATCH, so "use the column default" for one cell goes through here.
+  @InitFeature(FEATURE_KEY.SET_ROW_DEFAULT)
+  @Post('/organizations/:organizationId/table/:tableId/rows/default')
+  @UseGuards(JwtAuthGuard, OrganizationValidateGuard, FeatureAbilityGuard)
+  async setRowDefault(
+    @Param('organizationId') organizationId: string,
+    @Param('tableId') tableId: string,
+    @Body() setRowDefaultDto: SetRowDefaultDto
+  ) {
+    const result = await this.dataOperationsService.setCellToDefault(organizationId, tableId, setRowDefaultDto);
     return decamelizeKeys({ result });
   }
 }

@@ -98,7 +98,7 @@ describe('ToolJet Database - foreign key actions', () => {
         // the relation form needs the loaded columns, so wait for the grid
         cy.get(tooljetDatabaseSelectors.columnHeader('parent_id')).should('be.visible');
         cy.get(tooljetDatabaseSelectors.tableItem(child.name)).trigger('mouseover');
-        cy.get(tooljetDatabaseSelectors.tableItem(child.name)).find(tooljetDatabaseSelectors.tableKebabIcon).click();
+        cy.get(tooljetDatabaseSelectors.tableItem(child.name)).find(tooljetDatabaseSelectors.tableKebabIcon).click({ force: true });
         cy.get(tooljetDatabaseSelectors.renameTableOption).click();
         cy.contains('Add relation').click();
 

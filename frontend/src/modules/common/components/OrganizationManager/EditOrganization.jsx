@@ -8,7 +8,9 @@ import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 import { appendWorkspaceId, getHostURL } from '@/_helpers/routes';
 import _ from 'lodash';
 
-export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) => {
+import OrganizationDialog from './OrganizationDialog';
+
+export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue, variant = 'legacy' }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [name, setName] = useState({ value: '', error: '' });
   const [slug, setSlug] = useState({ value: '', error: '' });
@@ -175,6 +177,40 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     workspaceNameProgress;
   const isDisabled = userHasntChangeAnythingYet || baseConditions;
 
+  // Extracted display conditions and handlers for new UI
+  const showSlugCheckmark = !slugProgress && slug?.value !== currentValue?.slug && !slug.error;
+  const showLinkSuccess = !!(slug.value && !slug.error && !slugProgress && slug?.value !== currentValue?.slug);
+  const handleNameInputChange = async (e) => {
+    e.persist();
+    await delayedNameChange(e.target.value);
+  };
+  const handleSlugInputChange = async (e) => {
+    e.persist();
+    await delayedSlugChange(e.target.value);
+  };
+
+  if (variant === 'new') {
+    return (
+      <OrganizationDialog
+        mode="edit"
+        show={showEditOrg}
+        onClose={closeModal}
+        onSubmit={editOrganization}
+        isSubmitting={isCreating}
+        isDisabled={!!isDisabled}
+        name={name}
+        slug={slug}
+        slugProgress={slugProgress}
+        showSlugCheckmark={showSlugCheckmark}
+        showLinkSuccess={showLinkSuccess}
+        showNameSuccess={false}
+        onNameChange={handleNameInputChange}
+        onSlugChange={handleSlugInputChange}
+        baseHostURL={getHostURL()}
+      />
+    );
+  }
+
   return (
     <AlertDialog
       show={showEditOrg}
@@ -187,10 +223,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <label data-cy="workspace-name-label">Workspace name</label>
             <input
               type="text"
-              onChange={async (e) => {
-                e.persist();
-                await delayedNameChange(e.target.value);
-              }}
+              onChange={handleNameInputChange}
               onKeyDown={handleKeyDown}
               className={`form-control ${name?.error ? 'is-invalid' : 'is-valid'}`}
               placeholder={t('header.organization.workspaceName', 'Workspace name')}
@@ -220,16 +253,13 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
               disabled={isCreating}
               maxLength={50}
-              onChange={async (e) => {
-                e.persist();
-                await delayedSlugChange(e.target.value);
-              }}
+              onChange={handleSlugInputChange}
               onKeyDown={handleKeyDown}
               defaultValue={slug?.value}
               data-cy="workspace-slug-input-field"
               autoFocusfields
             />
-            {!slugProgress && slug?.value !== currentValue?.slug && !slug.error && (
+            {showSlugCheckmark && (
               <div className="icon-container">
                 <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -245,7 +275,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               <label className="label tj-input-error mt-1" data-cy="input-label-error">
                 {slug?.error || ''}
               </label>
-            ) : slug?.value !== currentValue?.slug && !slugProgress ? (
+            ) : showSlugCheckmark ? (
               <label className="label label-success mt-1" data-cy="sucess-label">{`Slug accepted!`}</label>
             ) : (
               <label
@@ -271,9 +301,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               )}
             </div>
             <label className="label label-success label-updated" data-cy="slug-success-label">
-              {!slugProgress && slug.value && !slug.error && slug?.value !== currentValue?.slug
-                ? `Link updated successfully!`
-                : ''}
+              {showLinkSuccess ? `Link updated successfully!` : ''}
             </label>
           </div>
         </div>

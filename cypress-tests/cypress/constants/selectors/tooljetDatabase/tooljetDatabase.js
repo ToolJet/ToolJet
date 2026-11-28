@@ -28,7 +28,7 @@ export const tooljetDatabaseSelectors = {
   seedDataOption: '[data-cy="seed-data-sql-option"]',
   // the row checkbox has no data-cy, so it is found through the row that holds the id cell
   rowOf: (rowId) => `[data-cy="id-${rowId}-column-id-table-cell"]`,
-  editRowButton: '[data-cy="edit-row-button-text"]',
+  editRowButton: '[data-cy="edit-row-button"]',
   deleteRowsButton: '[data-cy="delete-row-records-button"]',
   rowInput: (column) => `[data-cy="${column}-input-field"]`,
   cell: (rowId, column) => `[data-cy="id-${rowId}-column-${column}-table-cell"]`,
@@ -53,11 +53,12 @@ export const tooljetDatabaseSelectors = {
   seedSqlEditor: '[data-cy="seed-data-sql-textarea"] .cm-content',
 
   // table list search
-  searchIcon: '[data-cy="create-new-folder-button"]', // reused name of the search button
-  searchInput: 'input[placeholder="Search table"]',
+  // The tables panel search is always visible; there is no search icon to click first.
+  searchInput: '[data-cy="tables-search-bar"]',
 
   // columns
-  addColumnPlus: 'th.add-icon-column .icon-styles', // no data-cy on the header plus icon
+  addColumnPlus: '[data-cy="add-column-button"]',
+  columnMenuIcon: '[data-cy="column-menu-icon"]',
   columnNameInput: '[data-cy="column-name-input-field"]',
   dataTypeDropdown: '[data-cy="data-type-dropdown-section"]',
   dropdownOption: '[class*="option"]',
@@ -78,8 +79,8 @@ export const tooljetDatabaseSelectors = {
   migrationTitleInput: '[data-cy="migration-confirm-title-input"]',
   migrationSqlEditor: '[data-cy="migration-confirm-sql-editor"] .cm-content',
   environmentOption: (name) => `[data-cy="${name}-environment-option"]`,
-  drawer: '.migration-history-drawer', // no data-cy on the drawer
-  drawerStatus: '.migration-history-drawer__status',
-  drawerRow: '.migration-history-drawer__row',
-  drawerTab: '.migration-history-drawer__tab',
+  drawer: '[data-cy="migration-history-drawer"]',
+  drawerStatus: '[data-cy="migration-history-status"]',
+  drawerRow: '[data-cy="migration-history-row"]',
+  drawerTab: '[data-cy^="migration-history-tab-"]',
 };
