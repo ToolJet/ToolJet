@@ -419,5 +419,14 @@
     "tags": [
       "AI"
     ]
+  },
+  {
+    "name": "Cloudflare D1",
+    "description": "Query and manage Cloudflare D1 serverless SQL databases",
+    "version": "1.0.0",
+    "id": "cloudflare_d1",
+    "author": "Tooljet",
+    "timestamp": "Tue, 13 Oct 2026 05:55:46 GMT",
+    "repo": ""
   }
 ]
