@@ -166,7 +166,7 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'tooljetdbdefault',
   'workflowsdefault',
 ];
-const NewRevampedComponents: NewRevampedComponent[] = [
+export const NewRevampedComponents: NewRevampedComponent[] = [
   'Text',
   'TextInput',
   'PasswordInput',
