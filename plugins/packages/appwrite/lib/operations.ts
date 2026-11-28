@@ -11,8 +11,9 @@ function parseValue(value: ParsedObject) {
 }
 
 function computeValue(value: AwQueryTypes | ParsedObject) {
-  const numConverted = Number.parseInt(value as string);
-  return isNaN(numConverted) ? parseValue(value as ParsedObject) : numConverted;
+  // JSON.parse turns "42" and "9.99" into numbers but leaves strings such as
+  // "2024-01-15" or "00123" alone, where parseInt would truncate them.
+  return parseValue(value as ParsedObject);
 }
 
 export async function queryCollection(
