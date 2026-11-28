@@ -62,7 +62,7 @@ const dialogContentVariants = cva(
 );
 
 const DialogContent = forwardRef(function DialogContent(
-  { className, children, size, showCloseButton = true, preventClose = false, ...props },
+  { className, overlayClassName, children, size, showCloseButton = true, preventClose = false, ...props },
   ref
 ) {
   const [bodyOverflowing, setBodyOverflowing] = useState(false);
@@ -83,7 +83,7 @@ const DialogContent = forwardRef(function DialogContent(
 
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay className={overlayClassName} />
       <DialogPrimitive.Content
         ref={ref}
         data-slot="dialog-content"
@@ -121,6 +121,7 @@ DialogContent.propTypes = {
   showCloseButton: PropTypes.bool,
   preventClose: PropTypes.bool,
   className: PropTypes.string,
+  overlayClassName: PropTypes.string,
   children: PropTypes.node,
 };
 
