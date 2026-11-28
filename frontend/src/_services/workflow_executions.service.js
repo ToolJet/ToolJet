@@ -13,6 +13,7 @@ export const workflowExecutionsService = {
   enableWebhook,
   previewQueryNode,
   getPaginatedExecutions,
+  getRunInputKeys,
   getPaginatedNodes,
   trigger,
   streamSSE,
@@ -92,12 +93,17 @@ function enableWebhook(appId, value) {
   );
 }
 
-function getPaginatedExecutions(appVersionId, page = 1, perPage = 10) {
+function getPaginatedExecutions(appVersionId, page = 1, perPage = 10, filter = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(
-    `${config.apiUrl}/workflow_executions?appVersionId=${appVersionId}&page=${page}&per_page=${perPage}`,
-    requestOptions
-  ).then(handleResponse);
+  const params = new URLSearchParams({ appVersionId, page, per_page: perPage });
+  if (filter) params.set('filter', JSON.stringify(filter));
+  return fetch(`${config.apiUrl}/workflow_executions?${params}`, requestOptions).then(handleResponse);
+}
+
+function getRunInputKeys(appVersionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const params = new URLSearchParams({ appVersionId });
+  return fetch(`${config.apiUrl}/workflow_executions/input-keys?${params}`, requestOptions).then(handleResponse);
 }
 
 function getPaginatedNodes(executionId, page = 1, perPage = 20) {
