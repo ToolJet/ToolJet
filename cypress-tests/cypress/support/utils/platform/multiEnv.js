@@ -4,6 +4,7 @@ import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selec
 import { appVersionSelectors } from "Selectors/platform/exportImport";
 import { appEditorSelector } from "Selectors/platform/multiEnv";
 import { openInspector, openSubNode } from "Support/utils/appBuilder/inspectorTree";
+import { closeQueriesPanel } from "Support/utils/appBuilder/querymanager/queries";
 import { appVersionText } from "Texts/platform/exportImport";
 
 export const promoteApp = () => {
@@ -228,9 +229,15 @@ export const createAppWithComponents = (
   });
 };
 
-// An open query editor narrows the editor canvas, which then scrolls the Text component out of view.
+// The editor canvas is position: fixed, so Cypress counts a Text component under the open
+// query editor as hidden. Close the editor and the Queries list first; neither is open in preview.
 export const verifyEnvironmentData = (expectedDbValue, expectedQueryValue) => {
-  cy.get(commonWidgetSelector.draggableWidget("constant_data")).scrollIntoView();
+  cy.get("body").then(($body) => {
+    if ($body.find('[data-cy="query-configuration-close-button"]').length) {
+      cy.get('[data-cy="query-configuration-close-button"]').click();
+    }
+  });
+  closeQueriesPanel();
   cy.get(commonWidgetSelector.draggableWidget("constant_data"))
     .should("be.visible")
     .should("contain.text", expectedDbValue);

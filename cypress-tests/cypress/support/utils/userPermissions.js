@@ -190,13 +190,39 @@ export const verifyEnvironmentAccess = (environments, options = {}) => {
   verifyPreviewAccess(environments, opts);
   verifyPreviewURLAccess(environments, opts);
 };
+// Polls the Radix trigger's data-state for up to 1.5s and yields whether it opened, without failing.
+const tooltipOpened = (selector) =>
+  cy.get(selector).parent().then(
+    ($trigger) =>
+      new Cypress.Promise((resolve) => {
+        const start = Date.now();
+        const check = () => {
+          if (/open/.test($trigger.attr("data-state") || "")) resolve(true);
+          else if (Date.now() - start > 1500) resolve(false);
+          else setTimeout(check, 100);
+        };
+        check();
+      })
+  );
+
 // In the editor the tooltip is the Radix app-builder tooltip, opened by a real pointer on the button's wrapper.
-// Hover twice: a Radix tooltip that just closed ignores the first move onto the next trigger.
+// Hover twice: a Radix tooltip that just closed ignores the first move onto the next trigger. The version
+// popover re-renders when its versions request returns, which closes the tooltip, so hover again until it opens.
+const hoverUntilTooltip = (selector, tries = 4) => {
+  cy.get(selector).parent().realHover({ position: "center" });
+  cy.get(selector).parent().realHover({ position: "left" });
+  tooltipOpened(selector).then((opened) => {
+    if (!opened && tries > 1) {
+      cy.get("body").realMouseMove(-10000, -10000, { position: "topLeft" });
+      hoverUntilTooltip(selector, tries - 1);
+    }
+  });
+};
+
 const assertRestrictedTooltip = (selector, env) => {
   const message = `Access to ${env} environment is restricted. Contact admin to know more.`;
   cy.get(selector).should("be.disabled");
-  cy.get(selector).parent().realHover({ position: "center" });
-  cy.get(selector).parent().realHover({ position: "left" });
+  hoverUntilTooltip(selector);
   cy.get(".app-builder-tooltip").should("be.visible").and("contain", message);
   cy.get("body").realMouseMove(-10000, -10000, { position: "topLeft" });
   cy.contains(".app-builder-tooltip", message).should("not.exist");

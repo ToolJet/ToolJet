@@ -1,10 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonWidgetSelector } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
-import {
-  openQueriesPanel,
-  closeQueriesPanel,
-} from "Support/utils/appBuilder/querymanager/queries";
+import { openQueriesPanel } from "Support/utils/appBuilder/querymanager/queries";
 import {
   Environments,
   EnvironmentValues,
@@ -102,8 +99,6 @@ describe("Multi-Environment Behavior", () => {
     cy.get(dataSourceSelector.listQuery("psql")).click();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     cy.wait(WaitTimes.queryExecution);
-    // The Queries panel overlays the left of the canvas, where the Text widgets sit.
-    closeQueriesPanel();
 
     verifyEnvironmentData(DBValues.development, EnvironmentValues.development);
     // cy.get(commonWidgetSelector.draggableWidget("button1")).should(
@@ -116,6 +111,8 @@ describe("Multi-Environment Behavior", () => {
     //   "be.visible"
     // );
 
+    openQueriesPanel();
+    cy.get(dataSourceSelector.listQuery("psql")).click();
     verifyQueryEditorDisabled();
     verifyGlobalSettingsDisabled();
     verifyInspectorMenuHasNoDeleteOption();
@@ -129,6 +126,8 @@ describe("Multi-Environment Behavior", () => {
     //   "be.visible"
     // );
 
+    openQueriesPanel();
+    cy.get(dataSourceSelector.listQuery("psql")).click();
     verifyQueryEditorDisabled();
     verifyGlobalSettingsDisabled();
     verifyComponentsManagerDisabled();
