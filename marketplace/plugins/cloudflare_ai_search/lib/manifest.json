@@ -1,0 +1,41 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Cloudflare AI Search datasource",
+  "description": "Search and retrieve information from Cloudflare AI Search instances.",
+  "type": "api",
+  "source": {
+    "name": "Cloudflare AI Search",
+    "kind": "cloudflare_ai_search",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_token": {
+        "type": "string",
+        "encrypted": true
+      },
+      "account_id": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "api_token": {
+      "label": "API Token",
+      "key": "api_token",
+      "type": "password",
+      "help_text": "A Cloudflare API token with AI Search permissions."
+    },
+    "account_id": {
+      "label": "Account ID",
+      "key": "account_id",
+      "type": "text",
+      "help_text": "Your Cloudflare account ID."
+    }
+  },
+  "required": ["api_token", "account_id"]
+}
