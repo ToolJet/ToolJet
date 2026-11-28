@@ -3,6 +3,7 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronRight, Circle } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { usePortalContainer } from '@/AppBuilder/PopOut/PanelWindowContext';
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
@@ -10,7 +11,11 @@ const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 
 const DropdownMenuGroup = DropdownMenuPrimitive.Group;
 
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+const DropdownMenuPortal = ({ container, ...props }) => {
+  const panelBody = usePortalContainer();
+  return <DropdownMenuPrimitive.Portal container={container ?? panelBody} {...props} />;
+};
+DropdownMenuPortal.displayName = DropdownMenuPrimitive.Portal.displayName;
 
 const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 
@@ -45,7 +50,7 @@ const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) =
 DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
 
 const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
+  <DropdownMenuPortal>
     <DropdownMenuPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
@@ -56,7 +61,7 @@ const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...pr
       )}
       {...props}
     />
-  </DropdownMenuPrimitive.Portal>
+  </DropdownMenuPortal>
 ));
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 

@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
 import { cn } from '@/lib/utils';
+import { usePortalContainer } from '@/AppBuilder/PopOut/PanelWindowContext';
 
 const TooltipProvider = TooltipPrimitive.Provider;
 
@@ -9,8 +10,13 @@ const Tooltip = TooltipPrimitive.Root;
 
 const TooltipTrigger = TooltipPrimitive.Trigger;
 
+const TooltipPortal = (props) => {
+  const panelBody = usePortalContainer();
+  return <TooltipPrimitive.Portal container={panelBody} {...props} />;
+};
+
 const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Portal>
+  <TooltipPortal>
     <TooltipPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
@@ -20,7 +26,7 @@ const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }
       )}
       {...props}
     />
-  </TooltipPrimitive.Portal>
+  </TooltipPortal>
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 

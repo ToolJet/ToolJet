@@ -51,6 +51,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Canvas** | The visual workspace area in the App-Builder where components are placed | — |
 | **Left Sidebar** | App-Builder panel containing Pages, Inspector, and Debugger | — |
 | **Right Sidebar** | App-Builder panel for component properties and styles | — |
+| **Pop-out Panel** | An App-Builder panel shown in its own browser window instead of docked in the editor, opened with the panel's pop-out icon and docked back by closing that window. The choice is remembered per user in the browser. Available for the Code panel (React builder). Code: `AppBuilder/PopOut/`, `usePanelPopOut` | "Pop out code editor" (the in-page enlarged code field, not a window); Preview (a separate page, not a panel) |
 | **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | — |
 | **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | "module" also means a NestJS backend module — always qualify |
 | **Module Pin** | A ModuleViewer component pinning a specific module version via `moduleReferenceId` (stable UUID per version row, survives git/zip round-trips); publishing blocks on draft/orphan/unpinned modules | — |

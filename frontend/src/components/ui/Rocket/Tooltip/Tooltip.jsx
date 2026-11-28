@@ -7,6 +7,7 @@ import {
   TooltipProvider as ShadcnTooltipProvider,
 } from '@/components/ui/Rocket/shadcn/tooltip';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import { usePortalContainer } from '@/AppBuilder/PopOut/PanelWindowContext';
 
 // ── Re-exports (no visual tokens to override) ────────────────────────────
 const TooltipProvider = ShadcnTooltipProvider;
@@ -31,8 +32,9 @@ const TooltipContent = forwardRef(function TooltipContent(
   { className, sideOffset = 4, children, showArrow = true, ...props },
   ref
 ) {
+  const panelBody = usePortalContainer();
   return (
-    <TooltipPrimitive.Portal>
+    <TooltipPrimitive.Portal container={panelBody}>
       <TooltipPrimitive.Content
         ref={ref}
         sideOffset={sideOffset}
