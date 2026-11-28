@@ -159,7 +159,7 @@ export const AddNewRowConfig = ({
           </div>
 
           {selectionError && (
-            <p role="alert" className="tw-m-0 tw-font-body-default tw-text-text-danger">
+            <p role="alert" className="tw-m-0 tw-font-body-default tw-text-editor-text-danger">
               Select at least one column.
             </p>
           )}

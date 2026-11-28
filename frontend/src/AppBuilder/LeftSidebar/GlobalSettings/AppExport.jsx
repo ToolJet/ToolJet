@@ -35,7 +35,7 @@ const AppExport = ({ darkMode, isModuleEditor = false }) => {
         <Button
           fill="rgb(172, 178, 185)"
           leadingIcon="fileupload"
-          variant="tertiary"
+          variant="outline"
           className={cx('app-export-btn')}
           onClick={() => {
             setIsExportingApp(true);

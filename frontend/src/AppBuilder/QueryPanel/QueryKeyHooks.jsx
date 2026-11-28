@@ -36,7 +36,7 @@ const QueryKeyHooks = ({ children, isExpanded }) => {
     enableOnFormTags: ['input'],
   });
 
-  return <div className="row main-row">{children}</div>;
+  return children;
 };
 
 export default QueryKeyHooks;

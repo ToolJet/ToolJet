@@ -12,7 +12,7 @@
 
 .version-action-btn {
 	padding: 2px 8px !important;
-	font-size: 11px !important;
+	font-size: var(--app-builder-small-font-size, 11px) !important;
 	font-weight: 500;
 	border: 1px solid var(--border-weak);
 	background-color: #ffffff;

@@ -181,6 +181,132 @@ describe('ImportExportResourcesController', () => {
     return rows.map((r) => r.mid);
   }
 
+  describe('import variable preflight', () => {
+    async function payload() {
+      const admin = await createAdmin(app, 'variable-import@tooljet.io');
+      const source = await seedApp(admin);
+      const body = await exportApp(admin, source.id);
+      body.organization_id = admin.user.defaultOrganizationId;
+      body.app[0].appName = 'Variables import';
+      const definition = body.app[0].definition.appV2;
+      definition.appVersions[0].globalSettings = { variables: {} };
+      return { admin, body, definition };
+    }
+
+    it.each([{}, null, undefined])('should preserve supported empty maps %j (201)', async (map) => {
+      const { admin, body, definition } = await payload();
+      definition.appVersions[0].globalSettings.variables = map;
+      definition.pages[0].variables = map;
+      const result = await importPayload(admin, body, 'Empty maps');
+      const version = await findEntityOrFail(AppVersion, { appId: result.imports.app[0].id });
+      const page = await findEntityOrFail(Page, { appVersionId: version.id });
+      expect(version.globalSettings.variables).toEqual(map);
+      expect(page.variables).toEqual(map ?? null);
+    });
+
+    it.each(['app', 'page'])(
+      'should reject ID-keyed %s imports with a clear error and no new app (400)',
+      async (scope) => {
+        const { admin, body, definition } = await payload();
+        const map = { old: { id: 'old', name: 'source', value: '1', fxActive: false } };
+        if (scope === 'app') definition.appVersions[0].globalSettings.variables = map;
+        else definition.pages[0].variables = map;
+        const before = await countEntities(App);
+        const response = await request(app.getHttpServer())
+          .post('/api/v2/resources/import')
+          .set('tj-workspace-id', admin.user.defaultOrganizationId)
+          .set('Cookie', admin.cookie)
+          .send(body)
+          .expect(400);
+        expect(response.body).toMatchObject({
+          statusCode: 400,
+          message: expect.stringContaining('ID-keyed variable definitions are not supported'),
+        });
+        expect(await countEntities(App)).toBe(before);
+      }
+    );
+
+    it.each(['__proto__', 'constructor', 'prototype', 'toString', 'valueOf'])(
+      'should reject reserved name %s before request transformation (400)',
+      async (name) => {
+        const { admin, body, definition } = await payload();
+        definition.appVersions[0].globalSettings.variables = JSON.parse(`{"${name}":{"value":"1","fxActive":false}}`);
+        const before = await countEntities(App);
+        const response = await request(app.getHttpServer())
+          .post('/api/v2/resources/import')
+          .set('tj-workspace-id', admin.user.defaultOrganizationId)
+          .set('Cookie', admin.cookie)
+          .send(body)
+          .expect(400);
+        expect(response.body).toMatchObject({ statusCode: 400, message: expect.stringContaining(name) });
+        expect(await countEntities(App)).toBe(before);
+      }
+    );
+
+    it.each([[], false, 0, ''])('should reject malformed page map %j without importing anything (400)', async (map) => {
+      const { admin, body, definition } = await payload();
+      definition.pages[0].variables = map;
+      const before = await countEntities(App);
+      const response = await request(app.getHttpServer())
+        .post('/api/v2/resources/import')
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
+        .set('Cookie', admin.cookie)
+        .send(body)
+        .expect(400);
+      expect(response.body).toMatchObject({ statusCode: 400, message: expect.stringContaining('variables') });
+      expect(await countEntities(App)).toBe(before);
+    });
+
+    it('should reject an invalid later app before importing earlier apps or tables (400)', async () => {
+      const { admin, body, definition } = await payload();
+      const invalid = structuredClone(body.app[0]);
+      invalid.definition.appV2.appVersions[0].globalSettings.variables = { broken: null };
+      body.app.push(invalid);
+      // If preflight is delayed, this malformed table payload is processed first instead.
+      body.tooljet_database = [{ id: uuidv4(), table_name: 'must_not_be_created', schema: {} }];
+      const appsBefore = await countEntities(App);
+      const tablesBefore = await countEntities(InternalTable);
+      const response = await request(app.getHttpServer())
+        .post('/api/v2/resources/import')
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
+        .set('Cookie', admin.cookie)
+        .send(body)
+        .expect(400);
+      expect(response.body).toMatchObject({ statusCode: 400, message: expect.stringContaining('broken') });
+      expect(await countEntities(App)).toBe(appsBefore);
+      expect(await countEntities(InternalTable)).toBe(tablesBefore);
+      expect(definition.appVersions[0].globalSettings.variables).toEqual({});
+    });
+
+    it('should reject statically detectable cycles (400)', async () => {
+      const { admin, body, definition } = await payload();
+      definition.appVersions[0].globalSettings.variables = {
+        a: { value: '{{variables .b}}', fxActive: false },
+        b: { value: '{{variables.a}}', fxActive: false },
+      };
+      const response = await request(app.getHttpServer())
+        .post('/api/v2/resources/import')
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
+        .set('Cookie', admin.cookie)
+        .send(body)
+        .expect(400);
+      expect(response.body).toMatchObject({ statusCode: 400, message: expect.stringContaining('circular') });
+    });
+
+    it('should reject module page variables (400)', async () => {
+      const { admin, body, definition } = await payload();
+      definition.type = 'module';
+      definition.pages[0].variables = { local: { value: '1', fxActive: false } };
+      const response = await request(app.getHttpServer())
+        .post('/api/v2/resources/import')
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
+        .set('Cookie', admin.cookie)
+        .send(body)
+        .expect(400);
+      expect(response.body).toMatchObject({ statusCode: 400, message: expect.stringContaining('local') });
+    });
+  });
+
   describe('POST /api/v2/resources/export | export apps', () => {
     it('should allow an admin to export an app (201)', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');

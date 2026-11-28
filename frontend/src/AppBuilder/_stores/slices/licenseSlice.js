@@ -1,5 +1,6 @@
 import { licenseService } from '@/_services';
 import _ from 'lodash';
+import { isQueryCacheLicensed } from '@/AppBuilder/_utils/queryResponseCache';
 
 const initialState = {
   license: {},
@@ -20,12 +21,18 @@ export const createLicenseSlice = (set, get) => ({
     licenseService
       .getFeatureAccess()
       .then((data) => {
+        const wasCacheLicensed = isQueryCacheLicensed(get());
         set((state) => {
           state.license = {
             featureAccess: data,
           };
           state.isLicenseFetched = true;
         });
+        // queries.<name>.refresh() hints depend on the queryResponseCache license. Suggestions already built for the
+        // editor (always the 'canvas' module) must follow a license gained or lost in the same session.
+        if (get()._suggestionsInitialized && isQueryCacheLicensed(get()) !== wasCacheLicensed) {
+          get().rebuildQueryHints('canvas');
+        }
       })
       .catch(() => {
         // For public/unauthenticated apps the license API may be inaccessible.

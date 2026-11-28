@@ -1,3 +1,4 @@
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { NO_OF_GRIDS, isModalType } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import {
@@ -14,6 +15,27 @@ import {
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
 import { heightHeldInView, isUi2PerRowType, sizesToDropAreas } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+
+const INSPECTOR_POPOVER_SELECTOR = [
+  '#codehinter-preview-box-popover',
+  '.inspector-select-options-popover',
+  '.inspector-event-manager-popover',
+  '.inspector-steps-options-popover',
+  '.table-column-popover',
+  '.table-action-popover',
+  '.codebuilder-color-swatches-popover',
+  '.boxshadow-picker-popover',
+  '.color-picker-popover',
+  '.dropdown-menu-container',
+  '.inspector-select.react-select__menu-list',
+  '.icon-widget-popover',
+  '.inspector-header-actions-menu',
+  '.nav-item-popover',
+  '.nav-item-actions-popover',
+  '.nav-add-menu-popover',
+].join(',');
+
+export const isInspectorPopoverOpen = () => Boolean(document.querySelector(INSPECTOR_POPOVER_SELECTOR));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Grid slice — owns the mutable reflow state for dynamic-height layout.
@@ -551,38 +573,22 @@ export const createGridSlice = (set, get) => {
         setCanvasFooterSelected(true);
       }
 
-      // Check if any inspector popover is currently open
-      const isInspectorPopoverOpen = () => {
-        const selector = [
-          '#codehinter-preview-box-popover',
-          '.inspector-select-options-popover',
-          '.inspector-event-manager-popover',
-          '.inspector-steps-options-popover',
-          '.table-column-popover',
-          '.table-action-popover',
-          '.codebuilder-color-swatches-popover',
-          '.boxshadow-picker-popover',
-          '.color-picker-popover',
-          '.dropdown-menu-container',
-          '.inspector-select.react-select__menu-list',
-          '.icon-widget-popover',
-          '.inspector-header-actions-menu',
-          '.nav-item-popover',
-          '.nav-item-actions-popover',
-          '.nav-add-menu-popover',
-        ].join(',');
-        return !!document.querySelector(selector);
-      };
-
       if (
         !isClickedOnSubcontainer &&
-        ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
+        (['rm-container', 'real-canvas', 'modal', 'app-canvas-container'].includes(e.target.id) ||
+          e.target.classList?.contains?.('canvas-content')) &&
         !selectedText &&
         !isInspectorPopoverOpen() &&
         !isGroupResizing &&
         !isGroupDragging
       ) {
         clearSelectedComponents();
+        // The component properties panel shows a selection only, so it closes with it. Other right-panel content
+        // (the query editor, page settings) has its own subject and stays.
+        const { activeRightSideBarTab, isRightSidebarOpen, setRightSidebarOpen } = get();
+        if (isRightSidebarOpen && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION) {
+          setRightSidebarOpen(false);
+        }
       }
     },
   };

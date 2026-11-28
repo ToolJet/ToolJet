@@ -99,16 +99,15 @@
         width: 100%;
         justify-content: space-between;
         background-color: var(--interactive-default);
+        border: 1px solid transparent;
         &.highlight {
-            border: 2px solid #3D63DC;
+            border: 2px solid var(--border-accent-strong);
         }
 
+        // Marks the page currently displayed on the canvas.
         &.is-selected {
-            background-color: var(--interactive-selected) !important; 
-        }
-
-        &:hover {
-            background-color: var(--interactive-default);
+            border-color: var(--border-accent-weak);
+            background-color: var(--background-accent-weak) !important;
         }
 
         &.page-group-item {
@@ -333,7 +332,8 @@
 #add-new-page-popover, #edit-page-popover {
     margin-left: 40px;
     padding: 8px;    
-    button {
+    // Page menu rows are `.list-item-popover-option`, styled with the query menu (ToolJetUI/List).
+    button:not(.list-item-popover-option) {
         border: 0px;
         padding: 8px;
         width: 100%;
@@ -372,6 +372,21 @@
     }
 }
 
+// Radix positions the wrapper; the menu itself uses the component inspector popover surface.
+.popover.page-header-options {
+    position: static;
+
+    .list-item-popover-option[data-highlighted] {
+        border-radius: 6px;
+        background-color: var(--slate3);
+    }
+
+    .list-item-popover-option[data-disabled] {
+        cursor: default;
+        background-color: transparent;
+    }
+}
+
 #add-new-page-popup {
     width: 304px;
     max-width: none;
@@ -401,7 +416,7 @@
         background-color: var(--background-surface-layer-01);
         border-color: var(--border-default);
         border-radius: 6px;
-        color: var(--text-accent);
+        color: var(--editor-text-accent, var(--indigo9));
         font-weight: 400;
         font-size: 12px;
         line-height: 16px;
@@ -496,6 +511,72 @@
     }
 }
 
+.page-configuration-panel {
+    height: 100%;
+    overflow-y: auto;
+    background: var(--background-surface-layer-01);
+}
+
+// The Pages panel pins its title, tabs and New page footer, and only the tab content between them scrolls
+// (UC-14).
+.pages-settings--navigation {
+    height: 100%;
+
+    > div {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .pages-settings__tabs,
+    .pages-settings__tabs > .tj-tabs {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .pages-settings__tabs .tab-content {
+        flex: 1;
+        min-height: 0;
+        height: auto;
+    }
+}
+
+.pages-settings__footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-weak);
+}
+
+// Floating, the popup fits the viewport and scrolls below its title row (LR-23).
+#add-new-page-popup:not(.add-new-page-popup--embedded) {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 16px);
+
+    // Beats the global `.popover .popover-body { overflow: visible !important }` in popover.scss.
+    .popover-body {
+        min-height: 0;
+        overflow-y: auto !important;
+        @include hover-reveal-scrollbar;
+    }
+}
+
+#add-new-page-popup.add-new-page-popup--embedded {
+    position: static;
+    display: block;
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+
+    .popover-arrow {
+        display: none;
+    }
+}
+
 .section-header {
     color: var(--text-placeholder);
     display: flex;
@@ -543,4 +624,9 @@
 .add-new-page-options {
     padding: 8px;
     border-radius: 0 0 8px 8px;
+}
+
+// Dark Pages panel: Tabler's dark .form-control keeps its light border.
+.theme-dark .pages-settings .form-control {
+    border-color: var(--border-default);
 }

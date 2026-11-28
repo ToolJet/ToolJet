@@ -21,7 +21,7 @@ const operationsImports = packages.map(
   (dirent) => `import ${capitalize(dirent.name)}Operation from './packages/${dirent.name}/lib/operations.json'`
 );
 
-const darkSvgsIcons = new Set(['grpc', 'grpcv2', 'influxdb', 'mariadb', 'mysql', 'zendesk']);
+const darkSvgsIcons = new Set(['grpc', 'grpcv2', 'influxdb', 'mariadb', 'mysql', 'restapi', 'zendesk']);
 const svgsImports = packages.flatMap((dirent) => {
   const iconImport = `import ${dirent.name}Svg from './packages/${dirent.name}/lib/icon.svg'`;
   if (darkSvgsIcons.has(dirent.name)) {

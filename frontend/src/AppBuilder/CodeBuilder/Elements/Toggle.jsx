@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Toggle = ({ value, onChange, cyLabel, meta }) => {
+export const Toggle = ({ value, onChange, cyLabel, meta, paramLabel }) => {
   return (
     <div className="row fx-container">
       <div className="col d-flex align-items-center">
@@ -20,6 +20,7 @@ export const Toggle = ({ value, onChange, cyLabel, meta }) => {
             <input
               className="form-check-input"
               type="checkbox"
+              aria-label={meta?.toggleLabel || paramLabel?.trim() || undefined}
               onClick={() => onChange(`{{${!value}}}`)}
               checked={value}
               data-cy={`${cyLabel}-toggle-button`}

@@ -166,7 +166,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
       ? [
           {
             id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-            title: 'Additional Actions',
+            title: 'Additional actions',
             type: 'properties',
             properties: additionalActions,
             extraProps: (property) => ({

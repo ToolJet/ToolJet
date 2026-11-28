@@ -79,6 +79,7 @@ export default function GraphqlKeyValueTabs({ tabs = [], options = {}, optioncha
               variant="ghost"
               leadingIcon="plus"
               id="graphql-param-add-btn"
+              aria-label={`Add ${activeKey}`}
               data-cy={`graphql-${generateCypressDataCy(activeKey)}-add-button`}
               onClick={() => addNewKeyValuePair(activeKey)}
             />

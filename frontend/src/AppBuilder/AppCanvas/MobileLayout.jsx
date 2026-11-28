@@ -1,3 +1,4 @@
+import { WidgetTooltipScope } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
 import React, { Suspense, useRef, lazy } from 'react';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
@@ -79,14 +80,16 @@ export const MobileLayout = ({
             flexShrink: 0,
           }}
         >
-          <MobileNavigationHeader
-            isMobileDevice={true}
-            currentPageId={currentPageId ?? homePageId}
-            switchDarkMode={switchDarkMode}
-            darkMode={darkMode}
-            canvasMaxWidth={canvasMaxWidth}
-            canvasContainerRef={mobileNavSheetContainerRef}
-          />
+          <WidgetTooltipScope>
+            <MobileNavigationHeader
+              isMobileDevice={true}
+              currentPageId={currentPageId ?? homePageId}
+              switchDarkMode={switchDarkMode}
+              darkMode={darkMode}
+              canvasMaxWidth={canvasMaxWidth}
+              canvasContainerRef={mobileNavSheetContainerRef}
+            />
+          </WidgetTooltipScope>
         </div>
       )}
       <CanvasContentTail

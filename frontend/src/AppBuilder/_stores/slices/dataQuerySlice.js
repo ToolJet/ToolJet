@@ -6,10 +6,15 @@ import { toast } from 'react-hot-toast';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores/utils';
 import { normalizeQueryTransformationOptions } from '@/AppBuilder/_stores/utils/appDataCaseConversion';
-import { clearQueryRerunTimer } from '@/AppBuilder/_stores/slices/componentsSlice';
+import {
+  clearQueryRerunTimer,
+  clearPeriodicTimer,
+  reconcileQueryPeriodicRun,
+} from '@/AppBuilder/_stores/slices/componentsSlice';
 import { queriesBelongToVersion, waitForVersionQueries } from '@/AppBuilder/_helpers/queriesForVersion';
 import { codeAppReadsResultFrom } from '@/AppBuilder/_helpers/codeAppReaders';
 import { getQueryUsage } from '@/AppBuilder/_utils/entityUsage/queryUsage';
+import { canRefreshQueryCache } from '@/AppBuilder/_utils/queryResponseCache';
 
 const initialState = {
   sortBy: 'custom',
@@ -92,8 +97,6 @@ export const createDataQuerySlice = (set, get) => ({
       const setQueryToBeRun = get().queryPanel.setQueryToBeRun;
       const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
       const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
-      const setIsAppSaving = get().setIsAppSaving;
-      setIsAppSaving(true);
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const currDataQueries = [...dataQueries];
       const runOnCreate = options.runOnCreate;
@@ -123,8 +126,11 @@ export const createDataQuerySlice = (set, get) => ({
       });
       setSelectedQuery(tempId);
       setNameInputFocused(true);
-      dataqueryService
-        .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId, folderId)
+      get()
+        .trackAppSave(
+          () => dataqueryService.create(appId, appVersionId, name, kind, options, dataSourceId, pluginId, folderId),
+          moduleId
+        )
         .then((data) => {
           set((state) => {
             state.dataQuery.creatingQueryInProcessId = null;
@@ -195,8 +201,7 @@ export const createDataQuerySlice = (set, get) => ({
           });
           setSelectedQuery(null);
           toast.error(`Failed to create query: ${error.message ?? error.error}`);
-        })
-        .finally(() => setIsAppSaving(false));
+        });
     },
     renameQuery: (id, newName, moduleId = 'canvas') => {
       /** If query creation in progress, skips call and pushes the update to queue */
@@ -206,8 +211,6 @@ export const createDataQuerySlice = (set, get) => ({
         });
         return;
       }
-      const setIsAppSaving = get().setIsAppSaving;
-      setIsAppSaving(true);
       /**
        * Seting name to store before api call for instant UI update and better UX.
        * Name is again set to state post api call to handle if renaming fails in backend.
@@ -218,8 +221,8 @@ export const createDataQuerySlice = (set, get) => ({
         );
       });
       const versionId = get().currentVersionId;
-      dataqueryService
-        .update(id, versionId, newName)
+      get()
+        .trackAppSave(() => dataqueryService.update(id, versionId, newName), moduleId)
         .then((data) => {
           set((state) => {
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) =>
@@ -235,9 +238,6 @@ export const createDataQuerySlice = (set, get) => ({
         })
         .catch((error) => {
           toast.error(`Failed to rename query: ${error.message ?? error.error}`);
-        })
-        .finally(() => {
-          setIsAppSaving(false);
         });
     },
     deleteDataQueries: (queryId, moduleId = 'canvas') => {
@@ -245,23 +245,19 @@ export const createDataQuerySlice = (set, get) => ({
         state.dataQuery.isDeletingQueryInProcess = true;
       });
       const versionId = get().currentVersionId;
-      const setIsAppSaving = get().setIsAppSaving;
-      setIsAppSaving(true);
-      dataqueryService
-        .del(queryId, versionId)
+      // Deleting an unselected query must not replace the current configuration.
+      const deletedQuery = get().dataQuery.queries.modules[moduleId].find((query) => query.id === queryId);
+      const wasSelected = get().queryPanel.selectedQuery?.id === queryId;
+      get()
+        .trackAppSave(() => dataqueryService.del(queryId, versionId), moduleId)
         .then(() => {
           const dataQueries = get().dataQuery.queries.modules[moduleId];
-          // const deletedQueryName = dataQueries.find((query) => query.id === queryId).name;
           const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
-          const setSelectedQuery = get().queryPanel.setSelectedQuery;
-          const setSelectedDataSource = get().queryPanel.setSelectedDataSource;
-          const selectedQuery = get().queryPanel.selectedQuery;
-          setSelectedQuery(newSelectedQuery?.id || null);
-          get().deleteQueryMapping(selectedQuery?.name, selectedQuery?.id, moduleId);
-
-          if (!newSelectedQuery?.id) {
-            setSelectedDataSource(null);
+          if (wasSelected) {
+            get().queryPanel.setSelectedQuery(newSelectedQuery?.id || null, moduleId, { reveal: false });
+            if (!newSelectedQuery?.id) get().queryPanel.setSelectedDataSource(null);
           }
+          get().deleteQueryMapping(deletedQuery?.name, queryId, moduleId);
           set((state) => {
             state.dataQuery.isDeletingQueryInProcess = false;
             state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].filter(
@@ -281,10 +277,10 @@ export const createDataQuerySlice = (set, get) => ({
           set((state) => {
             state.dataQuery.isDeletingQueryInProcess = false;
           });
-        })
-        .finally(() => setIsAppSaving(false));
+        });
 
       clearQueryRerunTimer(queryId);
+      clearPeriodicTimer(queryId, { forgetPaused: true });
       get().removeNode(`queries.${queryId}`, moduleId);
       get().updateDependencyValues(`queries.${queryId}`, moduleId);
     },
@@ -305,19 +301,21 @@ export const createDataQuerySlice = (set, get) => ({
       }
       queryToClone.name = newName;
 
-      const setIsAppSaving = get().setIsAppSaving;
       const setSelectedQuery = get().queryPanel.setSelectedQuery;
-      setIsAppSaving(true);
 
-      dataqueryService
-        .create(
-          appId,
-          queryToClone.app_version_id,
-          queryToClone.name,
-          queryToClone.kind,
-          queryToClone.options,
-          queryToClone.data_source_id,
-          queryToClone.pluginId
+      get()
+        .trackAppSave(
+          () =>
+            dataqueryService.create(
+              appId,
+              queryToClone.app_version_id,
+              queryToClone.name,
+              queryToClone.kind,
+              queryToClone.options,
+              queryToClone.data_source_id,
+              queryToClone.pluginId
+            ),
+          moduleId
         )
         .then((data) => {
           set((state) => {
@@ -418,19 +416,19 @@ export const createDataQuerySlice = (set, get) => ({
           set((state) => {
             state.dataQuery.creatingQueryInProcessId = null;
           });
-        })
-        .finally(() => setIsAppSaving(false));
+        });
     },
     changeDataQuery: (newDataSource, moduleId = 'canvas') => {
       const appVersionId = get().currentVersionId;
-      const { queryPanel, setIsAppSaving } = get();
+      const { queryPanel, trackAppSave } = get();
       const { selectedQuery, setSelectedQuery, setSelectedDataSource } = queryPanel;
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = true;
       });
-      setIsAppSaving(true);
-      dataqueryService
-        .changeQueryDataSource(selectedQuery?.id, newDataSource.id, appVersionId)
+      trackAppSave(
+        () => dataqueryService.changeQueryDataSource(selectedQuery?.id, newDataSource.id, appVersionId),
+        moduleId
+      )
         .then(() => {
           set((state) => {
             state.dataQuery.isUpdatingQueryInProcess = false;
@@ -449,16 +447,22 @@ export const createDataQuerySlice = (set, get) => ({
           set((state) => {
             state.dataQuery.isUpdatingQueryInProcess = false;
           });
-        })
-        .finally(() => setIsAppSaving(false));
+        });
     },
     updateDataQuery: (options, moduleId = 'canvas') => {
+      const selectedQuery = get().queryPanel.selectedQuery;
+      get().dataQuery.updateDataQueryById(selectedQuery.id, options, moduleId);
+    },
+    // Updates any query's options, not only the selected one (e.g. from the code editor tab). Saving is
+    // the caller's job: the query panel autosaves the selected query when it changes.
+    updateDataQueryById: (queryId, options, moduleId = 'canvas') => {
       const componentNameIdMapping = get().modules['canvas'].componentNameIdMapping;
       const queryNameIdMapping = get().modules['canvas'].queryNameIdMapping;
+      const query = get().dataQuery.queries.modules[moduleId].find((candidate) => candidate.id === queryId);
+      if (!query) return;
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = true;
       });
-      const selectedQuery = get().queryPanel.selectedQuery;
 
       const setSelectedQuery = get().queryPanel.setSelectedQuery;
 
@@ -467,28 +471,39 @@ export const createDataQuerySlice = (set, get) => ({
         componentNameIdMapping,
         queryNameIdMapping
       );
+      const findStoredQuery = () => get().dataQuery.queries.modules[moduleId]?.find((q) => q.id === queryId);
+      const couldRefreshCache = canRefreshQueryCache(get(), findStoredQuery());
 
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = false;
-        state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
-          if (query.id === selectedQuery.id) {
+        state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((candidate) => {
+          if (candidate.id === queryId) {
             return {
-              ...query,
+              ...candidate,
               options: { ...newOptions },
             };
           }
-          return query;
+          return candidate;
         });
       });
+
+      // Reconcile an already-running periodic timer with the edited options
+      // (interval change or toggled back on → restart, toggle off → idle). allowStart:false so editing
+      // options never starts a timer for a query that hasn't been run yet.
+      reconcileQueryPeriodicRun(queryId, moduleId, get, { allowStart: false });
+
+      // Turning response caching on or off adds or removes queries.<name>.refresh(). Rebuild the query hints in full
+      // (the result-shape shortcut can't see this) only when that eligibility flips, not on every options edit.
+      if (canRefreshQueryCache(get(), findStoredQuery()) !== couldRefreshCache) get().rebuildQueryHints(moduleId);
 
       // Update query dependency registrations when options change.
       // Pass `options` (with entity names), not `newOptions` (with IDs), because
       // registerQueryDependencies uses extractAndReplaceReferencesFromString which handles name→ID mapping.
       if (options.runOnDependencyChange) {
-        get().registerQueryDependencies(selectedQuery.id, selectedQuery.name, selectedQuery.kind, options, moduleId);
+        get().registerQueryDependencies(query.id, query.name, query.kind, options, moduleId);
       } else {
         // Toggle turned off — clean up __options__ sentinel node if it exists
-        const optionsPath = `queries.${selectedQuery.id}.__options__`;
+        const optionsPath = `queries.${query.id}.__options__`;
         const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
         if (depGraph && depGraph.hasNode(optionsPath)) {
           set(
@@ -502,7 +517,7 @@ export const createDataQuerySlice = (set, get) => ({
         }
       }
 
-      setSelectedQuery(selectedQuery?.id);
+      if (get().queryPanel.selectedQuery?.id === queryId) setSelectedQuery(queryId);
     },
     saveData: throttle((newValues, moduleId = 'canvas') => {
       // Frozen versions (e.g. synced default-branch draft) reject saves — skip editor-filled defaults.
@@ -516,15 +531,12 @@ export const createDataQuerySlice = (set, get) => ({
       }
       // const entityIdMappedOptions = useResolveStore.getState().actions.findReferences(newValues?.options);
 
-      const setIsAppSaving = get().setIsAppSaving;
-      setIsAppSaving(true);
       set((state) => {
         state.dataQuery.isUpdatingQueryInProcess = true;
       });
 
       // .update(newValues?.id, newValues?.name, entityIdMappedOptions)
       if (!newValues?.id) {
-        setIsAppSaving(false);
         set((state) => {
           state.dataQuery.isUpdatingQueryInProcess = true;
         });
@@ -535,7 +547,8 @@ export const createDataQuerySlice = (set, get) => ({
       set((state) => {
         state.dataQuery.queryUpdates[newValues?.id] = updatePromise;
       });
-      updatePromise
+      get()
+        .trackAppSave(() => updatePromise, moduleId)
         .then((data) => {
           localStorage.removeItem('transformation');
           set((state) => {
@@ -555,7 +568,6 @@ export const createDataQuerySlice = (set, get) => ({
           });
         })
         .finally(() => {
-          setIsAppSaving(false);
           set((state) => {
             delete state.dataQuery.queryUpdates[newValues?.id];
           });

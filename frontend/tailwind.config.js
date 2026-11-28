@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 const plugin = require('tailwindcss/plugin');
 
+// The App Builder sets --app-builder-font-family on <body> while it edits; everywhere else stays Inter.
+const APP_BUILDER_FONT = 'var(--app-builder-font-family, var(--font-family-inter))';
+
 module.exports = {
   darkMode: ['class', '[class~="dark-theme"]'],
   content: [
@@ -43,6 +46,9 @@ module.exports = {
         'text-success': 'var(--text-success)',
         'text-warning': 'var(--text-warning)',
         'text-danger': 'var(--text-danger)',
+        // Editor chrome only: brighter on dark editor panels, the shared token everywhere else.
+        'editor-text-danger': 'var(--editor-text-danger, var(--text-danger))',
+        'editor-text-success': 'var(--editor-text-success, var(--text-success))',
         'text-on-solid': 'var(--text-on-solid)',
         'text-disabled': 'var(--text-disabled)',
         'text-disabled-on-solid': 'var(--text-disabled-on-solid)',
@@ -153,7 +159,7 @@ module.exports = {
     plugin(({ addUtilities }) => {
       const newUtilities = {
         '.font-display-small': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-display-small)',
           lineHeight: 'var(--line-height-display-medium)',
@@ -161,7 +167,7 @@ module.exports = {
           fontSmoothing: 'antialiased',
         },
         '.font-title-heavy-xx-large': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-xx-large)',
           lineHeight: 'var(--line-height-xx-large)',
@@ -169,7 +175,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-title-xx-large': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-xx-large)',
           lineHeight: 'var(--line-height-xx-large)',
@@ -177,7 +183,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-body-xx-large': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-xx-large)',
           lineHeight: 'var(--line-height-xx-large)',
@@ -191,7 +197,7 @@ module.exports = {
           lineHeight: 'var(--line-height-default)',
         },
         '.font-title-heavy-x-large': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-x-large)',
           lineHeight: 'var(--line-height-x-large)',
@@ -199,7 +205,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-title-x-large': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-x-large)',
           lineHeight: 'var(--line-height-x-large)',
@@ -207,7 +213,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-body-x-large': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-x-large)',
           lineHeight: 'var(--line-height-x-large)',
@@ -215,7 +221,7 @@ module.exports = {
           fontSmoothing: 'antialiased',
         },
         '.font-title-heavy-large': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-large)',
           lineHeight: 'var(--line-height-large)',
@@ -223,7 +229,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-title-large': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-large)',
           lineHeight: 'var(--line-height-large)',
@@ -231,7 +237,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-body-large': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-large)',
           lineHeight: 'var(--line-height-large)',
@@ -239,7 +245,7 @@ module.exports = {
           fontSmoothing: 'antialiased',
         },
         '.font-title-heavy-medium': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-default)',
           lineHeight: 'var(--line-height-default)',
@@ -247,7 +253,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-title-default': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-default)',
           lineHeight: 'var(--line-height-default)',
@@ -255,7 +261,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-body-default': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-default)',
           lineHeight: 'var(--line-height-default)',
@@ -263,7 +269,7 @@ module.exports = {
           fontSmoothing: 'antialiased',
         },
         '.font-title-heavy-small': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-small)',
           lineHeight: 'var(--line-height-small)',
@@ -271,7 +277,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-title-small': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-medium)',
           fontSize: 'var(--font-size-small)',
           lineHeight: 'var(--line-height-small)',
@@ -279,7 +285,7 @@ module.exports = {
           fontSmoothing: 'subpixel-antialiased',
         },
         '.font-body-small': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-regular)',
           fontSize: 'var(--font-size-small)',
           lineHeight: 'var(--line-height-small)',
@@ -287,7 +293,7 @@ module.exports = {
           fontSmoothing: 'antialiased',
         },
         '.font-title-section-title': {
-          fontFamily: 'var(--font-family-inter)',
+          fontFamily: APP_BUILDER_FONT,
           fontWeight: 'var(--font-weight-semi-bold)',
           fontSize: 'var(--font-size-small)',
           lineHeight: 'var(--line-height-small)',

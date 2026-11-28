@@ -75,8 +75,8 @@ describe('Inspector Additional Actions accordion for Calendar', () => {
     // General>Tooltip section renders alongside the modern pair).
     renderInspector();
 
-    expect(screen.getByText('Additional Actions')).toBeInTheDocument();
-    const accordionItem = screen.getByText('Additional Actions').closest('.accordion-item');
+    expect(screen.getByText('Additional actions')).toBeInTheDocument();
+    const accordionItem = screen.getByText('Additional actions').closest('.accordion-item');
     expect(within(accordionItem).getByTestId('inspector-element-visibility')).toBeInTheDocument();
     expect(within(accordionItem).getByTestId('inspector-element-tooltipFormat')).toBeInTheDocument();
     expect(within(accordionItem).getByTestId('inspector-element-tooltip')).toBeInTheDocument();

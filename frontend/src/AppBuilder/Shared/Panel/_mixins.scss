@@ -1,0 +1,47 @@
+// The editor chrome's one keyboard focus ring, the design-system Button's ring (components/ui/Button).
+// !important because legacy chrome rules draw their own :focus rings with !important.
+@mixin focus-ring {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--background-surface-layer-01), 0 0 0 4px var(--interactive-focus-outline) !important;
+}
+
+// One spec for the fields, rows and switches inside editor panels (UA-10, UA-11, UB-14..UB-17).
+// Mixins emit nothing until an editor selector includes them, so nothing outside the panels moves.
+
+// A panel search field: the bordered box, whether it is the input or the wrapper around its icon.
+@mixin panel-search-input {
+  box-sizing: border-box;
+  height: 32px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--background-surface-layer-01);
+}
+
+// A single-line input or select in a panel: its size and corner. The border stays the control's own,
+// so error and focus borders still show.
+@mixin panel-control {
+  box-sizing: border-box;
+  height: 32px;
+  border-radius: 8px;
+}
+
+// A list row in a panel (pages, queries, dependencies, code search, inspector).
+@mixin panel-row {
+  border-radius: 6px;
+}
+
+// An editor overlay (popover, menu, picker): the surface, a weak border, 8px corners, elevation 300.
+// !important because legacy popover rules paint their own surfaces with !important.
+@mixin panel-overlay-surface {
+  border: 1px solid var(--border-weak) !important;
+  border-radius: 8px !important;
+  background-color: var(--background-surface-layer-01) !important;
+  box-shadow: var(--elevation-300-box-shadow) !important;
+}
+
+// The design-system Switch size (components/ui/Switch): 28x16.
+@mixin panel-switch {
+  width: 28px;
+  height: 16px;
+  margin-top: 0;
+}

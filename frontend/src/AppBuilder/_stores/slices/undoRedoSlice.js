@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 enablePatches();
 
 const MAX_HISTORY_LENGTH = 100;
+const COMMAND_OP = 'command';
 
 export const createUndoRedoSlice = (set, get) => {
   const undoStack = [];
@@ -45,6 +46,8 @@ export const createUndoRedoSlice = (set, get) => {
     },
 
     processPatches: (rawPatches) => {
+      // Command entries (pushUndoRedoCommand) carry their own replay for state that isn't a component.
+      rawPatches?.forEach((patch) => patch?.op === COMMAND_OP && patch.run());
       const patches = filterAndFormatPatches(rawPatches);
       const componentIdsToDelete = [];
       const componentLayoutsToUpdate = {};
@@ -174,6 +177,35 @@ export const createUndoRedoSlice = (set, get) => {
       updateCanUndoRedo();
     },
 
+    /**
+     * Records an operation outside the component patch model (e.g. declared variables) as one undo
+     * step. `undo` and `redo` re-apply the before / after state themselves.
+     */
+    pushUndoRedoCommand: ({ undo, redo }) => {
+      redoStack.length = 0;
+      undoStack.push([[{ op: COMMAND_OP, run: undo }], [{ op: COMMAND_OP, run: redo }]]);
+      if (undoStack.length > MAX_HISTORY_LENGTH) {
+        undoStack.shift();
+      }
+      updateCanUndoRedo();
+    },
+
+    /**
+     * Puts back a command step whose replay failed (its save was rejected), so the builder can retry
+     * it: a failed undo returns to the undo stack, a failed redo to the redo stack. Undo and redo move
+     * the step before its asynchronous replay finishes, so the step is found by the `run` that failed.
+     */
+    returnUndoRedoCommand: (run) => {
+      // A moved step is stored as [the replay it now offers, the replay that just ran].
+      const justRan = (entry) => entry[1]?.some((patch) => patch?.op === COMMAND_OP && patch.run === run);
+      const [from, to] = redoStack.some(justRan) ? [redoStack, undoStack] : [undoStack, redoStack];
+      const index = from.findLastIndex(justRan);
+      if (index === -1) return;
+      const [entry] = from.splice(index, 1);
+      to.push([entry[1], entry[0]]);
+      updateCanUndoRedo();
+    },
+
     resetUndoRedoStack: () => {
       undoStack.length = 0;
       redoStack.length = 0;
@@ -204,6 +236,7 @@ const filterAndFormatPatches = (patches) => {
   const changeStack = [];
   patches?.map((patch) => {
     const { op, path, value } = patch;
+    if (op === COMMAND_OP || !path) return;
     const joinedPath = path.slice(0, 3).join('.');
     if (op === 'remove' && /^modules\.\w+\.pages$/.test(joinedPath)) {
       // componentIdsToDelete.push(path[path.length - 1]);

@@ -28,6 +28,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     customThemes: false,
     serverSideGlobalResolve: false,
     queryFolders: false,
+    queryResponseCache: false,
     scim: false,
     mfa: false,
     observability: false,

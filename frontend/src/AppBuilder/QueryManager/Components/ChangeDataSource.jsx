@@ -18,6 +18,7 @@ export const ChangeDataSource = ({ dataSources, onChange, value, isVersionReleas
 
   const select = (
     <Select
+      animateMenu
       className="w-100"
       options={dataSources.map((ds) => ({
         label: ds.is_dummy ? 'Undefined data source' : decodeEntities(ds.name),

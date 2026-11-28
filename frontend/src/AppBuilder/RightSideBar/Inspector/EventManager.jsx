@@ -4,7 +4,8 @@ import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 import { AlertTriangle, ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ToolTip } from '@/_components';
 import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
-import { ActionTypes } from './ActionTypes';
+import { ActionTypes, getAvailableActionTypes, getDisplayedActionId, getEventActionChanges } from './ActionTypes';
+import { canRefreshQueryCache } from '@/AppBuilder/_utils/queryResponseCache';
 import {
   mergeStaticAndDynamicActions,
   resolveLibraryComponentActions,
@@ -148,7 +149,13 @@ export const EventManager = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents), moduleId]);
 
-  let groupedOptions = ActionTypes.reduce((acc, action) => {
+  // Refresh Query Cache is offered only while a query of this module has caching on, with the license.
+  const refreshAvailable = useStore((state) =>
+    (state.dataQuery.queries.modules?.[moduleId] ?? []).some((query) => canRefreshQueryCache(state, query))
+  );
+  const actionIdOf = (event) => getDisplayedActionId(event, refreshAvailable);
+
+  let groupedOptions = getAvailableActionTypes(refreshAvailable).reduce((acc, action) => {
     const groupName = action.group;
 
     if (!acc[groupName]) {
@@ -633,10 +640,10 @@ export const EventManager = ({
               <FieldRow label={t('editor.inspector.eventManager.action', 'Action')} dataCy="action-label">
                 <div data-cy="action-selection">
                   <RocketSelect
-                    value={event.actionId}
+                    value={actionIdOf(event)}
                     onValueChange={(value) => {
                       dismissEventPopoverAutoOpen();
-                      handlerChanged(index, 'actionId', value);
+                      handlerChanged(index, getEventActionChanges(value));
                     }}
                     open={autoOpenActionSelect && index === focusedEventIndex ? true : undefined}
                     onOpenChange={(open) => {
@@ -1218,7 +1225,7 @@ export const EventManager = ({
             {({ innerRef, droppableProps, placeholder }) => (
               <div {...droppableProps} ref={innerRef}>
                 {events.map((event, index) => {
-                  const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
+                  const actionMeta = ActionTypes.find((action) => action.id === actionIdOf(event.event));
                   const goToAppValidation =
                     event.event.actionId === 'go-to-app'
                       ? isLinkedAppValid(event.event.correlationId, linkedAppsMap)
@@ -1381,7 +1388,7 @@ export const EventManager = ({
             variant="outline"
             size="default"
             leadingVisual={<Plus className="tw-h-4 tw-w-4" />}
-            className="tw-shadow-elevation-100 tw-mt-1"
+            className="tw-shadow-elevation-100 tw-mt-1 tw-border-border-default"
             data-cy="add-event-handler"
           >
             {t('editor.inspector.eventManager.addHandler', 'Add new event handler')}
@@ -1431,7 +1438,7 @@ export const EventManager = ({
           <EmptyMedia variant="icon">
             <MousePointerClick />
           </EmptyMedia>
-          <EmptyTitle>{t('editor.inspector.eventManager.emptyTitle', 'No events added yet.')}</EmptyTitle>
+          <EmptyTitle>{t('editor.inspector.eventManager.emptyTitle', 'No events added yet')}</EmptyTitle>
           <EmptyDescription>
             {t(
               'editor.inspector.eventManager.emptyDescription',

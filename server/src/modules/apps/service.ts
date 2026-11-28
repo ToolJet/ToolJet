@@ -73,6 +73,7 @@ import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Component } from '@entities/component.entity';
 import { Page } from '@entities/page.entity';
 import { FolderApp } from '@entities/folder_app.entity';
+import { decamelizeKeysKeepingVariableMaps } from '@helpers/variable-map-keys.helper';
 
 // App type → the UserPermissions bucket holding its folder's resolved access.
 // Add an entry here (not another ternary arm) when a new folder-owning app type is introduced.
@@ -161,7 +162,7 @@ export class AppsService implements IAppsService {
         },
       });
 
-      return decamelizeKeys(app);
+      return decamelizeKeysKeepingVariableMaps(app);
     });
   }
 
@@ -487,7 +488,7 @@ export class AppsService implements IAppsService {
       metadata: { updateParams: { app: appUpdateDto } },
     });
 
-    const response = decamelizeKeys(result);
+    const response = decamelizeKeysKeepingVariableMaps(result);
     return response;
   }
 
@@ -854,7 +855,7 @@ export class AppsService implements IAppsService {
     // Non-workflow apps store name/slug/icon/isPublic on app_versions; project them
     // onto the in-memory App so the JSON response carries the correct values.
     await this.appsUtilService.overlayAppMetadata(app, branchId);
-    const response = decamelizeKeys(app);
+    const response = decamelizeKeysKeepingVariableMaps(app);
 
     const dataQueriesForVersion = app.editingVersion
       ? await this.versionRepository.findDataQueriesForVersion(app.editingVersion.id)

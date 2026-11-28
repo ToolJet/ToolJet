@@ -514,6 +514,8 @@ export const startOpenTelemetry = async (): Promise<void> => {
     // Initialize audit log metrics
     const { initializeAuditLogMetrics } = await import('./audit-metrics');
     initializeAuditLogMetrics();
+    const { initializeQueryCacheMetrics } = await import('./query-cache-metrics');
+    initializeQueryCacheMetrics();
     // Start proactive cleanup interval
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
 

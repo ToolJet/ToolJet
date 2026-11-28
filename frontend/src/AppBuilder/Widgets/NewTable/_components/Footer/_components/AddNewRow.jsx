@@ -40,6 +40,9 @@ const FOCUSABLE_SELECTOR = 'input, textarea, [role="combobox"], [role="button"],
 
 const coreRowModel = getCoreRowModel();
 
+// The editor's right sidebar sits at z-index 1041; the dialog covers it, and its menus (1060) open above it.
+const DIALOG_LAYER_CLASS = 'tw-z-[1050]';
+
 export function AddNewRow({
   id,
   hideAddNewRowPopup,
@@ -433,8 +436,11 @@ export function AddNewRow({
           // a click on the backdrop must not throw away a half-filled form; Escape and Cancel still close it
           onInteractOutside={(event) => event.preventDefault()}
           onCloseAutoFocus={() => openerRef.current?.focus?.()}
+          // above the editor's right sidebar (z-index 1041), which the default z-50 leaves undimmed
+          overlayClassName={DIALOG_LAYER_CLASS}
           className={cn(
-            'tw-max-h-[min(80vh,720px)] tw-max-w-[500px] tw-overflow-hidden',
+            DIALOG_LAYER_CLASS,
+            'tj-widget-overlay tw-max-h-[min(80vh,720px)] tw-max-w-[500px] tw-overflow-hidden',
             darkMode && 'dark-theme theme-dark'
           )}
         >

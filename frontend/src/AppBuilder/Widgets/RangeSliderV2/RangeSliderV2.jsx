@@ -393,7 +393,10 @@ export const RangeSliderV2 = ({
                 step={stepSize || 1}
                 handleRender={(node, handleProps) => {
                   return (
-                    <OverlayTrigger placement="top" overlay={<Tooltip>{handleProps.value}</Tooltip>}>
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={<Tooltip className="tj-widget-overlay">{handleProps.value}</Tooltip>}
+                    >
                       {node}
                     </OverlayTrigger>
                   );
@@ -443,7 +446,11 @@ export const RangeSliderV2 = ({
                       // `undefined` leaves the overlay UNCONTROLLED so hover can open it;
                       show={handleProps.dragging || undefined}
                       placement="top"
-                      overlay={<Tooltip key={handleProps.value}>{handleProps.value}</Tooltip>}
+                      overlay={
+                        <Tooltip key={handleProps.value} className="tj-widget-overlay">
+                          {handleProps.value}
+                        </Tooltip>
+                      }
                     >
                       {node}
                     </OverlayTrigger>

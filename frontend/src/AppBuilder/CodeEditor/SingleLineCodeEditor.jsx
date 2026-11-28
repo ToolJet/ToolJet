@@ -19,8 +19,7 @@ import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 import { isInsideParent, resolveReferences } from './utils';
-import { okaidia } from '@uiw/codemirror-theme-okaidia';
-import { githubLight } from '@uiw/codemirror-theme-github';
+import { getCodeTheme } from './codeTheme';
 import { getAutocompletion, getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
@@ -235,7 +234,9 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
         paramName={paramName}
         isWorkspaceVariable={isWorkspaceVariable}
         errorStateActive={errorStateActive}
-        previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
+        previewPlacement={
+          restProps?.previewPlacement ?? (restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start')
+        }
         isPortalOpen={restProps?.portalProps?.isOpen}
         validationFn={validationFn}
         onAiSuggestionAccept={(newValue) => {
@@ -469,7 +470,7 @@ const EditorInput = ({
   };
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const theme = darkMode ? okaidia : githubLight;
+  const theme = getCodeTheme(darkMode);
 
   // when full screen editor is closed, show the preview box
   useEffect(() => {

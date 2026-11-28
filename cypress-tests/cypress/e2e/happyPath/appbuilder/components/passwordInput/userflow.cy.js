@@ -19,7 +19,6 @@ describe('Password Input — userflow facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PIUserflow-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Password Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // Happy path: a user types a number → the input reflects it.
