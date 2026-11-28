@@ -1,0 +1,210 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Dropbox datasource",
+  "description": "A schema defining Dropbox datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select operation",
+      "list": [
+        {
+          "name": "Get current account",
+          "value": "get_current_account"
+        },
+        {
+          "name": "List folder",
+          "value": "list_folder"
+        },
+        {
+          "name": "Get metadata",
+          "value": "get_metadata"
+        },
+        {
+          "name": "Create folder",
+          "value": "create_folder"
+        },
+        {
+          "name": "Move file/folder",
+          "value": "move"
+        },
+        {
+          "name": "Copy file/folder",
+          "value": "copy"
+        },
+        {
+          "name": "Delete file/folder",
+          "value": "delete"
+        },
+        {
+          "name": "Search files",
+          "value": "search"
+        },
+        {
+          "name": "Create shared link",
+          "value": "create_shared_link"
+        },
+        {
+          "name": "Upload file",
+          "value": "upload"
+        },
+        {
+          "name": "Download file",
+          "value": "download"
+        }
+      ]
+    },
+    "list_folder": {
+      "path": {
+        "label": "Path",
+        "key": "path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Dropbox folder path",
+        "placeholder": "/documents",
+        "height": "36px"
+      }
+    },
+    "create_folder": {
+      "path": {
+        "label": "Folder path",
+        "key": "path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/new-folder",
+        "height": "36px"
+      }
+    },
+
+    "move": {
+      "from_path": {
+        "label": "From path",
+        "key": "from_path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/old/file.txt",
+        "height": "36px"
+      },
+      "to_path": {
+        "label": "To path",
+        "key": "to_path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/new/file.txt",
+        "height": "36px"
+      }
+    },
+
+    "copy": {
+      "from_path": {
+        "label": "From path",
+        "key": "from_path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/source/file.txt",
+        "height": "36px"
+      },
+      "to_path": {
+        "label": "To path",
+        "key": "to_path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/copy/file.txt",
+        "height": "36px"
+      }
+    },
+
+    "delete": {
+      "path": {
+        "label": "Path",
+        "key": "path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/file.txt",
+        "height": "36px"
+      }
+    },
+
+    "search": {
+      "query": {
+        "label": "Search query",
+        "key": "query",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "invoice",
+        "height": "36px"
+      },
+      "path": {
+        "label": "Folder path (optional)",
+        "key": "path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/documents",
+        "height": "36px"
+      }
+    },
+
+    "create_shared_link": {
+      "path": {
+        "label": "Path",
+        "key": "path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/file.txt",
+        "height": "36px"
+      }
+    },
+    "get_metadata": {
+      "path": {
+        "label": "Path",
+        "key": "path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Dropbox file or folder path",
+        "placeholder": "/documents/file.pdf",
+        "height": "36px"
+      }
+    },
+    "upload": {
+      "path": {
+        "label": "Dropbox path",
+        "key": "path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/example.txt",
+        "height": "36px"
+      },
+      "file_content": {
+        "label": "File content",
+        "key": "file_content",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Hello from ToolJet",
+        "height": "100px"
+      },
+      "encoding": {
+        "label": "Encoding",
+        "key": "encoding",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "utf8 or base64",
+        "initialValue": "utf8",
+        "height": "36px"
+      }
+    },
+
+    "download": {
+      "path": {
+        "label": "Dropbox path",
+        "key": "path",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "/example.txt",
+        "height": "36px"
+      }
+    }
+  }
+}
