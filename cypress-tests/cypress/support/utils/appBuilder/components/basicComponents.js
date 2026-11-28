@@ -12,7 +12,6 @@ import {
   openEditorSidebar,
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
-import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 /**
  * MODULE — appBuilder/components/basicComponents: generic component lifecycle helpers.
@@ -38,7 +37,7 @@ export const verifyComponent = (widgetName) => {
 /**
  * @tjBlock  canvas
  * @tjUsage  verifyComponentinrightpannel('button')
- * @tjDom    ensures right-sidebar-components-button open, asserts widgetBox(<name>) visible
+ * @tjDom    ensures left-sidebar-components-button open, asserts widgetBox(<name>) visible
  */
 export const verifyComponentinrightpannel = (widgetName) => {
   cy.get("body")
@@ -48,7 +47,7 @@ export const verifyComponentinrightpannel = (widgetName) => {
         .is(":visible");
 
       if (!isSearchVisible) {
-        cy.get('[data-cy="right-sidebar-components-button"]').click();
+        cy.get('[data-cy="left-sidebar-components-button"]').click();
         cy.wait(500);
       }
     })
@@ -112,6 +111,5 @@ export const verifyComponentWithOutLabel = (
   verifyComponent(fakeName);
 
   cy.go("back");
-  resizeQueryPanel(0);
   deleteComponentAndVerify(fakeName);
 };

@@ -1,62 +1,44 @@
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import React, { forwardRef, useState } from 'react';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
-import { useTranslation } from 'react-i18next';
+import React, { forwardRef } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import { generateCypressDataCy } from '../../../modules/common/helpers/cypressHelpers';
+import { ToolTip } from '@/_components/ToolTip';
+import { SIDEBAR_ITEMS } from '@/AppBuilder/panelLayout';
 
-// TODO: remove refs and related dependancies
+// A left rail item. `panel` keys its entry in SIDEBAR_ITEMS: the accessible name is the panel's name,
+// the short label sits under the icon, and when the label is shorter than the name a tooltip shows
+// the name. `tip` replaces that tooltip, e.g. to say why the item is disabled or what it needs.
 export const SidebarItem = forwardRef(
   (
     {
-      tip = '',
-      // The button's accessible name when the tip is not plain text (a heading and a line): otherwise its name read
-      // "[object Object]".
-      label,
+      panel,
+      tip,
+      disabled,
       selectedSidebarItem,
       className,
-      icon,
-      IconComponent,
-      iconFill = 'var(--icon-strong)',
       commentBadge,
-      text,
       onClick,
       badge = false,
       count,
       children,
-      keepTooltipOpen,
-      classes,
-      trigger = ['hover', 'focus'],
-      show = undefined,
       ...rest
     },
     ref
   ) => {
-    const { t } = useTranslation();
-    // Shown on hover and focus, and put away on click: the panel the click opens sits under it, and the tip stayed
-    // over the AI chat's header until the pointer moved (QA 2026-11-05).
-    const [tipOpen, setTipOpen] = useState(false);
-    const accessibleName = typeof tip === 'string' && tip ? tip : label;
-    let displayIcon = icon;
-    if (icon == 'page') displayIcon = 'file01';
-    const content = (
+    const { name, label, cy } = SIDEBAR_ITEMS[panel];
+    const button = (
       <Button
         {...rest}
-        className={`${className} ${
-          selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
-        } ${icon}-icon`}
-        onClick={(event) => {
-          setTipOpen(false);
-          onClick?.(event);
-        }}
+        className={`${className} ${selectedSidebarItem === panel && 'sidebar-item--active'} ${panel}-icon`}
+        // aria-disabled, not native disabled: a disabled button fires no hover or focus events, and its tooltip
+        // says why it is disabled (as page menu rows do, PG-31).
+        aria-disabled={disabled ? true : rest['aria-disabled']}
+        onClick={disabled ? undefined : onClick}
         ref={ref}
         type="button"
-        aria-label={accessibleName || undefined}
+        aria-label={name}
         variant="ghost"
         size="default"
         iconOnly
-        data-cy={`left-sidebar-${generateCypressDataCy(typeof tip === 'object' ? icon : tip) || 'unknown'}-button`}
+        data-cy={`left-sidebar-${cy}-button`}
       >
         {children && (
           <div className={'sidebar-svg-icon  position-relative'}>
@@ -65,26 +47,15 @@ export const SidebarItem = forwardRef(
           </div>
         )}
         {badge && <SidebarItem.Badge count={count} />}
-        <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
+        <span className="left-sidebar-item-label">{label}</span>
       </Button>
     );
 
-    if (!tip) return content;
+    if (!tip && label === name) return button;
     return (
-      <OverlayTrigger
-        trigger={trigger}
-        placement="right"
-        delay={{ show: 250, hide: 200 }}
-        overlay={
-          <Tooltip id="button-tooltip" className={classes?.tooltip}>
-            {typeof tip === 'string' ? t(`leftSidebar.${tip}.tip`, tip) : tip}
-          </Tooltip>
-        }
-        show={show ?? tipOpen}
-        onToggle={(next) => setTipOpen(next)}
-      >
-        {content}
-      </OverlayTrigger>
+      <ToolTip message={tip ?? name} placement="right">
+        {button}
+      </ToolTip>
     );
   }
 );

@@ -330,6 +330,7 @@ export const DropDown = function DropDown({
             onInputChange={onSearchTextChange}
             onFocus={(event) => onComponentClick(id)}
             menuPortalTarget={document.body}
+            classNames={{ menuPortal: () => 'tj-widget-overlay' }}
             placeholder={placeholder}
           />
         </div>

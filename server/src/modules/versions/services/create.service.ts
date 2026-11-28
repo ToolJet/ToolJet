@@ -93,6 +93,24 @@ export class VersionsCreateService implements IVersionsCreateService {
         await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
       }
 
+      // All pages' component ids must exist before rewriting cross-page variable references.
+      const copiedPages = await manager.find(Page, {
+        where: { appVersionId: appVersion.id },
+        select: ['id', 'variables'],
+      });
+      const variableReferenceMapping = { ...oldDataQueryToNewMapping, ...oldComponentToNewComponentMapping };
+      for (const page of copiedPages) {
+        if (page.variables && Object.keys(page.variables).length > 0) {
+          await manager.update(
+            Page,
+            { id: page.id },
+            {
+              variables: updateEntityReferences(page.variables, variableReferenceMapping),
+            }
+          );
+        }
+      }
+
       await this.updateEventActionsForNewVersionWithNewMappingIds(
         manager,
         appVersion.id,
@@ -493,6 +511,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           hidden: page.hidden,
           pageHeader: page.pageHeader,
           pageFooter: page.pageFooter,
+          variables: page.variables,
           icon: page.icon,
           type: page.type,
           openIn: page.openIn,
@@ -729,6 +748,7 @@ export class VersionsCreateService implements IVersionsCreateService {
 
       if (
         eventDefinition?.actionId === 'run-query' ||
+        eventDefinition?.actionId === 'refresh-query-cache' ||
         eventDefinition?.actionId === 'reset-query' ||
         eventDefinition?.actionId === 'abort-query'
       ) {

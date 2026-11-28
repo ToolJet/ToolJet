@@ -92,6 +92,8 @@ describe('QueryConfirmPopup in a compare frame', () => {
     await user.click(screen.getByRole('button', { name: 'Yes' }));
 
     expect(queued()).toEqual([]);
+    // An ordinary run queued without run options resumes as one: no callbacks and no run options.
+    expect(runQuery).toHaveBeenCalledTimes(1);
     expect(runQuery).toHaveBeenCalledWith(
       'q1',
       'loadOrders',
@@ -102,7 +104,9 @@ describe('QueryConfirmPopup in a compare frame', () => {
       undefined,
       undefined,
       false,
-      'canvas'
+      'canvas',
+      undefined,
+      undefined
     );
   });
 

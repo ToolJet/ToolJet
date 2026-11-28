@@ -29,17 +29,16 @@ const dataTransfer = () => ({ setData() {}, getData() {}, setDragImage() {}, typ
 describe('dragging a custom component card', () => {
   beforeEach(() => {
     useCustomComponentLibrariesStore.setState({ libraries: [library], loadFailed: false });
-    act(() => useStore.setState({ isRightSidebarOpen: true, isRightSidebarPinned: false }));
+    act(() => useStore.setState({ isRightSidebarOpen: false, isRightSidebarPinned: false }));
   });
 
   afterEach(() => {
     act(() => useCustomComponentLibrariesStore.setState({ libraries: null, loadFailed: false }));
   });
 
-  it('[CustomComponentsTab-DRAG-001] keeps the unpinned component panel open while a card is dragged', () => {
-    // Break this catches: closing the panel when a drag starts. The panel unmounts with it, taking the
-    // dragged card out of the DOM, so the browser never fires dragend and react-dnd only finishes the drop
-    // on the next mouse move — the drop lands late, after the user nudges the cursor.
+  it('[CustomComponentsTab-DRAG-001] leaves the right panel closed while a card is dragged', () => {
+    // Break this catches: a drag start opening the right (properties) panel before anything has landed. The
+    // palette lives in the left panel, so the right panel has nothing to show until the drop (PR #19054).
     render(
       <DndProvider backend={HTML5Backend}>
         <CustomComponentsTab />
@@ -51,6 +50,6 @@ describe('dragging a custom component card', () => {
       fireEvent.dragStart(card, { dataTransfer: dataTransfer() });
     });
 
-    expect(useStore.getState().isRightSidebarOpen).toBe(true);
+    expect(useStore.getState().isRightSidebarOpen).toBe(false);
   });
 });

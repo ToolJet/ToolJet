@@ -23,7 +23,7 @@ describe('seedOrgEnvironmentsAndDefaultBranch', () => {
 
   beforeAll(async () => {
     ({ app } = await initTestApp());
-  });
+  }, 60_000);
 
   afterAll(async () => {
     await closeTestApp(app);

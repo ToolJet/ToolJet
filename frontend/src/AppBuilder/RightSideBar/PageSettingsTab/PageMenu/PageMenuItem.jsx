@@ -14,10 +14,10 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Overlay, Popover } from 'react-bootstrap';
 import PageOptions from './PageOptions';
-import { AddEditPagePopup } from './AddNewPagePopup';
 import { ToolTip } from '@/_components';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 export const PAGE_TYPES = {
   default: '',
@@ -32,7 +32,7 @@ export const PageMenuItem = withRouter(
     const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
     const isHomePage = page.id === homePageId;
     const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
-    const isSelected = page.id === currentPageId;
+    const isCurrentPage = page.id === currentPageId;
     const isHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id));
     const isDisabled = page?.disabled ?? false;
     const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
@@ -44,9 +44,7 @@ export const PageMenuItem = withRouter(
     const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
     const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
     const setEditingPage = useStore((state) => state.setEditingPage);
-    const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
     const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
-    const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
     const clonePage = useStore((state) => state.clonePage);
     const markAsHomePage = useStore((state) => state.markAsHomePage);
     const restricted = page?.permissions && page?.permissions?.length > 0;
@@ -57,17 +55,13 @@ export const PageMenuItem = withRouter(
     const editingPage = useStore((state) => state.editingPage);
     const editingPageName = useStore((state) => state.showEditPageNameInput);
     const switchPageWrapper = useStore((state) => state.switchPageWrapper);
+    const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+    const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
     const [showPageOptions, toggleShowPageOptions] = useState(false);
-    const [showEditPopover, setShowEditPopover] = useState(false);
-    const [nestedPopoverOpen, setNestedPopoverOpen] = useState(false);
 
-    const openPageEditPopover = useStore((state) => state.openPageEditPopover);
     const toggleEditPageNameInput = useStore((state) => state.toggleEditPageNameInput);
 
-    const optionBtnRef = useRef(null);
     const moreBtnRef = useRef(null);
-
-    const isEditingPage = editingPage?.id === page?.id;
 
     const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
@@ -91,7 +85,7 @@ export const PageMenuItem = withRouter(
       };
 
       switch (true) {
-        case isSelected: {
+        case isCurrentPage: {
           return {
             ...baseStyles,
             text: {
@@ -132,7 +126,7 @@ export const PageMenuItem = withRouter(
           };
         }
       }
-    }, [styles, isSelected, isHovered, page.id, editingPage?.id]);
+    }, [styles, isCurrentPage, isHovered, page.id, editingPage?.id]);
 
     const computedStyles = computeStyles();
 
@@ -145,12 +139,29 @@ export const PageMenuItem = withRouter(
       [switchPageWrapper, page, currentPageId, moduleId]
     );
 
-    const handleOpenPopup = (type, page) => {
-      setEditingPage(page);
-      toggleShowPageOptions(false);
-      setShowEditPopover(true);
-      setNewPagePopupConfig({ type, mode: 'edit' });
-    };
+    // Selecting a row opens its configuration. Only a page also switches the canvas: a nav item's switch is
+    // its runtime action (open the URL, leave for another app, fire its events).
+    const handleRowClick = useCallback(
+      (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if ((page?.type || 'default') === 'default') switchPageWrapper(page, currentPageId, moduleId);
+        setEditingPage(page);
+        setNewPagePopupConfig({ show: true, mode: 'edit', type: page?.type || 'default' });
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
+        setRightSidebarOpen(true);
+      },
+      [
+        switchPageWrapper,
+        page,
+        currentPageId,
+        moduleId,
+        setEditingPage,
+        setNewPagePopupConfig,
+        setActiveRightSideBarTab,
+        setRightSidebarOpen,
+      ]
+    );
 
     function getTooltip() {
       const permission = page?.permissions?.length ? page?.permissions[0] : null;
@@ -184,7 +195,6 @@ export const PageMenuItem = withRouter(
 
     return (
       <div
-        ref={optionBtnRef}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
@@ -192,18 +202,14 @@ export const PageMenuItem = withRouter(
         }}
       >
         <div
-          className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
-            (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
-          }`}
+          className={cx('page-menu-item', { 'dark-theme theme-dark': darkMode, 'is-selected': isCurrentPage })}
+          aria-current={isCurrentPage ? 'page' : undefined}
           data-page-id={page?.id}
           style={{
             position: 'relative',
             width: '100%',
           }}
-          onClick={(e) => {
-            e.preventDefault();
-            handleOpenPopup(page?.type || 'page', page);
-          }}
+          onClick={handleRowClick}
         >
           <div className="left" data-cy={`pages-name-${generateCypressDataCy(page?.name)}`}>
             <div className="main-page-icon-wrapper">{icon()}</div>
@@ -263,7 +269,7 @@ export const PageMenuItem = withRouter(
             {!shouldFreeze && (
               <div
                 className={cx('action-btn-wrapper', {
-                  'options-opened': showPageOptions && editingPage?.id == page?.id,
+                  'options-opened': showPageOptions,
                 })}
               >
                 <div onClick={handlePageSwitch} className="icon-btn">
@@ -278,10 +284,7 @@ export const PageMenuItem = withRouter(
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    setEditingPage(page);
                     toggleShowPageOptions(true);
-                    setNewPagePopupConfig({ show: false, mode: null, type: null });
-                    setShowEditPopover(false);
                   }}
                   className="icon-btn"
                 >
@@ -290,7 +293,7 @@ export const PageMenuItem = withRouter(
 
                 <Overlay
                   target={moreBtnRef.current}
-                  show={showPageOptions && isEditingPage}
+                  show={showPageOptions}
                   placement="bottom-end"
                   rootClose
                   transition={false}
@@ -302,28 +305,17 @@ export const PageMenuItem = withRouter(
                       },
                     },
                   ]}
-                  onHide={() => {
-                    setEditingPage(null);
-                    toggleShowPageOptions(false);
-                  }}
+                  onHide={() => toggleShowPageOptions(false)}
                 >
                   <Popover
                     style={{ zIndex: '99999', position: 'absolute' }}
                     id="edit-page-popover"
                     className={`${darkMode && 'dark-theme theme-dark'}`}
                   >
-                    <div className="menu-options mb-0">
-                      <PageOptions
-                        text="Edit page details"
-                        icon="editable"
-                        darkMode={darkMode}
-                        onClick={(e) => {
-                          handleOpenPopup(page?.type || 'page', page);
-                        }}
-                      />
+                    <div className="list-item-popover-body">
                       {page?.type === 'default' && (
                         <PageOptions
-                          text="Mark home"
+                          text="Mark as home"
                           icon="home"
                           darkMode={darkMode}
                           disabled={isHomePage}
@@ -358,59 +350,18 @@ export const PageMenuItem = withRouter(
                           </ToolTip>
                         }
                         icon="trash"
+                        danger
                         darkMode={darkMode}
                         disabled={isHomePage}
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
                           toggleShowPageOptions(false);
-                          openPageEditPopover(page);
-                          toggleDeleteConfirmationModal(true);
-                        }}
-                      />
-                      <PageOptions
-                        text={
-                          <ToolTip
-                            message={
-                              "You don't have access to page permissions. Upgrade your plan to access this feature."
-                            }
-                            placement="auto"
-                            show={!hasAppPermissionPages}
-                            tooltipClassName="!tw-z-[100000] page-paid-tooltip"
-                          >
-                            <div className="d-flex align-items-center enterprise-feature">
-                              <div>Page permission</div>
-                              {!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}
-                            </div>
-                          </ToolTip>
-                        }
-                        icon="lock"
-                        darkMode={darkMode}
-                        disabled={!hasAppPermissionPages}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          toggleShowPageOptions(false);
-                          togglePagePermissionModal(true);
+                          toggleDeleteConfirmationModal(true, page);
                         }}
                       />
                     </div>
                   </Popover>
-                </Overlay>
-
-                <Overlay
-                  target={optionBtnRef.current}
-                  show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditingPage}
-                  placement="left-start"
-                  rootClose={!nestedPopoverOpen}
-                  onHide={() => {
-                    setEditingPage(null);
-                    setNewPagePopupConfig({ show: false, mode: null, type: null });
-                    toggleShowPageOptions(false);
-                    setShowEditPopover(false);
-                  }}
-                >
-                  <AddEditPagePopup darkMode={darkMode} onNestedPopoverOpenChange={setNestedPopoverOpen} />
                 </Overlay>
               </div>
             )}

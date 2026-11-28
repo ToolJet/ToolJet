@@ -187,6 +187,11 @@ export type EntityDeleteDialogProps = {
   onCancel?: () => void;
   onConfirm?: () => void;
   darkMode?: boolean;
+  /** Replaces the dependents line for callers that don't compute blockers (pages). */
+  subtitle?: string;
+  /** Hooks for callers whose existing specs click these buttons (page delete: modal-*-button). */
+  cancelDataCy?: string;
+  confirmDataCy?: string;
 };
 
 /**
@@ -206,8 +211,13 @@ export const EntityDeleteDialog = ({
   onCancel,
   onConfirm,
   darkMode = false,
+  subtitle: subtitleOverride,
+  cancelDataCy = 'entity-delete-cancel',
+  confirmDataCy = 'entity-delete-confirm',
 }: EntityDeleteDialogProps) => {
-  const { blocked, title, subtitle } = buildDeleteDialogCopy({ entityLabel, subjects, blockers });
+  const copy = buildDeleteDialogCopy({ entityLabel, subjects, blockers });
+  const { blocked, title } = copy;
+  const subtitle = subtitleOverride ?? copy.subtitle;
   // A lone card is always open — there is nothing to compare it against. With several,
   // everything starts collapsed so the subject names stay scannable.
   const collapsible = blockers.length > 1;
@@ -240,7 +250,7 @@ export const EntityDeleteDialog = ({
           </div>
         )}
         <div className="entity-delete-heading">
-          <div className="entity-delete-title" data-cy="entity-delete-title">
+          <div className="entity-delete-title" role="heading" aria-level={2} data-cy="entity-delete-title">
             {title}
           </div>
           <div className="entity-delete-subtitle" data-cy="entity-delete-subtitle">
@@ -277,10 +287,10 @@ export const EntityDeleteDialog = ({
           </ButtonSolid>
         ) : (
           <>
-            <ButtonSolid size="sm" variant="tertiary" onClick={onCancel} data-cy="entity-delete-cancel">
+            <ButtonSolid size="sm" variant="tertiary" onClick={onCancel} data-cy={cancelDataCy}>
               Cancel
             </ButtonSolid>
-            <ButtonSolid size="sm" variant="dangerPrimary" onClick={onConfirm} data-cy="entity-delete-confirm">
+            <ButtonSolid size="sm" variant="dangerPrimary" onClick={onConfirm} data-cy={confirmDataCy}>
               <SolidIcon name="trash" width="14" fill="#fff" />
               Delete
             </ButtonSolid>

@@ -151,6 +151,7 @@ export enum LICENSE_FIELD {
   OBSERVABILITY_ENABLED = 'observabilityEnabled',
   MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
   QUERY_FOLDERS = 'queryFoldersEnabled',
+  QUERY_RESPONSE_CACHE = 'queryResponseCacheEnabled',
   PUBLIC_APP = 'publicAppEnabled',
   AUTOMATIC_SSO_LOGIN = 'automaticSsoLoginEnabled',
   RELEASE = 'releaseEnabled',

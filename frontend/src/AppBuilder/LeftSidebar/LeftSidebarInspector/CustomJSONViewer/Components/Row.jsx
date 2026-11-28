@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Copy, Link2 } from 'lucide-react';
 import StringNode from './StringNode';
 import FunctionNode from './FunctionNode';
 import NumberNode from './NumberNode';
@@ -9,8 +10,7 @@ import ObjectNode from './ObjectNode';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ToolTip } from '@/_components/ToolTip';
-import { DefaultCopyIcon } from '../../DefaultCopyIcon';
-import { copyToClipboard, extractComponentName, formatPathForCopy } from '../../utils';
+import { appendPathSegment, copyToClipboard, formatPathForCopy } from '../../utils';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
@@ -30,11 +30,14 @@ const renderNodeIcons = (node, iconsList, darkMode) => {
   return null;
 };
 
-const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => {
+const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, showPathCopy = true }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const Node = () => {
     if (typeof value === 'string') {
       return <StringNode value={value} />;
+    } else if (value instanceof Date) {
+      // As Copy value gives it (JSON), not an empty object.
+      return <StringNode value={Number.isNaN(value.getTime()) ? 'Invalid Date' : value.toISOString()} />;
     } else if (typeof value === 'undefined' || value === null) {
       return <NullNode value={value} />;
     } else if (typeof value === 'number') {
@@ -50,8 +53,14 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
     }
   };
 
-  const isObject = typeof value === 'object' && !Array.isArray(value) && value !== null;
-  const isArray = Array.isArray(value);
+  // Empty objects and arrays have nothing to expand, so they get no caret (DB-11b).
+  const isObject =
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value !== null &&
+    !(value instanceof Date) &&
+    Object.keys(value).length > 0;
+  const isArray = Array.isArray(value) && value.length > 0;
 
   return (
     <div style={{ marginLeft: `${level === 1 ? '0px' : '0.5rem'}` }}>
@@ -93,26 +102,34 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
             <Node />
           </div>
           <div className="json-viewer-actions-container">
-            <ToolTip message={'Copy path'}>
-              <span
-                onClick={() => {
-                  const formattedPath = formatPathForCopy(absolutePath);
-                  copyToClipboard(formattedPath, false);
-                }}
-                className="copy-to-clipboard json-viewer-action-icon"
-              >
-                <DefaultCopyIcon height={12} width={12} />
-              </span>
-            </ToolTip>
+            {showPathCopy && (
+              <ToolTip message={'Copy path'}>
+                <button
+                  type="button"
+                  aria-label={`Copy path of ${label}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    copyToClipboard(formatPathForCopy(absolutePath), false);
+                  }}
+                  className="copy-to-clipboard json-viewer-action-icon"
+                  data-cy="copy-path-to-clipboard"
+                >
+                  <Link2 size={12} />
+                </button>
+              </ToolTip>
+            )}
             <ToolTip message={'Copy value'}>
-              <span
-                onClick={() => {
+              <button
+                type="button"
+                aria-label={`Copy value of ${label}`}
+                onClick={(event) => {
+                  event.stopPropagation();
                   copyToClipboard(value);
                 }}
                 className="json-viewer-action-icon"
               >
-                <SolidIcon width="12" height="12" name="copy" fill="#6A727C" />
-              </span>
+                <Copy size={12} />
+              </button>
             </ToolTip>
           </div>
         </div>
@@ -125,9 +142,10 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
               label={key}
               value={val}
               level={level + 1}
-              absolutePath={`${absolutePath}.${key}`}
+              absolutePath={appendPathSegment(absolutePath, key)}
               iconsList={iconsList}
               darkMode={darkMode}
+              showPathCopy={showPathCopy}
             />
           ))}
         </div>
@@ -141,9 +159,10 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
                 label={`${index}`}
                 value={item}
                 level={level + 1}
-                absolutePath={`${absolutePath}.${index}`}
+                absolutePath={appendPathSegment(absolutePath, index)}
                 iconsList={iconsList}
                 darkMode={darkMode}
+                showPathCopy={showPathCopy}
               />
             );
           })}

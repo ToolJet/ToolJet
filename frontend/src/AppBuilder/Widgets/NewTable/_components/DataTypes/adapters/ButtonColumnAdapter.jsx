@@ -113,7 +113,11 @@ export const ButtonColumn = ({
 
   if (hasTooltip) {
     return (
-      <OverlayTrigger placement="auto" delay={{ show: 500, hide: 0 }} overlay={<Tooltip>{tooltip}</Tooltip>}>
+      <OverlayTrigger
+        placement="auto"
+        delay={{ show: 500, hide: 0 }}
+        overlay={<Tooltip className="tj-widget-overlay">{tooltip}</Tooltip>}
+      >
         <div style={{ display: 'flex' }}>{buttonElement}</div>
       </OverlayTrigger>
     );

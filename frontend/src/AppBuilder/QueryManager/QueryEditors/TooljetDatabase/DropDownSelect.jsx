@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import SelectBox from './SelectBox';
 import cx from 'classnames';
 import useShowPopover from '@/_hooks/useShowPopover';
-import { Badge, OverlayTrigger, Popover } from 'react-bootstrap';
+import { Badge, Fade, OverlayTrigger, Popover } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { ToolTip } from '@/_components/ToolTip';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
+import { getQueryPopoverMotion } from '@/AppBuilder/panelLayout';
 
 const DropDownSelect = ({
   darkMode,
@@ -69,6 +70,10 @@ const DropDownSelect = ({
   placeholder = '',
   dataCy = 'show-ds-popover-button',
 }) => {
+  // Workflow TJDB nodes reuse this select; only the App Builder (body.app-builder-chrome) animates it.
+  const dropdownMotion = document.body.classList.contains('app-builder-chrome')
+    ? getQueryPopoverMotion('dropdown')
+    : { className: '', transition: false };
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
   const [showMenu, setShowMenu] = useShowPopover(
@@ -190,6 +195,7 @@ const DropDownSelect = ({
   return (
     <OverlayTrigger
       show={showMenu && !disabled}
+      transition={dropdownMotion.transition ? Fade : false}
       placement={checkElementPosition()}
       overlay={
         <Popover
@@ -197,7 +203,7 @@ const DropDownSelect = ({
           id={popoverId.current}
           className={`${
             darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
-          } tjdb-workflow-query-editor-popover-index`}
+          } tjdb-workflow-query-editor-popover-index ${dropdownMotion.className}`}
           style={{
             width: isForeignKeyInEditCell
               ? '300px'
@@ -311,7 +317,10 @@ const DropDownSelect = ({
           </p>
         </div>
       ) : (
-        <div className={`col-auto ${buttonClasses} h-100`} id={popoverBtnId.current}>
+        <div
+          className={cx('col-auto h-100 query-dropdown-control', buttonClasses, { 'is-open': showMenu })}
+          id={popoverBtnId.current}
+        >
           <ButtonSolid
             size="sm"
             variant="tertiary"
@@ -365,7 +374,14 @@ const DropDownSelect = ({
                       selected?.label
                     )
                   ) : showPlaceHolder ? (
-                    <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
+                    <span
+                      style={{
+                        color: 'var(--tdb-select-placeholder, #9e9e9e)',
+                        fontSize: '12px',
+                        fontWeight: '400',
+                        lineHeight: '20px',
+                      }}
+                    >
                       {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer
                         ? topPlaceHolder
                         : placeholder

@@ -4,6 +4,7 @@ import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
 import { TableColumnContext } from './TableColumnContext';
 import { Button } from '@/components/ui/Button/Button';
+import PanelIconButton from '@/AppBuilder/Shared/Panel/PanelIconButton';
 import { useButtonManager } from '../hooks/useButtonManager';
 
 export const ColumnPopoverContent = ({
@@ -101,11 +102,10 @@ export const ColumnPopoverContent = ({
         <div className="d-flex align-items-center justify-content-between">
           <div className="d-flex custom-gap-6 flex-row items-center justify-start">
             {isButtonDetailView && (
-              <Button
-                variant="ghost"
+              <PanelIconButton
+                label="Back"
                 size="medium"
-                iconOnly={true}
-                isLucid={true}
+                isLucid
                 trailingIcon="arrow-left"
                 onClick={() => {
                   setSelectedButtonId(null);

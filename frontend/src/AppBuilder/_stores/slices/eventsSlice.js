@@ -16,6 +16,7 @@ import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { useCallback } from 'react';
 import moment from 'moment';
+import { normalizeEventAction } from '@/AppBuilder/RightSideBar/Inspector/ActionTypes';
 
 // To unsubscribe from the changes when no longer needed
 // unsubscribe();
@@ -165,7 +166,10 @@ export const createEventsSlice = (set, get) => ({
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
       try {
-        const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
+        const response = await get().trackAppSave(
+          () => appVersionService.createAppVersionEventHandler(appId, versionId, event),
+          moduleId
+        );
         get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
         get().eventsSlice.addEvent(response, moduleId);
         return response;
@@ -183,7 +187,10 @@ export const createEventsSlice = (set, get) => ({
       const versionId = get().currentVersionId;
 
       try {
-        const response = await appVersionService.bulkCreateAppVersionEventHandlers(appId, versionId, events);
+        const response = await get().trackAppSave(
+          () => appVersionService.bulkCreateAppVersionEventHandlers(appId, versionId, events),
+          moduleId
+        );
         get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
 
         // Add all created events to the store
@@ -202,7 +209,10 @@ export const createEventsSlice = (set, get) => ({
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
       get().eventsSlice.updateEventsField('eventToDeleteLoaderIndex', index, moduleId);
-      const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
+      const response = await get().trackAppSave(
+        () => appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId),
+        moduleId
+      );
       get().eventsSlice.updateEventsField('eventToDeleteLoaderIndex', null, moduleId);
       if (response?.affected === 1) {
         get().eventsSlice.removeEvent(eventId, moduleId);
@@ -222,7 +232,10 @@ export const createEventsSlice = (set, get) => ({
       const versionId = get().currentVersionId;
       const newEvents = replaceQueryOptionsEntityReferencesWithIds(events, componentNameIdMapping, queryNameIdMapping);
       try {
-        const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType);
+        const response = await get().trackAppSave(
+          () => appVersionService.saveAppVersionEventHandlers(appId, versionId, newEvents, updateType),
+          moduleId
+        );
         set((state) => {
           const eventsInState = state.eventsSlice.getModuleEvents(moduleId);
           const newEvents = eventsInState.map((event) => {
@@ -575,7 +588,8 @@ export const createEventsSlice = (set, get) => ({
     },
     executeAction: debounce(
       (eventObj, mode, customVariables = {}, moduleId = 'canvas', sourceSubContainerIndex = null) => {
-        const { event = eventObj } = eventObj;
+        const { event: rawEvent = eventObj } = eventObj;
+        const event = normalizeEventAction(rawEvent);
         const { getExposedValueOfComponent, getResolvedValue } = get();
 
         if (event?.disabled) {
@@ -647,7 +661,7 @@ export const createEventsSlice = (set, get) => ({
             }
             case 'run-query': {
               try {
-                const { queryId, queryName, component, eventId, callbackFns } = event;
+                const { queryId, queryName, component, eventId, callbackFns, refreshCache } = event;
                 const params = event['parameters'];
                 if (!queryId && !queryName) {
                   throw new Error('No query selected');
@@ -686,7 +700,8 @@ export const createEventsSlice = (set, get) => ({
                   false,
                   false,
                   updatedModuleId,
-                  callbackFns
+                  callbackFns,
+                  refreshCache === true ? { refreshCache: true } : undefined
                 );
               } catch (error) {
                 get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {
@@ -1176,7 +1191,7 @@ export const createEventsSlice = (set, get) => ({
       const { executeAction } = eventsSlice;
       const currentComponents = Object.entries(getCurrentPageComponents(moduleId));
 
-      const runQuery = (queryName = '', parameters, moduleId = 'canvas', callbackFns) => {
+      const runQuery = (queryName = '', parameters, moduleId = 'canvas', callbackFns, runOptions) => {
         const query = dataQuery.queries.modules[moduleId].find((query) => {
           const isFound = query.name === queryName;
           if (isPreview) {
@@ -1209,6 +1224,7 @@ export const createEventsSlice = (set, get) => ({
           queryName: query.name,
           parameters: processedParams,
           callbackFns,
+          refreshCache: runOptions?.refreshCache === true,
         };
 
         return executeAction(event, mode, {}, moduleId);

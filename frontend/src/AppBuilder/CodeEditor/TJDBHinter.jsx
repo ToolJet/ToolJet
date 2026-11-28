@@ -2,8 +2,7 @@
 import React, { useEffect, useLayoutEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
-import { okaidia } from '@uiw/codemirror-theme-okaidia';
-import { githubLight } from '@uiw/codemirror-theme-github';
+import { getCodeTheme } from './codeTheme';
 
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
@@ -46,7 +45,7 @@ const TJDBCodeEditor = (props) => {
   const [errorState, setErrorState] = React.useState(false);
   const [error, setError] = React.useState(null);
 
-  const theme = darkMode ? okaidia : githubLight;
+  const theme = getCodeTheme(darkMode);
   const langExtention = langSupport[lang] ?? null;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

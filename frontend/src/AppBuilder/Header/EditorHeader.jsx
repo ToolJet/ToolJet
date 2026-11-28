@@ -92,15 +92,15 @@ export const EditorHeader = ({ darkMode, appType }) => {
         <div className="container-xl header-container" data-cy="editor-header-section">
           <div className="d-flex w-100 tw-h-9  tw-justify-between">
             <div
-              className="header-inner-wrapper d-flex"
+              className="header-inner-wrapper d-flex tw-min-w-0"
               style={{
                 width: 'calc(100% - 348px)',
                 background: '',
               }}
             >
-              <div className="d-flex align-items-center">
+              <div className="d-flex align-items-center tw-min-w-0">
                 <div
-                  className="p-0 m-0 d-flex align-items-center"
+                  className="p-0 m-0 d-flex align-items-center tw-min-w-0"
                   style={{
                     padding: '0px',
                     width: '100%',
@@ -111,7 +111,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                     <h1 className="navbar-brand d-none-navbar-horizontal p-0 tw-shrink-0" data-cy="editor-page-logo">
                       <LogoNavDropdown darkMode={darkMode} type={appType} />
                     </h1>
-                    <div className={cx('d-flex flex-row tw-mr-1', headerLockClass)}>
+                    <div className={cx('d-flex flex-row tw-mr-1 tw-min-w-0', headerLockClass)}>
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
@@ -134,17 +134,19 @@ export const EditorHeader = ({ darkMode, appType }) => {
               </div>
             </div>
 
-            <div className={headerLockClass} aria-disabled={isGitSyncLicenseLocked || undefined}>
+            <div
+              className={cx('d-flex align-items-center', headerLockClass)}
+              aria-disabled={isGitSyncLicenseLocked || undefined}
+            >
               <HeaderActions darkMode={darkMode} />
             </div>
 
             <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
-              <div className="d-flex align-items-center p-0">
+              <div className="d-flex align-items-center p-0 tw-shrink-0">
                 <div
                   className={cx('d-flex version-manager-container p-0  align-items-center gap-0', headerLockClass)}
                   aria-disabled={isGitSyncLicenseLocked || undefined}
                 >
-                  {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
                   {!isModuleEditor && <CompareVersionsButton darkMode={darkMode} />}
                   <VersionManagerErrorBoundary>
@@ -158,6 +160,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                     </div>
                   )}
                   <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
+                  {!isModuleEditor && <PreviewAndShareIcons />}
                 </div>
               </div>
             </div>

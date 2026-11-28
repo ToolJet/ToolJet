@@ -9,17 +9,23 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import AppCanvas from '@/AppBuilder/AppCanvas';
 import RightSideBar from '@/AppBuilder/RightSideBar';
 import QueryPanel from '@/AppBuilder/QueryPanel';
+import QueryCodeEditorTabs from '@/AppBuilder/QueryManager/CodeEditorTab/QueryCodeEditorTabs';
 import RealtimeCursors from '@/AppBuilder/RealtimeCursors';
 import EditorHeader from '@/AppBuilder/Header';
 import LeftSidebar from '@/AppBuilder/LeftSidebar';
+import { DeletePageConfirmationModal } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageMenu/DeletePageConfirmationModal';
+import { QueryPermissionModal } from '@/AppBuilder/QueryPanel/QueryPermissionModal';
+import QueryDeleteConfirmation from '@/AppBuilder/QueryPanel/QueryDeleteConfirmation';
+import { PagePermissionModal } from '@/AppBuilder/RightSideBar/PageSettingsTab/PagePermissionModal';
 import Popups from './Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
-import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 import { shallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import { getErrorContext } from '@/_ui/ErrorBoundary/errorReport';
 import useCustomComponentDevPreviewSync from '@/AppBuilder/_hooks/useCustomComponentDevPreviewSync';
+import { AppBuilderTooltipProvider } from '@/AppBuilder/_contexts/AppBuilderTooltipContext';
+import useAppBuilderChrome from '@/AppBuilder/_hooks/useAppBuilderChrome';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -83,6 +89,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   }, [isEditorLoading, appId, currentVersionId]);
 
   useCustomComponentDevPreviewSync(appId);
+  useAppBuilderChrome(currentMode === 'edit', darkMode);
 
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {
@@ -96,24 +103,31 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     <div className={cx('wrapper', { editor: currentMode === 'edit' })}>
       {/* Last-resort boundary — catches anything the panel-level boundaries miss. */}
       <FallbackBoundary label="App builder" location="Editor" darkMode={darkMode}>
-        <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
-          <Suspense fallback={<div>Loading...</div>}>
-            <EditorHeader darkMode={darkMode} appType={appType} />
+        <AppBuilderTooltipProvider>
+          <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <EditorHeader darkMode={darkMode} appType={appType} />
+            </Suspense>
 
-            <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
-          </Suspense>
-
-          {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
-            <RealtimeCursors />
-          )}
-          <DndProvider backend={HTML5Backend}>
-            <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
-            <QueryPanel darkMode={darkMode} />
-            <RightSidebarToggle darkMode={darkMode} />
-            <RightSideBar darkMode={darkMode} />
-          </DndProvider>
-          <Popups darkMode={darkMode} />
-        </ModuleProvider>
+            {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
+              <RealtimeCursors />
+            )}
+            <DndProvider backend={HTML5Backend}>
+              <Suspense fallback={<div>Loading...</div>}>
+                <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
+              </Suspense>
+              <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
+              <QueryPanel darkMode={darkMode} />
+              <QueryCodeEditorTabs darkMode={darkMode} />
+              <RightSideBar darkMode={darkMode} />
+            </DndProvider>
+            <DeletePageConfirmationModal darkMode={darkMode} />
+            <QueryPermissionModal darkMode={darkMode} />
+            <QueryDeleteConfirmation darkMode={darkMode} />
+            <PagePermissionModal darkMode={darkMode} />
+            <Popups darkMode={darkMode} />
+          </ModuleProvider>
+        </AppBuilderTooltipProvider>
       </FallbackBoundary>
     </div>
   );

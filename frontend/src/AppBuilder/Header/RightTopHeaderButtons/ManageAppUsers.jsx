@@ -192,19 +192,17 @@ class ManageAppUsersComponent extends React.Component {
 
     return (
       <div className="manage-app-users">
-        <ToolTip message="Share" placement="bottom">
-          <Button
-            data-cy="editor-app-share-button"
-            variant="ghost"
-            iconOnly
-            onClick={() => {
-              this.validateThePreExistingSlugs();
-              this.setState({ showModal: true });
-            }}
-          >
-            <Share2 width="16" height="16" className="tw-text-icon-strong" />
-          </Button>
-        </ToolTip>
+        <Button
+          data-cy="editor-app-share-button"
+          variant="outline"
+          onClick={() => {
+            this.validateThePreExistingSlugs();
+            this.setState({ showModal: true });
+          }}
+        >
+          <Share2 width="15" height="15" strokeWidth={1.8} aria-hidden="true" />
+          <span>Share</span>
+        </Button>
 
         <Modal
           show={this.state.showModal}

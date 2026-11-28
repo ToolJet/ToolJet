@@ -10,7 +10,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import useWorkflowStore from '@/_stores/workflowStore';
-import { useTranslation } from 'react-i18next';
 import { CustomToggleSwitch } from '../Components/CustomToggleSwitch';
 import {
   formatInputDefault,
@@ -40,7 +39,6 @@ const CURRENT_BRANCH_DESCRIPTION = 'State of this branch will appear here';
 
 export function Workflows({ options, optionsChanged, currentState, darkMode }) {
   const { moduleId } = useModuleContext();
-  const { t } = useTranslation();
   const [workflowOptions, setWorkflowOptions] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
@@ -217,21 +215,10 @@ export function Workflows({ options, optionsChanged, currentState, darkMode }) {
 
   return (
     <>
-      <div style={{ marginBottom: '2px' }}>
-        {`To know more about querying workflows data,`}
-        &nbsp;
-        <a
-          href={'https://docs.tooljet.com/docs/workflows/triggers/app'}
-          target="_blank"
-          style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
-          rel="noreferrer"
-        >
-          {t('globals.readDocumentation', 'read documentation').toLowerCase()}
-        </a>
-      </div>
       <label className="mb-1">Workflow</label>
       <div data-cy="workflow-dropdown"></div>
       <Select
+        animateMenu
         options={workflowOptions}
         value={resolvedWorkflowId ?? {}}
         onChange={(workflowId) => {
@@ -361,7 +348,7 @@ export function Workflows({ options, optionsChanged, currentState, darkMode }) {
             </div>
             {isConflictingParamsRow(param, params, declaredInputKeys) && (
               <div
-                className="col-11 tw-text-text-danger tw-font-body-small mt-1"
+                className="col-11 tw-text-editor-text-danger tw-font-body-small mt-1"
                 data-cy={`workflow-param-input-conflict-${param.key}`}
               >
                 {`${param.key} is an input of this version. Set it under Inputs.`}

@@ -104,7 +104,7 @@ export const acceptedTypeCases = [
 // Keep in step with the config; a field losing the flag should start failing here.
 export const fxExemptFields = {
   // source: fileButton.js:89
-  properties: [{ paramName: "Tooltip", key: "tooltipFormat", accordion: "Additional Actions" }],
+  properties: [{ paramName: "Tooltip", key: "tooltipFormat", accordion: "Additional actions" }],
   styles: [
     { paramName: "", key: "iconDirection", accordion: "label and icon" }, // source: fileButton.js:201 (renders no label)
     { paramName: "Content alignment", key: "contentAlignment", accordion: "label and icon" }, // source: fileButton.js:218

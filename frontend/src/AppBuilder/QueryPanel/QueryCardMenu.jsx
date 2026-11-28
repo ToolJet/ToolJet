@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Overlay, Popover } from 'react-bootstrap';
+import { Fade, Overlay, Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import classNames from 'classnames';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
@@ -11,11 +11,14 @@ import { debounce } from 'lodash';
 import { Waypoints } from 'lucide-react';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { getQueryPopoverMotion } from '@/AppBuilder/panelLayout';
 
 const QueryCardMenu = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
-  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
+  // The row whose ⋮ opened the menu; the selected query when opened another way.
+  const menuQueryId = useStore((state) => state.queryPanel.menuQueryId ?? state.queryPanel.selectedQuery?.id);
+  const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const hasAppPermissionQuery = useStore((state) => state?.license?.featureAccess?.appPermissionQuery ?? false);
   const targetBtnForMenu = useStore((state) => state.queryPanel.targetBtnForMenu);
@@ -27,6 +30,7 @@ const QueryCardMenu = ({ darkMode }) => {
   const setRenamingQuery = useStore((state) => state.queryPanel.setRenamingQuery);
   const deleteDataQuery = useStore((state) => state.queryPanel.deleteDataQuery);
   const setEntityToViewDependencies = useStore((state) => state.setEntityToViewDependencies);
+  const popoverMotion = getQueryPopoverMotion('query-actions');
 
   const QUERY_MENU_OPTIONS = [
     {
@@ -74,20 +78,22 @@ const QueryCardMenu = ({ darkMode }) => {
 
   const handleQueryMenuActions = (value) => {
     if (value === 'rename') {
-      setRenamingQuery(selectedQuery?.id);
+      setRenamingQuery(menuQueryId);
     }
     if (value === 'duplicate') {
-      debouncedDuplicateQuery(selectedQuery?.id, appId);
+      debouncedDuplicateQuery(menuQueryId, appId);
     }
     if (value === 'view-dependencies') {
-      setEntityToViewDependencies?.({ kind: 'query', id: selectedQuery?.id });
+      setEntityToViewDependencies?.({ kind: 'query', id: menuQueryId });
     }
     if (value === 'permission') {
       if (!hasAppPermissionQuery) return;
+      // The permissions modal reads the selected query; select it without opening the editor.
+      setSelectedQuery(menuQueryId, moduleId, { reveal: false });
       toggleQueryPermissionModal(true);
     }
     if (value === 'delete') {
-      deleteDataQuery(selectedQuery?.id);
+      deleteDataQuery(menuQueryId);
     }
     toggleQueryHandlerMenu(false);
   };
@@ -108,8 +114,11 @@ const QueryCardMenu = ({ darkMode }) => {
         target={targetElement}
         show={showQueryHandlerMenu}
         rootClose
-        transition={false}
-        onHide={() => toggleQueryHandlerMenu(false)}
+        transition={popoverMotion.transition ? Fade : false}
+        onHide={(event) => {
+          if (event?.key === 'Escape') targetElement?.focus();
+          toggleQueryHandlerMenu(false);
+        }}
         popperConfig={{
           strategy: 'absolute',
           modifiers: [
@@ -132,11 +141,20 @@ const QueryCardMenu = ({ darkMode }) => {
         }}
       >
         {(props) => (
-          <Popover {...props} id="query-list-menu" className={darkMode && 'dark-theme'}>
+          <Popover
+            {...props}
+            id="query-list-menu"
+            role="group"
+            aria-label="Query actions"
+            className={classNames(popoverMotion.className, { 'dark-theme': darkMode })}
+          >
             <Popover.Body bsPrefix="list-item-popover-body">
               {QUERY_MENU_OPTIONS.map((option) => {
                 const optionBody = (
-                  <div
+                  <button
+                    type="button"
+                    autoFocus={option.value === 'rename'}
+                    aria-disabled={option.value === 'permission' && !hasAppPermissionQuery ? true : undefined}
                     data-cy={`query-card-${String(option?.value).toLowerCase()}-button`}
                     className="list-item-popover-option"
                     key={option?.value}
@@ -145,17 +163,19 @@ const QueryCardMenu = ({ darkMode }) => {
                       handleQueryMenuActions(option.value);
                     }}
                   >
-                    <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                    <div
+                    <span className="list-item-popover-menu-option-icon" aria-hidden="true">
+                      {option.icon}
+                    </span>
+                    <span
                       className={classNames('list-item-option-menu-label', {
-                        'color-tomato9': option.value === 'delete',
+                        'tw-text-editor-text-danger': option.value === 'delete',
                         'color-disabled': option.value === 'permission' && !hasAppPermissionQuery,
                       })}
                     >
                       {option?.label}
-                    </div>
+                    </span>
                     {option.value === 'permission' && !hasAppPermissionQuery && option.trailingIcon}
-                  </div>
+                  </button>
                 );
 
                 return option.value === 'permission' ? (

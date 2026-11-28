@@ -35,7 +35,17 @@ type JsonObject = { [key: string]: JsonValue };
  */
 const OPAQUE_VALUE_KEYS: readonly string[] = ['pages', 'events', 'dataQueries', 'data_queries'];
 
-export function convertAllKeysToSnakeCase(o: JsonValue): JsonValue {
+/**
+ * Declared app variables (`globalSettings.variables`) are keyed by the user's variable name, so the
+ * map is user data too: converting `querySequence` to `query_sequence` leaves `variables.querySequence`
+ * undefined, and `moduleCount` / `module_count` would collide. Only this nested map is kept as is;
+ * other keys named `variables` are converted as before.
+ */
+const SETTINGS_KEYS: readonly string[] = ['globalSettings', 'global_settings'];
+const isOpaqueValue = (key: string, parentKey?: string): boolean =>
+  OPAQUE_VALUE_KEYS.includes(key) || (key === 'variables' && SETTINGS_KEYS.includes(parentKey ?? ''));
+
+export function convertAllKeysToSnakeCase(o: JsonValue, parentKey?: string): JsonValue {
   if (Array.isArray(o)) {
     return o.map((value: JsonValue): JsonValue =>
       typeof value === 'object' && value !== null ? convertAllKeysToSnakeCase(value) : value
@@ -59,8 +69,8 @@ export function convertAllKeysToSnakeCase(o: JsonValue): JsonValue {
           .toLowerCase();
         let value: JsonValue = source[origKey];
 
-        if (!OPAQUE_VALUE_KEYS.includes(origKey) && typeof value === 'object' && value !== null) {
-          value = convertAllKeysToSnakeCase(value);
+        if (!isOpaqueValue(origKey, parentKey) && typeof value === 'object' && value !== null) {
+          value = convertAllKeysToSnakeCase(value, origKey);
         }
         newO[newKey] = value;
       }
@@ -87,6 +97,11 @@ const QUERY_OPTION_KEYS_TO_NORMALIZE = [
   'notificationDuration',
   'disableQuery',
   'disabledMessage',
+  'runPeriodically',
+  'runPeriodicallyFx',
+  'queryRunInterval',
+  'pauseAfterFailures',
+  'runPeriodicallyInBackground',
   'workflowId',
   'workflowVersionId',
 ];

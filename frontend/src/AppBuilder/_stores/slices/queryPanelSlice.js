@@ -12,6 +12,14 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { canRefreshQueryCache } from '@/AppBuilder/_utils/queryResponseCache';
+import {
+  reconcileQueryPeriodicRun,
+  pauseQueryPeriodicRun,
+  resumeQueryPeriodicRun,
+} from '@/AppBuilder/_stores/slices/componentsSlice';
+import { QUERY_PANEL_RESIZE, parseStoredQueryPanelWidth } from '@/AppBuilder/panelLayout';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { emptyPreviewParameters } from '@/AppBuilder/QueryManager/Components/previewParameters';
 import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
 import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
@@ -20,24 +28,50 @@ import { classifyWorkflowEvent, syncWorkflowOutcome } from './workflowQueryResul
 const BLOCKED_WRITE_MESSAGE = compareGuard.BLOCKED_WRITE_MESSAGE ?? '';
 const writeBlockedInCompare = compareGuard.writeBlockedInCompare ?? (() => false);
 
-const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
+const runtimePanelPreferences = JSON.parse(localStorage.getItem('runtimePanelPreferences')) ?? {};
+
+const readStoredQueryPanelWidth = () => {
+  try {
+    return parseStoredQueryPanelWidth(localStorage.getItem(QUERY_PANEL_RESIZE.storageKey));
+  } catch {
+    return null;
+  }
+};
 
 // tj-403 = data-source query-run permission denied; toast in every mode, unlike ordinary query failures
 const toastIfQueryRunRestricted = (errorData) => {
   if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN) toast.error(errorData.data.responseObject.responseBody);
 };
 
+// The result fields a failed or aborted run leaves on the query. A run start no longer blanks the
+// query (bound components keep the previous result while it loads), so a run that settles without
+// a result writes this blank itself: the query ends up exactly as it did when the start blanked it.
+const clearedQueryResult = () => ({
+  data: [],
+  rawData: [],
+  metadata: undefined,
+  request: undefined,
+  response: undefined,
+  responseHeaders: undefined,
+  error: undefined,
+});
+
 const initialState = {
-  isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
+  isQueryPaneExpanded: runtimePanelPreferences?.isExpanded ?? false,
+  // The runtime drawer's tab ('inspect' | 'debugger').
+  runtimePanelTab: 'inspect',
   isDraggingQueryPane: false,
   // eslint-disable-next-line no-constant-binary-expression
-  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : (95 ?? 70),
+  queryPanelHeight: runtimePanelPreferences?.isExpanded ? 30 : 0,
   selectedQuery: null,
   previewPanelHeight: 0,
+  // Dragged width of the right-side query panel in px; null keeps the default width.
+  queryPanelWidth: readStoredQueryPanelWidth(),
   selectedDataSource: null,
   queryToBeRun: null,
   previewLoading: false,
   queryPreviewData: '',
+  queryPreviewCache: undefined,
   // The parameters the last Preview ran with no value, which Preview names under its result.
   previewEmptyParameters: [],
   showCreateQuery: false,
@@ -48,16 +82,39 @@ const initialState = {
   queryPanelSearchTem: '',
   showQueryPermissionModal: false,
   targetBtnForMenu: null,
+  menuQueryId: null,
   showQueryHandlerMenu: false,
   showDeleteConfirmation: false,
   renamingQueryId: null,
   deletingQueryId: null,
   asyncQueryRuns: [],
+  // Queries whose code editor is open in a separate browser tab (see QueryManager/CodeEditorTab).
+  codeEditorTabQueryIds: [],
 };
 
 export const createQueryPanelSlice = (set, get) => ({
   queryPanel: {
     ...initialState,
+    openCodeEditorTab: (queryId) =>
+      set(
+        (state) => {
+          if (!state.queryPanel.codeEditorTabQueryIds.includes(queryId)) {
+            state.queryPanel.codeEditorTabQueryIds.push(queryId);
+          }
+        },
+        false,
+        'openCodeEditorTab'
+      ),
+    closeCodeEditorTab: (queryId) =>
+      set(
+        (state) => {
+          state.queryPanel.codeEditorTabQueryIds = state.queryPanel.codeEditorTabQueryIds.filter(
+            (id) => id !== queryId
+          );
+        },
+        false,
+        'closeCodeEditorTab'
+      ),
     setQueryPanelSearchTerm: (searchTerm) =>
       set(
         (state) => {
@@ -82,6 +139,26 @@ export const createQueryPanelSlice = (set, get) => ({
         false,
         'setIsQueryPaneExpanded'
       ),
+    setRuntimePanelTab: (runtimePanelTab) =>
+      set(
+        (state) => {
+          state.queryPanel.runtimePanelTab = runtimePanelTab;
+        },
+        false,
+        'setRuntimePanelTab'
+      ),
+    // Every "inspect this" entry point (Open inspector, Entity usage links) lands here.
+    openRuntimeInspector: (path) => {
+      get().setSelectedNodePath(path);
+      set(
+        (state) => {
+          state.queryPanel.runtimePanelTab = 'inspect';
+          state.queryPanel.isQueryPaneExpanded = true;
+        },
+        false,
+        'openRuntimeInspector'
+      );
+    },
     setQueryPanelHeight: (queryPanelHeight) => {
       const currentQueryPanelHeight = get().queryPanel.queryPanelHeight;
       if (currentQueryPanelHeight === queryPanelHeight) return;
@@ -93,8 +170,12 @@ export const createQueryPanelSlice = (set, get) => ({
         'setQueryPanelHeight'
       );
     }, // updateQueryPanelHeight
-    setSelectedQuery: (queryId, moduleId = 'canvas') => {
+    // Selecting a different query also shows its editor in the right panel. Selections the editor makes
+    // by itself (first query on load or version switch, next query after a delete) pass `reveal: false`
+    // so they never open the right panel or replace what the user has open there.
+    setSelectedQuery: (queryId, moduleId = 'canvas', { reveal = true } = {}) => {
       set((state) => {
+        const isNewSelection = state.queryPanel.selectedQuery?.id !== queryId;
         if (queryId === null) {
           state.queryPanel.selectedQuery = null;
           state.queryPanel.selectedDataSource = null;
@@ -114,7 +195,10 @@ export const createQueryPanelSlice = (set, get) => ({
         // never render against a stale datasource.
         state.queryPanel.selectedQuery = query;
         state.queryPanel.selectedDataSource = get().queryPanel.resolveDataSourceForQuery(query);
-        return;
+        if (reveal && isNewSelection) {
+          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.QUERY;
+          state.isRightSidebarOpen = true;
+        }
       });
     },
     // Resolves the datasource a query belongs to from the loaded datasource lists, falling back to the
@@ -154,6 +238,25 @@ export const createQueryPanelSlice = (set, get) => ({
         'setPreviewPanelHeight'
       );
     }, // updatePreviewPanelHeight
+
+    // Called on every drag frame; persist only when the drag ends, so a drag writes storage once.
+    setQueryPanelWidth: (width, { persist = false } = {}) => {
+      if (get().queryPanel.queryPanelWidth !== width) {
+        set(
+          (state) => {
+            state.queryPanel.queryPanelWidth = width;
+          },
+          false,
+          'setQueryPanelWidth'
+        );
+      }
+      if (!persist) return;
+      try {
+        localStorage.setItem(QUERY_PANEL_RESIZE.storageKey, String(width));
+      } catch {
+        // Storage can be unavailable (private mode, quota); the width still holds for this session.
+      }
+    },
     setSelectedDataSource: (dataSource = null) =>
       set(
         (state) => {
@@ -178,10 +281,11 @@ export const createQueryPanelSlice = (set, get) => ({
         false,
         'setPreviewLoading'
       ),
-    setPreviewData: (data) =>
+    setPreviewData: (data, cache) =>
       set(
         (state) => {
           state.queryPanel.queryPreviewData = data;
+          state.queryPanel.queryPreviewCache = cache;
         },
         false,
         'setPreviewData'
@@ -259,7 +363,9 @@ export const createQueryPanelSlice = (set, get) => ({
           undefined,
           queryConfirmationData.shouldSetPreviewData,
           false,
-          moduleId
+          moduleId,
+          undefined,
+          queryConfirmationData.runOptions
         );
 
       !isConfirm &&
@@ -339,6 +445,15 @@ export const createQueryPanelSlice = (set, get) => ({
 
       return asyncHandler;
     },
+    // Stop a query's periodic re-run at runtime (pausePeriodicRun CSA). The pause is
+    // sticky: reconcile won't auto-restart it on the next manual run / option edit.
+    pausePeriodicRun: (queryId, moduleId = 'canvas') => {
+      pauseQueryPeriodicRun(queryId, moduleId);
+    },
+    // Resume a paused periodic re-run (resumePeriodicRun CSA).
+    resumePeriodicRun: (queryId, moduleId = 'canvas') => {
+      resumeQueryPeriodicRun(queryId, moduleId, get);
+    },
     resetQuery: (queryId, moduleId = 'canvas') => {
       const { setResolvedQuery } = get();
       setResolvedQuery(
@@ -370,7 +485,8 @@ export const createQueryPanelSlice = (set, get) => ({
       shouldSetPreviewData = false,
       isOnLoad = false,
       moduleId = 'canvas',
-      callbackFns = undefined
+      callbackFns = undefined,
+      runOptions = undefined // { refreshCache: true }: clear the EE response cache, run, and cache the result
     ) => {
       const {
         eventsSlice,
@@ -409,7 +525,9 @@ export const createQueryPanelSlice = (set, get) => ({
             eventId,
             shouldSetPreviewData,
             isOnLoad,
-            moduleId
+            moduleId,
+            callbackFns,
+            runOptions
           )
         );
       }
@@ -528,6 +646,8 @@ export const createQueryPanelSlice = (set, get) => ({
           shouldSetPreviewData,
           parameters,
           confirmationMessage,
+          // Kept so Yes resumes the same kind of run: a refresh stays a refresh.
+          runOptions,
         };
 
         if (confirmed === undefined) {
@@ -544,6 +664,12 @@ export const createQueryPanelSlice = (set, get) => ({
           return;
         }
       }
+
+      // Query is committed to executing now — start/refresh its periodic timer if
+      // "Run this query periodically" is on. Idempotent: a tick re-running the query
+      // re-enters here and no-ops when the resolved interval is unchanged. Skipped when the toggle is
+      // off: an existing timer then just idles (the tick and updateDataQuery reconcile handle it).
+      if (dataQuery.options?.runPeriodically) reconcileQueryPeriodicRun(queryId, moduleId, get);
 
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {
@@ -569,7 +695,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
         if (shouldSetPreviewData) {
           setPreviewLoading(false);
-          setPreviewData(finalData);
+          setPreviewData(finalData, data?.metadata?.cache);
         }
 
         if (dataQuery.options.showSuccessNotification) {
@@ -639,6 +765,7 @@ export const createQueryPanelSlice = (set, get) => ({
           queryId,
           {
             isLoading: false,
+            ...clearedQueryResult(),
             ...(errorData?.data?.type === TJ_QUERY_ERROR_TYPE.UNAUTHORIZED
               ? {
                   metadata: errorData?.metadata,
@@ -679,21 +806,10 @@ export const createQueryPanelSlice = (set, get) => ({
           queryPreviewData && setPreviewData('');
         }
 
-        setResolvedQuery(
-          queryId,
-          {
-            isLoading: true,
-            data: [],
-            rawData: [],
-            id: queryId,
-            metadata: undefined,
-            request: undefined,
-            response: undefined,
-            responseHeaders: undefined,
-            error: undefined,
-          },
-          moduleId
-        );
+        // Only flag the run as loading: the previous result (and error) stays until this run
+        // settles, so bound components don't go blank. `isLoading` is the loading signal. Failure
+        // and abort write clearedQueryResult() when they settle, so the end state is unchanged.
+        setResolvedQuery(queryId, { isLoading: true }, moduleId);
 
         // Create AbortController only for fetch-based kinds. For runjs/runpy/workflows,
         // controller.abort() has no effect on the underlying execution, so registering one
@@ -703,6 +819,14 @@ export const createQueryPanelSlice = (set, get) => ({
         if (abortController) {
           queryAbortControllers.set(queryId, abortController);
         }
+
+        // Refresh clears every user's cached responses, so a public app's viewers get a normal run.
+        // The server enforces the same rule.
+        // Without caching on the query or the license, refresh is a plain run: no cache instruction is sent.
+        const refreshCache =
+          runOptions?.refreshCache === true &&
+          canRefreshQueryCache(get(), query) &&
+          !(appStore.modules.canvas.app?.isPublic && modeStore.modules.canvas.currentMode === 'view');
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
@@ -721,7 +845,8 @@ export const createQueryPanelSlice = (set, get) => ({
             // whatever env was active when they first mounted. Only fall back to it for released/
             // public views, where selectedEnvironment is never populated.
             selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId),
-            query.options?.workflowVersionId
+            query.options?.workflowVersionId,
+            refreshCache
           );
         } else {
           const isReleasedApp = appStore.modules.canvas.app?.isReleasedApp;
@@ -754,7 +879,8 @@ export const createQueryPanelSlice = (set, get) => ({
               return selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId);
             })(),
             modeStore.modules.canvas.currentMode,
-            abortController?.signal
+            abortController?.signal,
+            refreshCache
           );
         }
 
@@ -876,7 +1002,7 @@ export const createQueryPanelSlice = (set, get) => ({
           .catch((e) => {
             // User-initiated abort — clear loading silently, log to debugger, do not fire failure events
             if (isAbortError(e)) {
-              setResolvedQuery(queryId, { isLoading: false }, moduleId);
+              setResolvedQuery(queryId, { isLoading: false, ...clearedQueryResult() }, moduleId);
               get().debugger.log({
                 logLevel: 'warning',
                 type: 'query',
@@ -1078,7 +1204,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   }
                   setPreviewLoading(false);
                   setIsPreviewQueryLoading(false);
-                  if (!calledFromQuery) setPreviewData(finalData);
+                  if (!calledFromQuery) setPreviewData(finalData, data?.data?.metadata?.cache);
                   resolve({ status: 'ok', data: finalData });
                 } else if (executionStatus === 'waiting') {
                   const waitingData = syncWorkflowOutcome(data.data).result.data;
@@ -1242,7 +1368,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   }
                 }
 
-                if (!calledFromQuery) setPreviewData(finalData);
+                if (!calledFromQuery) setPreviewData(finalData, data?.metadata?.cache);
                 onEvent('onDataQuerySuccess', queryEvents, 'edit');
 
                 if (callbackFns?.onSuccess) {
@@ -1327,11 +1453,12 @@ export const createQueryPanelSlice = (set, get) => ({
       try {
         pyodide = await loadPyodide();
       } catch (errorMessage) {
+        // Same shape as a Python error below. Nesting it under `data` made RunPy queries and Python
+        // transformations treat a Pyodide load failure as a successful run.
         return {
-          data: {
-            status: 'failed',
-            message: errorMessage,
-          },
+          status: 'failed',
+          message: errorMessage,
+          description: errorMessage,
         };
       }
       const log = (line) => console.log({ line });
@@ -1374,6 +1501,11 @@ export const createQueryPanelSlice = (set, get) => ({
                 return resolvedState.queries[key].isLoading;
               },
             };
+            const cachedQuery = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+            if (canRefreshQueryCache(get(), cachedQuery)) {
+              queriesInCurentState[key].refresh = () =>
+                actions.runQuery(key, undefined, moduleId, undefined, { refreshCache: true });
+            }
           }
 
           await pyodide.globals.set('actions', actions);
@@ -1594,7 +1726,8 @@ export const createQueryPanelSlice = (set, get) => ({
       syncExecution = true,
       params = {},
       appEnvId,
-      workflowVersionId = null
+      workflowVersionId = null,
+      refreshCache = false
     ) => {
       const { getAllExposedValues } = get();
       const currentState = getAllExposedValues();
@@ -1628,7 +1761,8 @@ export const createQueryPanelSlice = (set, get) => ({
           appEnvId,
           query.id,
           syncExecution,
-          workflowVersionId
+          workflowVersionId,
+          refreshCache
         );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
@@ -1749,16 +1883,17 @@ export const createQueryPanelSlice = (set, get) => ({
             ? get().resolvedStore.modules[moduleId]?.exposedValues?.queries?.[queryId]
             : get().getResolvedState(moduleId).queries[key];
 
+        const runWithParams = (params, callbackFns, runOptions) => {
+          if (typeof params !== 'object' || params === null) {
+            params = {};
+          }
+          const processedParams = {};
+          const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+          query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
+          return actions.runQuery(query.name, processedParams, moduleId, callbackFns, runOptions);
+        };
         const queryEntry = {
-          run: (params, callbackFns) => {
-            if (typeof params !== 'object' || params === null) {
-              params = {};
-            }
-            const processedParams = {};
-            const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
-            query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
-            return actions.runQuery(query.name, processedParams, moduleId, callbackFns);
-          },
+          run: (params, callbackFns) => runWithParams(params, callbackFns),
           reset: () => {
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             return actions.resetQuery(query.name);
@@ -1774,7 +1909,16 @@ export const createQueryPanelSlice = (set, get) => ({
         // Live getters for all state properties so that after
         // `await queries.x.run()` any field (data, error, request, response,
         // metadata, responseHeaders, …) reflects the completed run.
-        const reservedMethods = new Set(['run', 'reset', 'getData', 'getRawData', 'getloadingState']);
+        // Same as run(), but first drops every cached response of the query, then caches this run's result.
+        if (
+          canRefreshQueryCache(
+            get(),
+            dataQuery.queries.modules?.[moduleId]?.find((q) => q.name === key)
+          )
+        ) {
+          queryEntry.refresh = (params, callbackFns) => runWithParams(params, callbackFns, { refreshCache: true });
+        }
+        const reservedMethods = new Set(['run', 'refresh', 'reset', 'getData', 'getRawData', 'getloadingState']);
         const liveDescriptors = {};
         for (const prop of Object.keys(resolvedState.queries[key])) {
           if (reservedMethods.has(prop)) continue;
@@ -1957,9 +2101,14 @@ export const createQueryPanelSlice = (set, get) => ({
         state.queryPanel.showQueryPermissionModal = show;
       });
     },
-    toggleQueryHandlerMenu: (show, id) => {
+    // queryId: the row whose ⋮ opened the menu. The menu acts on it without selecting it, so a closed
+    // query editor stays closed (QM-62).
+    toggleQueryHandlerMenu: (show, id, queryId) => {
       set((state) => {
-        if (show) state.queryPanel.targetBtnForMenu = id;
+        if (show) {
+          state.queryPanel.targetBtnForMenu = id;
+          state.queryPanel.menuQueryId = queryId ?? null;
+        }
         state.queryPanel.showQueryHandlerMenu = show;
       });
     },
@@ -1970,6 +2119,14 @@ export const createQueryPanelSlice = (set, get) => ({
     deleteDataQuery: (queryId) =>
       set((state) => {
         state.queryPanel.deletingQueryId = queryId;
+      }),
+    // Shows the selected query's editor in the right panel, even when that query was already selected
+    // (setSelectedQuery only opens the panel for a new selection). The bottom drawer holds the
+    // Inspector and Debugger, so it is left as the user had it.
+    revealQueryEditor: () =>
+      set((state) => {
+        state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.QUERY;
+        state.isRightSidebarOpen = true;
       }),
     expandQueryPaneIfNeeded: () => {
       const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {

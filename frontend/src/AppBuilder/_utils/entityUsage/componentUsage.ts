@@ -1,3 +1,4 @@
+import { getVariableDefinitionRefs, addVariableDefinitionReaders } from './variableDefinitionRefs';
 import { getQueryCodeAnalyses } from '@/AppBuilder/_utils/scriptAnalysis';
 import type { UsageDetail, UsageEntry } from './types';
 import {
@@ -18,7 +19,12 @@ import {
 import { COMPONENT_EVENT_TARGETS, eventDetail, resolveEventTarget } from './eventTargets';
 import { getQueryRefs } from './queryRefs';
 
-export function getComponentUsage(state: any, componentId: string, moduleId = 'canvas') {
+export function getComponentUsage(
+  state: any,
+  componentId: string,
+  moduleId = 'canvas',
+  definitionRefs = getVariableDefinitionRefs(state, moduleId)
+) {
   const uses = new Map<string, UsageEntry>();
   const usedBy = new Map<string, UsageEntry>();
   const triggers = new Map<string, UsageEntry>();
@@ -106,6 +112,8 @@ export function getComponentUsage(state: any, componentId: string, moduleId = 'c
       }
     }
   });
+
+  addVariableDefinitionReaders(usedBy, 'components', componentId, definitionRefs);
 
   return { uses: sorted(uses), usedBy: sorted(usedBy), triggers: sorted(triggers) };
 }

@@ -244,7 +244,7 @@ export const OptionsList = ({
               }}
             />
             {duplicateLabels.length > 0 && (
-              <div className="tw-text-text-danger tw-mt-1" data-cy="option-value-unique-error">
+              <div className="tw-text-editor-text-danger tw-mt-1" data-cy="option-value-unique-error">
                 Option value must be unique. <br />
                 Also used by: {duplicateLabels.map((l) => `"${l}"`).join(', ')}
               </div>

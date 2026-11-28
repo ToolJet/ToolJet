@@ -45,7 +45,10 @@ const Preview = ({
   onOpenOccurrence: (occurrence?: number) => void;
   title?: boolean;
 }) => (
-  <span className={cx('code-search-row-preview', { 'code-search-row-title': title })}>
+  <span
+    className={cx('code-search-row-preview', { 'code-search-row-title': title })}
+    title={segments.map((segment) => segment.text).join('')}
+  >
     {segments.map((segment, index) =>
       segment.match ? (
         <mark

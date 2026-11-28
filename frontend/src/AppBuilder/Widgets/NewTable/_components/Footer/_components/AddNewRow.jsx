@@ -440,7 +440,7 @@ export function AddNewRow({
           overlayClassName={DIALOG_LAYER_CLASS}
           className={cn(
             DIALOG_LAYER_CLASS,
-            'tw-max-h-[min(80vh,720px)] tw-max-w-[500px] tw-overflow-hidden',
+            'tj-widget-overlay tw-max-h-[min(80vh,720px)] tw-max-w-[500px] tw-overflow-hidden',
             darkMode && 'dark-theme theme-dark'
           )}
         >
