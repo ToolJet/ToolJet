@@ -1,0 +1,68 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "ElevenLabs datasource",
+  "description": "A schema defining ElevenLabs datasource",
+  "type": "api",
+  "source": {
+    "name": "ElevenLabs",
+    "kind": "elevenlabs",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "region": {
+        "type": "string"
+      }
+    },
+    "customTesting": false
+  },
+  "defaults": {
+    "api_key": {
+      "value": ""
+    },
+    "region": {
+      "value": "default"
+    }
+  },
+  "properties": {
+    "api_key": {
+      "label": "API key",
+      "key": "api_key",
+      "type": "password",
+      "description": "Enter your ElevenLabs API key"
+    },
+    "region": {
+      "label": "Region",
+      "key": "region",
+      "type": "dropdown",
+      "description": "Server that requests are sent to. Pick a data residency region only if your workspace is provisioned there",
+      "list": [
+        {
+          "name": "Default (api.elevenlabs.io)",
+          "value": "default"
+        },
+        {
+          "name": "United States (api.us.elevenlabs.io)",
+          "value": "us"
+        },
+        {
+          "name": "EU data residency (api.eu.residency.elevenlabs.io)",
+          "value": "eu"
+        },
+        {
+          "name": "India data residency (api.in.residency.elevenlabs.io)",
+          "value": "in"
+        }
+      ]
+    }
+  },
+  "required": [
+    "api_key"
+  ]
+}
